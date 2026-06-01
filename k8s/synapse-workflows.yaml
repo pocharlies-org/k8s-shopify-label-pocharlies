@@ -631,7 +631,7 @@ data:
       dsl: '1.0.0'
       namespace: skirmshop
       name: poll-tracking
-      version: '1.2.4'
+      version: '1.2.5'
       summary: 'Poll UPS/CEX tracking and publish a canonical TrackingEventReceived event to the shipping bus.'
 
     input:
@@ -706,26 +706,23 @@ data:
             method: post
             endpoint: 'http://labels-event-gateway.skirmshop.svc.cluster.local:3006/events'
             headers:
-              content-type: application/cloudevents+json
+              content-type: application/json
+              ce-specversion: '1.0'
+              ce-id: '${ .correlationId }'
+              ce-type: com.skirmshop.shipping.trackingeventreceived.v1
+              ce-source: urn:skirmshop:shipping-app:synapse:poll-tracking
+              ce-subject: '${ .orderId }'
               x-correlation-id: '${ .correlationId }'
             body:
-              specversion: '1.0'
-              id: '${ .correlationId }'
-              type: com.skirmshop.shipping.trackingeventreceived.v1
-              source: urn:skirmshop:shipping-app:synapse:poll-tracking
-              subject: '${ .orderId }'
-              time: '${ .tracking.occurredAt // now }'
-              datacontenttype: application/json
-              data:
-                shipmentId: '${ .shipmentId }'
-                carrier: '${ .carrier }'
-                trackingNumber: '${ .trackingNumber }'
-                rawCode: '${ .tracking.rawStatusCode }'
-                normalizedStatus: '${ .tracking.normalizedStatus }'
-                description: '${ .tracking.description // "" }'
-                location: '${ .tracking.location // "" }'
-                occurredAt: '${ .tracking.occurredAt // now }'
-                rawPayload: '${ .tracking }'
+              shipmentId: '${ .shipmentId }'
+              carrier: '${ .carrier }'
+              trackingNumber: '${ .trackingNumber }'
+              rawCode: '${ .tracking.rawStatusCode }'
+              normalizedStatus: '${ .tracking.normalizedStatus }'
+              description: '${ .tracking.description // "" }'
+              location: '${ .tracking.location // "" }'
+              occurredAt: '${ .tracking.occurredAt // now }'
+              rawPayload: '${ .tracking }'
           output:
             as: '.trackingEventPublished'
           then: end
