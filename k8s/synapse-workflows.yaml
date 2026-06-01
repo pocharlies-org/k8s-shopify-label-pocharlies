@@ -631,7 +631,7 @@ data:
       dsl: '1.0.0'
       namespace: skirmshop
       name: poll-tracking
-      version: '1.2.6'
+      version: '1.2.7'
       summary: 'Poll UPS/CEX tracking and publish a canonical TrackingEventReceived event to the shipping bus.'
 
     input:
@@ -673,7 +673,7 @@ data:
               accept: application/json
               x-correlation-id: '${ .correlationId }'
           output:
-            as: '.tracking'
+            as: '${ $input + { tracking: $output } }'
           then: publishTrackingEvent
 
       - pollCex:
@@ -685,7 +685,7 @@ data:
               accept: application/json
               x-correlation-id: '${ .correlationId }'
           output:
-            as: '.tracking'
+            as: '${ $input + { tracking: $output } }'
           then: publishTrackingEvent
 
       - pollCorreos:
@@ -697,7 +697,7 @@ data:
               accept: application/json
               x-correlation-id: '${ .correlationId }'
           output:
-            as: '.tracking'
+            as: '${ $input + { tracking: $output } }'
           then: publishTrackingEvent
 
       - publishTrackingEvent:
