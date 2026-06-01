@@ -194,6 +194,24 @@ spec:
         key: observability/prod/telegram
         property: synapse_bot_token
 ---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: labels-socialmedia-secrets
+  namespace: skirmshop
+spec:
+  refreshInterval: 1h
+  secretStoreRef: { name: vault-backend, kind: ClusterSecretStore }
+  target:
+    name: labels-socialmedia-secrets
+    creationPolicy: Owner
+    deletionPolicy: Retain
+  data:
+    - secretKey: CONNECTOR_SHARED_SECRET
+      remoteRef:
+        key: secret/whatsapp-mcp
+        property: CONNECTOR_SHARED_SECRET
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -212,17 +230,23 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: notification-dispatcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:60633267fe316f51332342cb3813f8550f3dd255dba87949b84f8e56779eb9db
+          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:c3ed85b2430e26f1c759e36dcdab791aa5e8e231bfaf1c86eb33d0daa8c47eea
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
             - { name: SHOPIFY_SHOP_DOMAIN, value: "ymimst-yh.myshopify.com" }
             - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: NOTIFICATIONS_ENABLED, value: "false" }
+            - { name: NOTIFICATIONS_ENABLED, value: "true" }
             - { name: EMAIL_ENABLED, value: "false" }
-            - { name: WHATSAPP_ENABLED, value: "false" }
+            - { name: WHATSAPP_ENABLED, value: "true" }
+            - { name: WHATSAPP_TRANSPORT, value: "http" }
+            - { name: WHATSAPP_HTTP_URL, value: "http://whatsapp-connector-professional.whatsapp-mcp.svc.cluster.local:3001" }
+            - name: WHATSAPP_CONNECTOR_SHARED_SECRET
+              valueFrom:
+                secretKeyRef: { name: labels-socialmedia-secrets, key: CONNECTOR_SHARED_SECRET }
             - { name: TELEGRAM_ENABLED, value: "false" }
             - { name: LABEL_STORAGE_URL, value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007" }
+            - { name: SHOPIFY_APP_URL, value: "https://track.skirmshop.es/labels" }
             - { name: SHOPIFY_ADMIN_STORE, value: "skirmshop-spain" }
             - { name: OPS_TELEGRAM_ENABLED, value: "true" }
             - { name: OPS_TELEGRAM_CHAT_ID, value: "-1003984393379" }
