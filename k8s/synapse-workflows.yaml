@@ -631,8 +631,8 @@ data:
       dsl: '1.0.0'
       namespace: skirmshop
       name: poll-tracking
-      version: '1.2.0'
-      summary: 'Poll UPS/CEX tracking and emit a canonical TrackingEventReceived event.'
+      version: '1.2.1'
+      summary: 'Poll UPS/CEX tracking and publish a canonical TrackingEventReceived event to the shipping bus.'
 
     input:
       schema:
@@ -675,7 +675,7 @@ data:
               x-correlation-id: '${ .correlationId }'
           output:
             as: '.tracking'
-          then: emitTrackingEvent
+          then: publishTrackingEvent
 
       - pollCex:
           call: http
@@ -687,7 +687,7 @@ data:
               x-correlation-id: '${ .correlationId }'
           output:
             as: '.tracking'
-          then: emitTrackingEvent
+          then: publishTrackingEvent
 
       - pollCorreos:
           call: http
@@ -699,25 +699,36 @@ data:
               x-correlation-id: '${ .correlationId }'
           output:
             as: '.tracking'
-          then: emitTrackingEvent
+          then: publishTrackingEvent
 
-      - emitTrackingEvent:
-          emit:
-            event:
-              with:
-                type: com.skirmshop.shipping.trackingeventreceived.v1
-                source: urn:skirmshop:shipping-app:synapse:poll-tracking
-                subject: '${ .orderId }'
-                data:
-                  shipmentId: '${ .shipmentId }'
-                  carrier: '${ .carrier }'
-                  trackingNumber: '${ .trackingNumber }'
-                  rawCode: '${ .tracking.rawStatusCode }'
-                  normalizedStatus: '${ .tracking.normalizedStatus }'
-                  description: '${ .tracking.description // "" }'
-                  location: '${ .tracking.location // "" }'
-                  occurredAt: '${ .tracking.occurredAt // now }'
-                  rawPayload: '${ .tracking }'
+      - publishTrackingEvent:
+          call: http
+          with:
+            method: post
+            endpoint: 'http://labels-event-gateway.skirmshop.svc.cluster.local:3006/events'
+            headers:
+              content-type: application/cloudevents+json
+              x-correlation-id: '${ .correlationId }'
+            body:
+              specversion: '1.0'
+              id: '${ .correlationId }'
+              type: com.skirmshop.shipping.trackingeventreceived.v1
+              source: urn:skirmshop:shipping-app:synapse:poll-tracking
+              subject: '${ .orderId }'
+              time: '${ .tracking.occurredAt // now }'
+              datacontenttype: application/json
+              data:
+                shipmentId: '${ .shipmentId }'
+                carrier: '${ .carrier }'
+                trackingNumber: '${ .trackingNumber }'
+                rawCode: '${ .tracking.rawStatusCode }'
+                normalizedStatus: '${ .tracking.normalizedStatus }'
+                description: '${ .tracking.description // "" }'
+                location: '${ .tracking.location // "" }'
+                occurredAt: '${ .tracking.occurredAt // now }'
+                rawPayload: '${ .tracking }'
+          output:
+            as: '.trackingEventPublished'
           then: end
 
       - failUnsupportedCarrier:
