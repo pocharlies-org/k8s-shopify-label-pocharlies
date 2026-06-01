@@ -67,7 +67,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:7c332218c4e25d12d3fff5867f34923da2c17df3e21791eb8b6e2f4decc9843c  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:d0d45641c054ba991251c54e09f7edb489a19dc634070f6aed86a7d75a7e175a  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -93,6 +93,12 @@ spec:
             # true. ConfigMap is refreshed weekly by labels-vat-sync from
             # Shopify Admin REST /countries.json.
             - { name: VAT_RATES_FILE, value: "/etc/vat/vat-rates.json" }
+            - { name: OPS_TELEGRAM_ENABLED, value: "true" }
+            - { name: OPS_TELEGRAM_CHAT_ID, value: "-1003984393379" }
+            - { name: OPS_TELEGRAM_LABELS_THREAD_ID, value: "6921" }
+            - name: OPS_TELEGRAM_BOT_TOKEN
+              valueFrom:
+                secretKeyRef: { name: labels-telegram-bot, key: bot_token }
             - name: EASY_PRINT_PACKING_SLIP_URL_TEMPLATE
               valueFrom:
                 configMapKeyRef:
