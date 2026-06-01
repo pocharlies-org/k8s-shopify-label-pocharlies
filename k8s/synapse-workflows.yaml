@@ -631,7 +631,7 @@ data:
       dsl: '1.0.0'
       namespace: skirmshop
       name: poll-tracking
-      version: '1.2.3'
+      version: '1.2.4'
       summary: 'Poll UPS/CEX tracking and publish a canonical TrackingEventReceived event to the shipping bus.'
 
     input:
@@ -668,7 +668,7 @@ data:
           call: http
           with:
             method: get
-            endpoint: 'http://labels-ups-adapter.skirmshop.svc.cluster.local:3002/tracking/{{ .trackingNumber }}'
+            endpoint: 'http://labels-ups-adapter.skirmshop.svc.cluster.local:3002/tracking/{trackingNumber}'
             headers:
               accept: application/json
               x-correlation-id: '${ .correlationId }'
@@ -680,7 +680,7 @@ data:
           call: http
           with:
             method: get
-            endpoint: 'http://labels-correos-express-adapter.skirmshop.svc.cluster.local:3003/tracking/{{ .trackingNumber }}'
+            endpoint: 'http://labels-correos-express-adapter.skirmshop.svc.cluster.local:3003/tracking/{trackingNumber}'
             headers:
               accept: application/json
               x-correlation-id: '${ .correlationId }'
@@ -692,7 +692,7 @@ data:
           call: http
           with:
             method: get
-            endpoint: 'http://labels-correos-adapter.skirmshop.svc.cluster.local:3011/tracking/{{ .trackingNumber }}'
+            endpoint: 'http://labels-correos-adapter.skirmshop.svc.cluster.local:3011/tracking/{trackingNumber}'
             headers:
               accept: application/json
               x-correlation-id: '${ .correlationId }'
