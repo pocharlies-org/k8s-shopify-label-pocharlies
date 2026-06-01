@@ -1,0 +1,45 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: labels-pickup-point-reminder
+  namespace: skirmshop
+spec:
+  schedule: "0 * * * *"
+  timeZone: Etc/UTC
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 600
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 86400
+      backoffLimit: 1
+      activeDeadlineSeconds: 600
+      template:
+        metadata:
+          labels:
+            app: labels-pickup-point-reminder
+        spec:
+          restartPolicy: Never
+          enableServiceLinks: false
+          nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+          tolerations:
+            - { key: role, operator: Equal, value: edge, effect: NoSchedule }
+          containers:
+            - name: pickup-point-reminder
+              image: harbor.e-dani.com/homelab/skirmshop-labels-pickup-point-reminder@sha256:a26d6dbd69e32c3015836275859bcb38779b6453f1943fa0f96f20f6befe3349
+              env:
+                - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
+                - { name: DATABASE_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
+                - name: OPS_TELEGRAM_BOT_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: labels-telegram-bot
+                      key: bot_token
+                - { name: OPS_TELEGRAM_CHAT_ID, value: "-1003984393379" }
+                - { name: OPS_TELEGRAM_LABELS_THREAD_ID, value: "6921" }
+                - { name: OPS_TELEGRAM_ENABLED, value: "true" }
+              envFrom: [{ secretRef: { name: labels-secrets } }]
+              resources:
+                requests: { cpu: 20m, memory: 64Mi }
+                limits: { memory: 256Mi }
