@@ -17,7 +17,7 @@ data:
       synapseApiToken: required('SYNAPSE_API_TOKEN'),
       workflowNamespace: process.env.POLL_TRACKING_WORKFLOW_NAMESPACE ?? 'skirmshop',
       workflowName: process.env.POLL_TRACKING_WORKFLOW_NAME ?? 'poll-tracking',
-      workflowVersion: process.env.POLL_TRACKING_WORKFLOW_VERSION ?? '1.2.1',
+      workflowVersion: process.env.POLL_TRACKING_WORKFLOW_VERSION ?? '1.2.2',
       batchSize: positiveInt(process.env.POLL_TRACKING_BATCH_SIZE, 100),
       requestTimeoutMs: positiveInt(process.env.REQUEST_TIMEOUT_MS, 15000),
       launchDelayMs: positiveInt(process.env.POLL_TRACKING_LAUNCH_DELAY_MS, 50),
@@ -231,7 +231,7 @@ spec:
               # Promoted to a first-class app (was the saga-launcher image running an
               # inline ConfigMap .mjs). Adds dedup + max-attempts + min-interval + max-age
               # guards that stop the unbounded "new poll instance every 15 min" growth.
-              # poll-tracking v1.2.1 publishes TrackingEventReceived through the
+              # poll-tracking v1.2.2 publishes TrackingEventReceived through the
               # event gateway so tracking-ingestion persists carrier movement.
               image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-poll-scheduler@sha256:4b4029eee1d542a4d9fe06bdfbbd74c8ea7085e2e4d6da97c55c6ae29dd9d922
               env:
@@ -239,7 +239,7 @@ spec:
                 - { name: SYNAPSE_API_URL, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }
                 - { name: POLL_TRACKING_WORKFLOW_NAMESPACE, value: "skirmshop" }
                 - { name: POLL_TRACKING_WORKFLOW_NAME, value: "poll-tracking" }
-                - { name: POLL_TRACKING_WORKFLOW_VERSION, value: "1.2.1" }
+                - { name: POLL_TRACKING_WORKFLOW_VERSION, value: "1.2.2" }
                 - { name: POLL_TRACKING_BATCH_SIZE, value: "100" }
                 - { name: REQUEST_TIMEOUT_MS, value: "15000" }
                 # --- dedup / back-pressure guards (the fix) ---

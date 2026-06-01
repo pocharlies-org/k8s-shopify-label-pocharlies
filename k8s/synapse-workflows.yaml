@@ -631,7 +631,7 @@ data:
       dsl: '1.0.0'
       namespace: skirmshop
       name: poll-tracking
-      version: '1.2.1'
+      version: '1.2.2'
       summary: 'Poll UPS/CEX tracking and publish a canonical TrackingEventReceived event to the shipping bus.'
 
     input:
@@ -662,7 +662,6 @@ data:
                 when: '${ .carrier == "correos" }'
                 then: pollCorreos
             - unsupported:
-                when: '${ true }'
                 then: failUnsupportedCarrier
 
       - pollUps:
