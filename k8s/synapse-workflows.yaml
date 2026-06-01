@@ -35,7 +35,7 @@ data:
       dsl: '1.0.0'
       namespace: skirmshop
       name: generate-shipment-label
-      version: '1.2.15'
+      version: '1.2.16'
       summary: |
         Full shipping saga for a paid Shopify order. Routes to UPS, Correos
         Express or Correos matriz, persists the label, updates
@@ -105,7 +105,7 @@ data:
                 call: http
                 with:
                   method: post
-                  endpoint: http://routing-service:3001/resolve
+                  endpoint: http://labels-routing-service.skirmshop.svc.cluster.local:3001/resolve
                   headers:
                     content-type: application/json
                     x-correlation-id: '${ .correlationId }'
@@ -198,7 +198,7 @@ data:
                 call: http
                 with:
                   method: post
-                  endpoint: http://ups-adapter:3002/shipments
+                  endpoint: http://labels-ups-adapter.skirmshop.svc.cluster.local:3002/shipments
                   headers:
                     content-type: application/json
                     x-correlation-id: '${ .correlationId }'
@@ -226,7 +226,7 @@ data:
                   call: http
                   with:
                     method: post
-                    endpoint: http://ups-adapter:3002/compensate
+                    endpoint: http://labels-ups-adapter.skirmshop.svc.cluster.local:3002/compensate
                     body:
                       shipmentId: '${ .shipmentId }'
                       correlationId: '${ .correlationId }'
@@ -245,7 +245,7 @@ data:
                 call: http
                 with:
                   method: post
-                  endpoint: http://correos-express-adapter:3003/shipments
+                  endpoint: http://labels-correos-express-adapter.skirmshop.svc.cluster.local:3003/shipments
                   headers:
                     content-type: application/json
                     x-correlation-id: '${ .correlationId }'
@@ -270,7 +270,7 @@ data:
                   call: http
                   with:
                     method: post
-                    endpoint: http://correos-express-adapter:3003/compensate
+                    endpoint: http://labels-correos-express-adapter.skirmshop.svc.cluster.local:3003/compensate
                     body:
                       shipmentId: '${ .shipmentId }'
                       correlationId: '${ .correlationId }'
@@ -289,7 +289,7 @@ data:
                 call: http
                 with:
                   method: post
-                  endpoint: http://correos-adapter:3011/shipments
+                  endpoint: http://labels-correos-adapter.skirmshop.svc.cluster.local:3011/shipments
                   headers:
                     content-type: application/json
                     x-correlation-id: '${ .correlationId }'
@@ -388,7 +388,7 @@ data:
                 call: http
                 with:
                   method: post
-                  endpoint: http://label-storage:3007/persist
+                  endpoint: http://labels-label-storage.skirmshop.svc.cluster.local:3007/persist
                   headers:
                     content-type: application/json
                     x-correlation-id: '${ .correlationId }'
@@ -428,7 +428,7 @@ data:
                 call: http
                 with:
                   method: post
-                  endpoint: http://notification-dispatcher:3007/ops/label-created
+                  endpoint: http://labels-notification-dispatcher.skirmshop.svc.cluster.local:3007/ops/label-created
                   headers:
                     content-type: application/json
                     x-correlation-id: '${ .correlationId }'
@@ -473,7 +473,7 @@ data:
                 call: http
                 with:
                   method: post
-                  endpoint: http://shopify-fulfillment-service:3005/fulfillments
+                  endpoint: http://labels-shopify-fulfillment-service.skirmshop.svc.cluster.local:3005/fulfillments
                   headers:
                     content-type: application/json
                     x-correlation-id: '${ .correlationId }'
