@@ -2975,7 +2975,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "baleares_minor",
         "maxWeightKg": 1,
         "totalCharges": "7.65",
@@ -2984,7 +2984,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "baleares_minor",
         "maxWeightKg": 2,
         "totalCharges": "8.78",
@@ -2993,7 +2993,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "baleares_minor",
         "maxWeightKg": 3,
         "totalCharges": "10.35",
@@ -3002,7 +3002,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "baleares_minor",
         "maxWeightKg": 4,
         "totalCharges": "11.22",
@@ -3011,7 +3011,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "baleares_minor",
         "maxWeightKg": 5,
         "totalCharges": "12.08",
@@ -3020,7 +3020,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "baleares_minor",
         "maxWeightKg": 10,
         "totalCharges": "16.41",
@@ -3029,7 +3029,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "baleares_minor",
         "maxWeightKg": 15,
         "totalCharges": "21.41",
@@ -3038,7 +3038,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "baleares_minor",
         "maxWeightKg": 9999,
         "totalCharges": "21.41",
@@ -3049,7 +3049,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "canarias_tnf_lpa",
         "maxWeightKg": 1,
         "totalCharges": "10.49",
@@ -3058,7 +3058,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "canarias_tnf_lpa",
         "maxWeightKg": 2,
         "totalCharges": "15.27",
@@ -3067,7 +3067,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "canarias_tnf_lpa",
         "maxWeightKg": 3,
         "totalCharges": "19.59",
@@ -3076,7 +3076,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "canarias_tnf_lpa",
         "maxWeightKg": 4,
         "totalCharges": "23.94",
@@ -3085,7 +3085,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "canarias_tnf_lpa",
         "maxWeightKg": 5,
         "totalCharges": "28.28",
@@ -3094,7 +3094,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "canarias_tnf_lpa",
         "maxWeightKg": 10,
         "totalCharges": "50.31",
@@ -3103,7 +3103,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "canarias_tnf_lpa",
         "maxWeightKg": 15,
         "totalCharges": "72.48",
@@ -3112,7 +3112,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "canarias_tnf_lpa",
         "maxWeightKg": 9999,
         "totalCharges": "72.48",
@@ -3123,7 +3123,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "canarias_minor",
         "maxWeightKg": 1,
         "totalCharges": "11.53",
@@ -3132,7 +3132,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "canarias_minor",
         "maxWeightKg": 2,
         "totalCharges": "16.80",
@@ -3141,7 +3141,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "canarias_minor",
         "maxWeightKg": 3,
         "totalCharges": "21.56",
@@ -3150,7 +3150,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "canarias_minor",
         "maxWeightKg": 4,
         "totalCharges": "26.36",
@@ -3159,7 +3159,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "canarias_minor",
         "maxWeightKg": 5,
         "totalCharges": "31.11",
@@ -3168,7 +3168,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "canarias_minor",
         "maxWeightKg": 10,
         "totalCharges": "55.34",
@@ -3177,7 +3177,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "canarias_minor",
         "maxWeightKg": 15,
         "totalCharges": "79.74",
@@ -3186,7 +3186,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "canarias_minor",
         "maxWeightKg": 9999,
         "totalCharges": "79.74",
@@ -3197,7 +3197,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "azores",
         "maxWeightKg": 1,
         "totalCharges": "44.54",
@@ -3206,7 +3206,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "azores",
         "maxWeightKg": 2,
         "totalCharges": "45.84",
@@ -3215,7 +3215,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "azores",
         "maxWeightKg": 3,
         "totalCharges": "48.02",
@@ -3224,7 +3224,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "azores",
         "maxWeightKg": 4,
         "totalCharges": "50.79",
@@ -3233,7 +3233,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "azores",
         "maxWeightKg": 5,
         "totalCharges": "53.86",
@@ -3242,7 +3242,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "azores",
         "maxWeightKg": 10,
         "totalCharges": "75.70",
@@ -3251,7 +3251,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "azores",
         "maxWeightKg": 15,
         "totalCharges": "93.55",
@@ -3260,7 +3260,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "azores",
         "maxWeightKg": 9999,
         "totalCharges": "93.55",
@@ -3271,7 +3271,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "madeira",
         "maxWeightKg": 1,
         "totalCharges": "43.29",
@@ -3280,7 +3280,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "madeira",
         "maxWeightKg": 2,
         "totalCharges": "43.77",
@@ -3289,7 +3289,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "madeira",
         "maxWeightKg": 3,
         "totalCharges": "45.06",
@@ -3298,7 +3298,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "madeira",
         "maxWeightKg": 4,
         "totalCharges": "47.28",
@@ -3307,7 +3307,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "madeira",
         "maxWeightKg": 5,
         "totalCharges": "49.75",
@@ -3316,7 +3316,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "madeira",
         "maxWeightKg": 10,
         "totalCharges": "69.40",
@@ -3325,7 +3325,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "madeira",
         "maxWeightKg": 15,
         "totalCharges": "85.12",
@@ -3334,7 +3334,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "madeira",
         "maxWeightKg": 9999,
         "totalCharges": "85.12",
@@ -3345,7 +3345,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "mallorca",
         "maxWeightKg": 1,
         "totalCharges": "7.26",
@@ -3354,7 +3354,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "mallorca",
         "maxWeightKg": 2,
         "totalCharges": "8.22",
@@ -3363,7 +3363,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "mallorca",
         "maxWeightKg": 3,
         "totalCharges": "9.64",
@@ -3372,7 +3372,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "mallorca",
         "maxWeightKg": 4,
         "totalCharges": "10.33",
@@ -3381,7 +3381,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "mallorca",
         "maxWeightKg": 5,
         "totalCharges": "11.02",
@@ -3390,7 +3390,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "mallorca",
         "maxWeightKg": 10,
         "totalCharges": "14.48",
@@ -3399,7 +3399,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "mallorca",
         "maxWeightKg": 15,
         "totalCharges": "17.95",
@@ -3408,7 +3408,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "26",
+        "service": "67",
         "zone": "mallorca",
         "maxWeightKg": 9999,
         "totalCharges": "17.95",

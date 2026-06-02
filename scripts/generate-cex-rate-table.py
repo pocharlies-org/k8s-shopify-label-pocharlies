@@ -143,7 +143,14 @@ PAQ14 = {
     "additional": [0.41, 0.45, 0.52, 0.65, 4.81, 3.39, 3.25],
 }
 
-# Islas Express, p.9. Maps to legacy service "26" used by routing for Canarias.
+# Islas Express, p.9. CEX product "Canarias Express" = código 67 (see
+# CEX_SERVICE_TO_PRODUCT in correos-express-adapter/src/services.ts). routing
+# decides service '67' for Canarias, the label path (grabacion) sends producto
+# '67', and the checkout title maps '67'→"Correos Express Canarias". The table
+# MUST publish these island rows under '67' (was '26', which never matched the
+# routed '67' in cexServiceMatches → Canarias fell through to the bogus EPAQ24
+# interislas 6.55€). The Baleares-minor/Mallorca rows here are unused (routing
+# uses the BALEARES product for Baleares) but kept for contract completeness.
 ISLAS_EXPRESS_ZONES = [
     ("baleares_minor", "Islas Menores Baleares"),
     ("canarias_tnf_lpa", "Canarias - Tnf y Lpa"),
@@ -153,7 +160,7 @@ ISLAS_EXPRESS_ZONES = [
     ("mallorca", "MALLORCA"),
 ]
 ISLAS_EXPRESS = {
-    "service": "26",
+    "service": "67",
     "transit_days": 5,
     "zones": ISLAS_EXPRESS_ZONES,
     "rows": {
