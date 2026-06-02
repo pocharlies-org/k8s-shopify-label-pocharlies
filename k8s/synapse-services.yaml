@@ -230,7 +230,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: notification-dispatcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:81f1c6d24424e925d897920ccd4818a7e5ff21320c494668dd67ad406a79b641
+          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:af0166def12e9c3eea8b945064abc5e14e508cad381e665540c4a7c16102f100
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -247,6 +247,7 @@ spec:
             - { name: TELEGRAM_ENABLED, value: "false" }
             - { name: LABEL_STORAGE_URL, value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007" }
             - { name: SHOPIFY_APP_URL, value: "https://track.skirmshop.es/labels" }
+            - { name: PUBLIC_WHATSAPP_NUMBER_E164, value: "+34628534490" }
             - { name: SHOPIFY_ADMIN_STORE, value: "skirmshop-spain" }
             - { name: OPS_TELEGRAM_ENABLED, value: "true" }
             - { name: OPS_TELEGRAM_CHAT_ID, value: "-1003984393379" }

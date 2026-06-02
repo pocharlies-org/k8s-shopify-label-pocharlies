@@ -67,7 +67,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:59b8c0dd56b8c087dafc0c7373b29c63a2aef4e9bf3cf800a365f76e6fa2e90a  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:fac467784baf37ba046153531b388ecb56d7dfc54896a35bbd042fe3ae2c764f  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -87,6 +87,7 @@ spec:
             - { name: LABEL_STORAGE_URL, value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007" }
             - { name: SHOPIFY_APP_URL, value: "https://track.skirmshop.es/labels" }
             - { name: PUBLIC_TRACKING_URL_BASE, value: "https://track.skirmshop.es/labels/track" }
+            - { name: PUBLIC_WHATSAPP_NUMBER_E164, value: "+34628534490" }
             - { name: CORREOS_ENABLED, value: "false" }
             # Per-destination VAT applied to checkout rates so the customer
             # pays the all-in price under taxesIncluded:true + taxShipping:
