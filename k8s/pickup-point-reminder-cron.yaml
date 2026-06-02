@@ -27,7 +27,7 @@ spec:
             - { key: role, operator: Equal, value: edge, effect: NoSchedule }
           containers:
             - name: pickup-point-reminder
-              image: harbor.e-dani.com/homelab/skirmshop-labels-pickup-point-reminder@sha256:5e178d8808b6fd906f5c69c6c6e0fc53d079f5c4902d6b4a328c4dc26e0e0e05
+              image: harbor.e-dani.com/homelab/skirmshop-labels-pickup-point-reminder@sha256:54a1afc18ac2ba65592a4d2dacf21b97f53a5868973a13a08633d694212f5f81
               env:
                 - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
                 - { name: DATABASE_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }

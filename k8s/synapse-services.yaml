@@ -230,7 +230,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: notification-dispatcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:93a66381336f032ba8ee40a00477343ae5f496c0d7a14e3c96024572308b7e04
+          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:52c0b3bce699b36d3786692eaa9f321f9c82c90117e02750c420ddfcba473f5a
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -238,6 +238,7 @@ spec:
             - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
             - { name: NOTIFICATIONS_ENABLED, value: "true" }
             - { name: EMAIL_ENABLED, value: "false" }
+            - { name: PICKUP_EMAIL_ENABLED, value: "true" }
             - { name: WHATSAPP_ENABLED, value: "true" }
             - { name: WHATSAPP_TRANSPORT, value: "http" }
             - { name: WHATSAPP_HTTP_URL, value: "http://whatsapp-connector-professional.whatsapp-mcp.svc.cluster.local:3001" }
