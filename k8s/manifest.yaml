@@ -694,6 +694,12 @@ spec:
       services:
         - name: labels-shopify-app
           port: 3004
+    - match: Host(`track.skirmshop.es`) && Path(`/`)
+      kind: Rule
+      priority: 50
+      services:
+        - name: labels-shopify-app
+          port: 3004
   tls:
     store: { name: default, namespace: traefik-edge }
 ---
