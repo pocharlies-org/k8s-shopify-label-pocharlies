@@ -51,7 +51,10 @@ spec:
           env:
             - { name: PORT, value: "3000" }
             - { name: SHOPIFY_SHOP_DOMAIN, value: "ymimst-yh.myshopify.com" }
-            - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
+            - {
+                name: PG_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 30m, memory: 64Mi }
@@ -90,19 +93,31 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:fb3736df2ac1a7febe4b3490c3f05834a66ad4ec61d12cf154b4e5a93c28cc96
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:5a9fabbb928d05ac3d4393e1a894a5e9c77f8d7b49af5c42d92004131a21f3a0
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
-            - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: LABEL_STORAGE_URL, value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007" }
+            - {
+                name: PG_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - {
+                name: LABEL_STORAGE_URL,
+                value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007",
+              }
             # CEX integración confirmed canalEntrada=1 for Skirmshop pararEntrega on 2026-05-26.
             - { name: CEX_PARAR_CANAL_ENTRADA, value: "1" }
             # Tarifa contractual y recargos viven en ConfigMaps editables desde el admin.
             # El adapter re-lee ambos ficheros en cada /rate, así que un patch del
             # ConfigMap se ve en <60s sin reinicio del pod (kubelet auto-remonta).
-            - { name: CEX_RATE_TABLE_FILE, value: "/etc/cex/rate-table/rate-table.json" }
-            - { name: CEX_SURCHARGES_FILE, value: "/etc/cex/surcharges/surcharges.json" }
+            - {
+                name: CEX_RATE_TABLE_FILE,
+                value: "/etc/cex/rate-table/rate-table.json",
+              }
+            - {
+                name: CEX_SURCHARGES_FILE,
+                value: "/etc/cex/surcharges/surcharges.json",
+              }
           envFrom:
             - { secretRef: { name: labels-secrets } }
             - { secretRef: { name: labels-cex-secrets } }
@@ -111,8 +126,16 @@ spec:
             # the files when the ConfigMap is patched. ConfigMaps project
             # rate-table.json + surcharges.json into /etc/cex/ and the
             # adapter's /rate handler re-reads them every request.
-            - { name: cex-rate-table, mountPath: /etc/cex/rate-table, readOnly: true }
-            - { name: cex-surcharges, mountPath: /etc/cex/surcharges, readOnly: true }
+            - {
+                name: cex-rate-table,
+                mountPath: /etc/cex/rate-table,
+                readOnly: true,
+              }
+            - {
+                name: cex-surcharges,
+                mountPath: /etc/cex/surcharges,
+                readOnly: true,
+              }
           resources:
             requests: { cpu: 30m, memory: 96Mi }
             limits: { memory: 384Mi }
@@ -154,9 +177,18 @@ spec:
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
-            - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: NATS_URL, value: "nats://labels-nats-cluster.skirmshop.svc.cluster.local:4222" }
-            - { name: LABEL_STORAGE_URL, value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007" }
+            - {
+                name: PG_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - {
+                name: NATS_URL,
+                value: "nats://labels-nats-cluster.skirmshop.svc.cluster.local:4222",
+              }
+            - {
+                name: LABEL_STORAGE_URL,
+                value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007",
+              }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 20m, memory: 64Mi }
@@ -230,24 +262,40 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: notification-dispatcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:52c0b3bce699b36d3786692eaa9f321f9c82c90117e02750c420ddfcba473f5a
+          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:dcf851360233166a5ee29298d61f940617adccadd910a59965bde4a8ab51922f
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
             - { name: SHOPIFY_SHOP_DOMAIN, value: "ymimst-yh.myshopify.com" }
-            - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
+            - {
+                name: PG_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
             - { name: NOTIFICATIONS_ENABLED, value: "true" }
             - { name: EMAIL_ENABLED, value: "false" }
             - { name: PICKUP_EMAIL_ENABLED, value: "true" }
             - { name: WHATSAPP_ENABLED, value: "true" }
             - { name: WHATSAPP_TRANSPORT, value: "http" }
-            - { name: WHATSAPP_HTTP_URL, value: "http://whatsapp-connector-professional.whatsapp-mcp.svc.cluster.local:3001" }
+            - {
+                name: WHATSAPP_HTTP_URL,
+                value: "http://whatsapp-connector-professional.whatsapp-mcp.svc.cluster.local:3001",
+              }
             - name: WHATSAPP_CONNECTOR_SHARED_SECRET
               valueFrom:
-                secretKeyRef: { name: labels-socialmedia-secrets, key: CONNECTOR_SHARED_SECRET }
+                secretKeyRef:
+                  {
+                    name: labels-socialmedia-secrets,
+                    key: CONNECTOR_SHARED_SECRET,
+                  }
             - { name: TELEGRAM_ENABLED, value: "false" }
-            - { name: LABEL_STORAGE_URL, value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007" }
-            - { name: SHOPIFY_APP_URL, value: "https://track.skirmshop.es/labels" }
+            - {
+                name: LABEL_STORAGE_URL,
+                value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007",
+              }
+            - {
+                name: SHOPIFY_APP_URL,
+                value: "https://track.skirmshop.es/labels",
+              }
             - { name: PUBLIC_WHATSAPP_NUMBER_E164, value: "+34628534490" }
             - { name: SHOPIFY_ADMIN_STORE, value: "skirmshop-spain" }
             - { name: OPS_TELEGRAM_ENABLED, value: "true" }
@@ -293,13 +341,22 @@ spec:
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
-            - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: NATS_URL, value: "nats://labels-nats-cluster.skirmshop.svc.cluster.local:4222" }
+            - {
+                name: PG_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - {
+                name: NATS_URL,
+                value: "nats://labels-nats-cluster.skirmshop.svc.cluster.local:4222",
+              }
             - { name: NATS_STREAM, value: "SHIPPING_EVENTS" }
             - { name: NATS_DURABLE, value: "event-projector" }
             - { name: NATS_FILTER_SUBJECT, value: "shipping.events.>" }
             - { name: NATS_SUBJECTS, value: "shipping.events.>" }
-            - { name: SYNAPSE_CORRELATOR_URL, value: "http://labels-synapse-correlator.skirmshop.svc.cluster.local:8080/" }
+            - {
+                name: SYNAPSE_CORRELATOR_URL,
+                value: "http://labels-synapse-correlator.skirmshop.svc.cluster.local:8080/",
+              }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 30m, memory: 64Mi }
@@ -337,8 +394,14 @@ spec:
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
-            - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: NATS_URL, value: "nats://labels-nats-cluster.skirmshop.svc.cluster.local:4222" }
+            - {
+                name: PG_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - {
+                name: NATS_URL,
+                value: "nats://labels-nats-cluster.skirmshop.svc.cluster.local:4222",
+              }
             - { name: NATS_STREAM, value: "SHIPPING_EVENTS" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
@@ -377,9 +440,15 @@ spec:
         - name: synapse-workflow-registrar
           image: harbor.e-dani.com/homelab/skirmshop-labels-synapse-workflow-registrar@sha256:6f07872edcce1dd7536d3775619042fa72320e6e4cc818d4daa556552bff9852
           env:
-            - { name: SYNAPSE_API_URL, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }
+            - {
+                name: SYNAPSE_API_URL,
+                value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080",
+              }
             - { name: WORKFLOWS_DIR, value: "/workflows" }
-            - { name: WORKFLOW_FILES, value: "generate-shipment-label.yaml,handle-tracking-event.yaml,process-return.yaml,poll-tracking.yaml" }
+            - {
+                name: WORKFLOW_FILES,
+                value: "generate-shipment-label.yaml,handle-tracking-event.yaml,process-return.yaml,poll-tracking.yaml",
+              }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           volumeMounts:
             - { name: workflows, mountPath: /workflows, readOnly: true }

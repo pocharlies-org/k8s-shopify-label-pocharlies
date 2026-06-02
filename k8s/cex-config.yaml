@@ -3438,6 +3438,7 @@ data:
       "fuel_surcharge_effective_from": "2026-05-27",
       "fuel_surcharge_source": "CEX email 2026-05-27 - Real Decreto-ley 7/2026 + 9/2026",
       "portugal_supplement_eur": 0.3,
+      "saturday_delivery_supplement_eur": 3.0,
       "dua_importacion_canarias_eur": 16.0,
       "dua_exportacion_alto_valor_eur": 22.0,
       "dua_exportacion_bajo_valor_eur": 20.85,
@@ -3445,4 +3446,3 @@ data:
       "dua_andorra_gibraltar_eur": 24.5,
       "t2lf_eur": 6.0
     }
-

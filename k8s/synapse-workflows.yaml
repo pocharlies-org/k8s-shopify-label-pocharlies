@@ -35,7 +35,7 @@ data:
       dsl: '1.0.0'
       namespace: skirmshop
       name: generate-shipment-label
-      version: '1.2.16'
+      version: '1.2.17'
       summary: |
         Full shipping saga for a paid Shopify order. Routes to UPS, Correos
         Express or Correos matriz, persists the label, updates
@@ -88,6 +88,8 @@ data:
               type: string
             shippingMethodSource:
               type: string
+            saturdayDelivery:
+              type: boolean
             paymentMethod:
               type: string
             insuredValue:
@@ -161,7 +163,7 @@ data:
                 when: (.routing.decision.carrier == "ups" or .routing.decision.carrier == "correos_express") and .pickupPointRequired == true and .pickupPointId == null
                 then: pickupPointRequired
             - shipmentReady:
-                then: createShipment
+                then: saturdayDeliveryGate
 
       - pickupPointRequired:
           emit:
@@ -176,6 +178,52 @@ data:
                   carrier: '${ .routing.decision.carrier }'
                   reason: 'Pickup point selected at checkout; waiting for post-payment point selection before creating label'
           then: exit
+
+      - saturdayDeliveryGate:
+          switch:
+            - cexSaturdayDeliveryPaid:
+                when: .routing.decision.carrier == "correos_express" and .saturdayDelivery == true
+                then: notifyOpsSaturdayDeliveryRequired
+            - noSaturdayDelivery:
+                then: createShipment
+
+      - notifyOpsSaturdayDeliveryRequired:
+          try:
+            - notifyOpsSaturdayDeliveryRequiredCall:
+                call: http
+                with:
+                  method: post
+                  endpoint: http://labels-notification-dispatcher.skirmshop.svc.cluster.local:3007/ops/saturday-delivery-required
+                  headers:
+                    content-type: application/json
+                    x-correlation-id: '${ .correlationId }'
+                  body:
+                    orderId: '${ .orderId }'
+                    shipmentId: '${ .shipmentId }'
+                    correlationId: '${ .correlationId }'
+                    carrier: '${ .routing.decision.carrier }'
+                    service: '${ .routing.decision.service }'
+                    serviceName: '${ .shippingMethodTitle }'
+                output:
+                  as: '${ $input + { opsSaturdayDeliveryAlert: $output } }'
+          catch:
+            errors:
+              with:
+                type: all
+            as: err
+            do:
+              - emitOpsSaturdayDeliveryAlertFailed:
+                  emit:
+                    event:
+                      with:
+                        type: com.skirmshop.shipping.opssaturdaydeliveryalertfailed.v1
+                        source: urn:skirmshop:shipping-app:synapse
+                        subject: '${ .orderId }'
+                        data:
+                          orderId: '${ .orderId }'
+                          shipmentId: '${ .shipmentId }'
+                          reason: '${ $context.err | tostring }'
+          then: createShipment
 
       # -- 2. Create shipment on the chosen carrier ------------------------
       - createShipment:
@@ -254,6 +302,7 @@ data:
                     shipmentId: '${ .shipmentId }'
                     correlationId: '${ .correlationId }'
                     routing: '${ .routing.decision }'
+                    saturdayDelivery: '${ .saturdayDelivery }'
                     order:
                       origin: '${ .origin }'
                       destination: '${ .destination }'
@@ -442,6 +491,7 @@ data:
                     labelCost: '${ .quotedTotal }'
                     insuredValue: '${ .insuredValue }'
                     insurancePremium: '${ .insurancePremium // .carrierConfirmed.data.insurancePremium // null }'
+                    saturdayDelivery: '${ .saturdayDelivery }'
                     trackingNumber: '${ .carrierConfirmed.data.trackingNumber }'
                     trackingUrl: '${ .carrierConfirmed.data.trackingUrl }'
                     labelBytesRef: '${ .labelStored.labelBytesRef }'

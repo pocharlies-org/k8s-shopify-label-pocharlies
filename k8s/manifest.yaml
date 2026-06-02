@@ -25,6 +25,7 @@ spec:
   dataFrom:
     - extract: { key: secret/skirmshop/labels }
 
+
 # ── labels microservices (stateless) ─────────────────────────────────────────
 # All use harbor.e-dani.com/homelab/skirmshop-labels-<name>:latest
 # Build from local images before deploying (Phase 8 CI step).
@@ -67,26 +68,65 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:a130b6479bbed20be2dfe8b02e7bf36b816e4ee55800b2a534c254b7cc530bbf  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:6cec838182e84b2ef08b44ba5b5f5ac6778a7d723e020dbca299ae6acbbf7ba8 # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
             # Shopify signs embedded app sessions with the internal shop handle.
             # This direct env overrides the legacy value still present in labels-secrets.
             - { name: SHOPIFY_SHOP_DOMAIN, value: "ymimst-yh.myshopify.com" }
-            - { name: DATABASE_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: POSTGRES_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: REDIS_URL, value: "redis://labels-valkey-master.skirmshop.svc.cluster.local:6379" }
-            - { name: RABBITMQ_URL, value: "amqp://$(RABBITMQ_USER):$(RABBITMQ_PASS)@shared-rabbitmq.databases.svc.cluster.local:5672" }
-            - { name: ROUTING_SERVICE_URL, value: "http://labels-routing-service.skirmshop.svc.cluster.local:3001" }
-            - { name: SYNAPSE_API_URL, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }
-            - { name: CEX_ADAPTER_URL, value: "http://labels-correos-express-adapter.skirmshop.svc.cluster.local:3003" }
-            - { name: UPS_ADAPTER_URL, value: "http://labels-ups-adapter.skirmshop.svc.cluster.local:3002" }
-            - { name: CORREOS_ADAPTER_URL, value: "http://labels-correos-adapter.skirmshop.svc.cluster.local:3011" }
-            - { name: LABEL_STORAGE_URL, value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007" }
-            - { name: SHOPIFY_APP_URL, value: "https://track.skirmshop.es/labels" }
-            - { name: PUBLIC_TRACKING_URL_BASE, value: "https://track.skirmshop.es/labels/track" }
+            - {
+                name: DATABASE_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - {
+                name: PG_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - {
+                name: POSTGRES_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - {
+                name: REDIS_URL,
+                value: "redis://labels-valkey-master.skirmshop.svc.cluster.local:6379",
+              }
+            - {
+                name: RABBITMQ_URL,
+                value: "amqp://$(RABBITMQ_USER):$(RABBITMQ_PASS)@shared-rabbitmq.databases.svc.cluster.local:5672",
+              }
+            - {
+                name: ROUTING_SERVICE_URL,
+                value: "http://labels-routing-service.skirmshop.svc.cluster.local:3001",
+              }
+            - {
+                name: SYNAPSE_API_URL,
+                value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080",
+              }
+            - {
+                name: CEX_ADAPTER_URL,
+                value: "http://labels-correos-express-adapter.skirmshop.svc.cluster.local:3003",
+              }
+            - {
+                name: UPS_ADAPTER_URL,
+                value: "http://labels-ups-adapter.skirmshop.svc.cluster.local:3002",
+              }
+            - {
+                name: CORREOS_ADAPTER_URL,
+                value: "http://labels-correos-adapter.skirmshop.svc.cluster.local:3011",
+              }
+            - {
+                name: LABEL_STORAGE_URL,
+                value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007",
+              }
+            - {
+                name: SHOPIFY_APP_URL,
+                value: "https://track.skirmshop.es/labels",
+              }
+            - {
+                name: PUBLIC_TRACKING_URL_BASE,
+                value: "https://track.skirmshop.es/labels/track",
+              }
             - { name: PUBLIC_WHATSAPP_NUMBER_E164, value: "+34628534490" }
             - { name: CORREOS_ENABLED, value: "false" }
             # Per-destination VAT applied to checkout rates so the customer
@@ -94,6 +134,10 @@ spec:
             # true. ConfigMap is refreshed weekly by labels-vat-sync from
             # Shopify Admin REST /countries.json.
             - { name: VAT_RATES_FILE, value: "/etc/vat/vat-rates.json" }
+            - {
+                name: CEX_SURCHARGES_FILE,
+                value: "/etc/cex/surcharges/surcharges.json",
+              }
             - { name: OPS_TELEGRAM_ENABLED, value: "true" }
             - { name: OPS_TELEGRAM_CHAT_ID, value: "-1003984393379" }
             - { name: OPS_TELEGRAM_LABELS_THREAD_ID, value: "6921" }
@@ -111,15 +155,22 @@ spec:
             # The ConfigMap projects vat-rates.json into /etc/vat/ and the
             # per-request loader in rates.ts re-reads it from there.
             - { name: vat-rates, mountPath: /etc/vat, readOnly: true }
+            - {
+                name: cex-surcharges,
+                mountPath: /etc/cex/surcharges,
+                readOnly: true,
+              }
           resources:
             requests: { cpu: 50m, memory: 64Mi }
-            limits:   { memory: 512Mi }
+            limits: { memory: 512Mi }
           readinessProbe:
             httpGet: { path: /health, port: 3000 }
             initialDelaySeconds: 15
       volumes:
         - name: vat-rates
           configMap: { name: labels-vat-rates }
+        - name: cex-surcharges
+          configMap: { name: labels-cex-surcharges }
 ---
 ---
 apiVersion: v1
@@ -190,16 +241,22 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: event-gateway
-          image: harbor.e-dani.com/homelab/skirmshop-labels-event-gateway@sha256:50884d0db3ba97edbf68e9a9df0f7c8f0bb084396234846c226b33c269e76e59  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-gateway@sha256:50884d0db3ba97edbf68e9a9df0f7c8f0bb084396234846c226b33c269e76e59 # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
-            - { name: RABBITMQ_URL, value: "amqp://$(RABBITMQ_USER):$(RABBITMQ_PASS)@shared-rabbitmq.databases.svc.cluster.local:5672" }
-            - { name: NATS_URL, value: "nats://labels-nats-cluster.skirmshop.svc.cluster.local:4222" }
+            - {
+                name: RABBITMQ_URL,
+                value: "amqp://$(RABBITMQ_USER):$(RABBITMQ_PASS)@shared-rabbitmq.databases.svc.cluster.local:5672",
+              }
+            - {
+                name: NATS_URL,
+                value: "nats://labels-nats-cluster.skirmshop.svc.cluster.local:4222",
+              }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 30m, memory: 64Mi }
-            limits:   { memory: 256Mi }
+            limits: { memory: 256Mi }
           readinessProbe:
             httpGet: { path: /health, port: 3000 }
             initialDelaySeconds: 10
@@ -230,17 +287,26 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: label-storage
-          image: harbor.e-dani.com/homelab/skirmshop-labels-label-storage@sha256:e2ea9101a6e1adf6106ba68e7eaeb6f32203e6ced9b9157eb4c8d6f04ef82991  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-label-storage@sha256:e2ea9101a6e1adf6106ba68e7eaeb6f32203e6ced9b9157eb4c8d6f04ef82991 # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
-            - { name: DATABASE_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: POSTGRES_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
+            - {
+                name: DATABASE_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - {
+                name: PG_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - {
+                name: POSTGRES_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 30m, memory: 64Mi }
-            limits:   { memory: 256Mi }
+            limits: { memory: 256Mi }
           readinessProbe:
             httpGet: { path: /health, port: 3000 }
             initialDelaySeconds: 10
@@ -277,18 +343,27 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:f141d6fdab7f9bdfb7ceca6c5cbf88a4cd04fa8f9a98a01166e6a3a9149c489d  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:c12bdc4cb671703ea10c3da5e293a80578f8fe9a6e86ba33a3c9b4be8933f525 # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
-            - { name: DATABASE_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: POSTGRES_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
+            - {
+                name: DATABASE_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - {
+                name: PG_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - {
+                name: POSTGRES_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
             - { name: SHOPIFY_SHOP_DOMAIN, value: "ymimst-yh.myshopify.com" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 30m, memory: 64Mi }
-            limits:   { memory: 256Mi }
+            limits: { memory: 256Mi }
           readinessProbe:
             httpGet: { path: /health, port: 3000 }
             initialDelaySeconds: 10
@@ -319,23 +394,41 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: saga-launcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:631c94d10aa389271efd82012cefdbd369ff9349529075251fcd2c53f14561fd  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:0a8c53499b31aff81f93f0098985c7594a3022dd90429fcbd19991e51a73a551 # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
-            - { name: DATABASE_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: POSTGRES_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: NATS_URL, value: "nats://labels-nats-cluster.skirmshop.svc.cluster.local:4222" }
-            - { name: SYNAPSE_API_URL, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }
-            - { name: SYNAPSE_WORKFLOW_VERSION, value: "1.2.16" }
-            - { name: SHOPIFY_APP_INTERNAL_URL, value: "http://labels-shopify-app.skirmshop.svc.cluster.local:3004" }
+            - {
+                name: DATABASE_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - {
+                name: PG_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - {
+                name: POSTGRES_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - {
+                name: NATS_URL,
+                value: "nats://labels-nats-cluster.skirmshop.svc.cluster.local:4222",
+              }
+            - {
+                name: SYNAPSE_API_URL,
+                value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080",
+              }
+            - { name: SYNAPSE_WORKFLOW_VERSION, value: "1.2.17" }
+            - {
+                name: SHOPIFY_APP_INTERNAL_URL,
+                value: "http://labels-shopify-app.skirmshop.svc.cluster.local:3004",
+              }
             - { name: SHOPIFY_SHOP_DOMAIN, value: "ymimst-yh.myshopify.com" }
             - { name: EXISTING_FULFILLMENT_GUARD_ENABLED, value: "false" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 30m, memory: 64Mi }
-            limits:   { memory: 256Mi }
+            limits: { memory: 256Mi }
           readinessProbe:
             httpGet: { path: /health, port: 3000 }
             initialDelaySeconds: 10
@@ -366,22 +459,40 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: outbox-relay
-          image: harbor.e-dani.com/homelab/skirmshop-labels-outbox-relay@sha256:d75273052d6960f36bea13addb78164443de3813d1f28a0692df70084ef800b0  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-outbox-relay@sha256:d75273052d6960f36bea13addb78164443de3813d1f28a0692df70084ef800b0 # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
-            - { name: DATABASE_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: POSTGRES_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: REDIS_URL, value: "redis://labels-valkey-master.skirmshop.svc.cluster.local:6379" }
-            - { name: LABEL_STORAGE_URL, value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007" }
+            - {
+                name: DATABASE_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - {
+                name: PG_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - {
+                name: POSTGRES_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - {
+                name: REDIS_URL,
+                value: "redis://labels-valkey-master.skirmshop.svc.cluster.local:6379",
+              }
+            - {
+                name: LABEL_STORAGE_URL,
+                value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007",
+              }
             - { name: UPS_ISC1_ENROLLED, value: "true" }
-            - { name: NATS_URL, value: "nats://labels-nats-cluster.skirmshop.svc.cluster.local:4222" }
+            - {
+                name: NATS_URL,
+                value: "nats://labels-nats-cluster.skirmshop.svc.cluster.local:4222",
+              }
             - { name: RELAY_BATCH_SIZE, value: "10" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 30m, memory: 64Mi }
-            limits:   { memory: 256Mi }
+            limits: { memory: 256Mi }
           readinessProbe:
             httpGet: { path: /ready, port: 3000 }
             initialDelaySeconds: 10
@@ -418,21 +529,36 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:a8b2ed6fe191e27e4769662adb9e383f0b669cfb9dd78270e8ec812cdd48e4e6  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:a8b2ed6fe191e27e4769662adb9e383f0b669cfb9dd78270e8ec812cdd48e4e6 # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
-            - { name: DATABASE_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: POSTGRES_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
+            - {
+                name: DATABASE_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - {
+                name: PG_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - {
+                name: POSTGRES_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
             # Required so the customs commercial-invoice PDF is persisted to
             # label-storage (otherwise the Aduanas "Descargar" button is dead).
-            - { name: LABEL_STORAGE_URL, value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007" }
-            - { name: REDIS_URL, value: "redis://labels-valkey-master.skirmshop.svc.cluster.local:6379" }
+            - {
+                name: LABEL_STORAGE_URL,
+                value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007",
+              }
+            - {
+                name: REDIS_URL,
+                value: "redis://labels-valkey-master.skirmshop.svc.cluster.local:6379",
+              }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 20m, memory: 64Mi }
-            limits:   { memory: 256Mi }
+            limits: { memory: 256Mi }
           readinessProbe:
             httpGet: { path: /health, port: 3000 }
             initialDelaySeconds: 10
@@ -444,6 +570,7 @@ metadata: { name: labels-ups-adapter, namespace: skirmshop }
 spec:
   selector: { app: labels-ups-adapter }
   ports: [{ name: http, port: 3002, targetPort: 3000 }]
+
 
 # ── Synapse workflow engine ───────────────────────────────────────────────────
 ---
@@ -482,15 +609,25 @@ spec:
           ports: [{ name: http, containerPort: 8080 }]
           env:
             - { name: SYNAPSE_API_AUTH_TOKEN_FILE, value: /app/tokens.yaml }
-            - { name: SYNAPSE_API_JWT_AUTHORITY, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }
-            - { name: CONNECTIONSTRINGS__REDIS, value: "labels-valkey-master.skirmshop.svc.cluster.local:6379" }
+            - {
+                name: SYNAPSE_API_JWT_AUTHORITY,
+                value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080",
+              }
+            - {
+                name: CONNECTIONSTRINGS__REDIS,
+                value: "labels-valkey-master.skirmshop.svc.cluster.local:6379",
+              }
             - { name: SYNAPSE_DASHBOARD_SERVE, value: "true" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           volumeMounts:
-            - { name: tokens, mountPath: /app/tokens.yaml, subPath: tokens.yaml }
+            - {
+                name: tokens,
+                mountPath: /app/tokens.yaml,
+                subPath: tokens.yaml,
+              }
           resources:
             requests: { cpu: 50m, memory: 128Mi }
-            limits:   { memory: 512Mi }
+            limits: { memory: 512Mi }
           readinessProbe:
             httpGet: { path: /healthz, port: 8080 }
             initialDelaySeconds: 15
@@ -555,11 +692,14 @@ spec:
           env:
             - { name: SYNAPSE_CORRELATOR_NAMESPACE, value: skirmshop }
             - { name: SYNAPSE_CORRELATOR_NAME, value: skirmshop-correlator }
-            - { name: CONNECTIONSTRINGS__REDIS, value: "labels-valkey-master.skirmshop.svc.cluster.local:6379" }
+            - {
+                name: CONNECTIONSTRINGS__REDIS,
+                value: "labels-valkey-master.skirmshop.svc.cluster.local:6379",
+              }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 30m, memory: 64Mi }
-            limits:   { memory: 256Mi }
+            limits: { memory: 256Mi }
       volumes:
         - name: tokens
           configMap: { name: synapse-tokens }
@@ -619,19 +759,28 @@ spec:
         - name: synapse-operator
           image: ghcr.io/serverlessworkflow/synapse/operator:1.0.0-alpha1
           env:
-            - { name: CONNECTIONSTRINGS__REDIS, value: "labels-valkey-master.skirmshop.svc.cluster.local:6379" }
+            - {
+                name: CONNECTIONSTRINGS__REDIS,
+                value: "labels-valkey-master.skirmshop.svc.cluster.local:6379",
+              }
             - { name: SYNAPSE_OPERATOR_NAME, value: skirmshop-operator }
             - { name: SYNAPSE_OPERATOR_NAMESPACE, value: skirmshop }
-            - { name: SYNAPSE_RUNNER_API, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }
+            - {
+                name: SYNAPSE_RUNNER_API,
+                value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080",
+              }
             - { name: SYNAPSE_RUNNER_CONTAINER_PLATFORM, value: kubernetes }
             - { name: SYNAPSE_RUNNER_LIFECYCLE_EVENTS, value: "true" }
             - { name: SYNAPSE_RUNTIME_MODE, value: kubernetes }
             - { name: SYNAPSE_RUNTIME_K8S_NAMESPACE, value: skirmshop }
-            - { name: SYNAPSE_RUNTIME_K8S_SERVICE_ACCOUNT, value: labels-synapse-operator }
+            - {
+                name: SYNAPSE_RUNTIME_K8S_SERVICE_ACCOUNT,
+                value: labels-synapse-operator,
+              }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 30m, memory: 64Mi }
-            limits:   { memory: 256Mi }
+            limits: { memory: 256Mi }
       volumes:
         - name: tokens
           configMap: { name: synapse-tokens }
