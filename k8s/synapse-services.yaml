@@ -262,7 +262,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: notification-dispatcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:dcf851360233166a5ee29298d61f940617adccadd910a59965bde4a8ab51922f
+          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:863edd93d4df4a68d77e32e1be874b4a7ea3f0e6968da92480e5a960a08737ac
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -276,6 +276,10 @@ spec:
             - { name: PICKUP_EMAIL_ENABLED, value: "true" }
             - { name: WHATSAPP_ENABLED, value: "true" }
             - { name: WHATSAPP_TRANSPORT, value: "http" }
+            - { name: WHATSAPP_CLOUD_API_VERSION, value: "v21.0" }
+            - { name: WHATSAPP_CLOUD_PHONE_NUMBER_ID, value: "" }
+            - { name: WHATSAPP_CLOUD_ACCESS_TOKEN, value: "" }
+            - { name: WHATSAPP_CLOUD_WABA_ID, value: "" }
             - {
                 name: WHATSAPP_HTTP_URL,
                 value: "http://whatsapp-connector-professional.whatsapp-mcp.svc.cluster.local:3001",
