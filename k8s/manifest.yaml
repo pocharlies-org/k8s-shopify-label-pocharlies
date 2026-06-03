@@ -418,7 +418,7 @@ spec:
                 name: SYNAPSE_API_URL,
                 value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080",
               }
-            - { name: SYNAPSE_WORKFLOW_VERSION, value: "1.2.19" }
+            - { name: SYNAPSE_WORKFLOW_VERSION, value: "1.2.20" }
             - {
                 name: SHOPIFY_APP_INTERNAL_URL,
                 value: "http://labels-shopify-app.skirmshop.svc.cluster.local:3004",

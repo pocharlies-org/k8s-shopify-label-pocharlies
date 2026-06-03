@@ -35,7 +35,7 @@ data:
       dsl: '1.0.0'
       namespace: skirmshop
       name: generate-shipment-label
-      version: '1.2.19'
+      version: '1.2.20'
       summary: |
         Full shipping saga for a paid Shopify order. Routes to UPS, Correos
         Express or Correos matriz, persists the label, updates
@@ -307,6 +307,8 @@ data:
                       origin: '${ .origin }'
                       destination: '${ .destination }'
                       items: '${ .items }'
+                      pickupPointId: '${ .pickupPointId }'
+                      pickupPointCarrier: '${ .pickupPointCarrier }'
                 output:
                   as: '${ $input + { carrierConfirmed: { data: $output.carrierAccepted } } }'
           catch:
