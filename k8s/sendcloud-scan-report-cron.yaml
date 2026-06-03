@@ -1,0 +1,621 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: labels-sendcloud-scan-report
+  namespace: skirmshop
+data:
+  sendcloud-scan-report.mjs: |
+    import { readFile } from 'node:fs/promises';
+    import pg from 'pg';
+
+    const { Pool } = pg;
+
+    const config = {
+      pgUrl: required('PG_URL'),
+      shopDomain: required('SHOPIFY_SHOP_DOMAIN'),
+      shopifyApiKey: required('SHOPIFY_API_KEY'),
+      shopifyApiSecret: required('SHOPIFY_API_SECRET'),
+      shopifyApiVersion: process.env.SHOPIFY_API_VERSION || '2026-04',
+      telegramToken: required('OPS_TELEGRAM_BOT_TOKEN'),
+      telegramChatId: required('OPS_TELEGRAM_CHAT_ID'),
+      telegramThreadId: optionalNumber('OPS_TELEGRAM_LABELS_THREAD_ID'),
+      cronJobName: process.env.CRONJOB_NAME || 'labels-sendcloud-scan-report',
+      namespace: process.env.CRONJOB_NAMESPACE || 'skirmshop',
+      stopDate: process.env.REPORT_STOP_DATE || '2026-07-01',
+      maxShopifyPages: positiveInt(process.env.REPORT_MAX_SHOPIFY_PAGES, 12),
+      maxListItems: positiveInt(process.env.REPORT_MAX_LIST_ITEMS, 10),
+    };
+
+    const pool = new Pool({ connectionString: config.pgUrl });
+
+    try {
+      await main();
+    } finally {
+      await pool.end();
+    }
+
+    async function main() {
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const todayKey = ymd(todayStart);
+
+      if (todayKey > config.stopDate) {
+        const result = await patchCronJob({
+          spec: { suspend: true },
+          metadata: {
+            annotations: {
+              'skirmshop.es/sendcloud-scan-status': `expired:${todayKey}`,
+            },
+          },
+        });
+        log('sendcloud-scan-report.expired', { todayKey, suspended: result.ok });
+        return;
+      }
+
+      const reportEnd = todayStart;
+      const reportStart = new Date(reportEnd.getTime() - 24 * 60 * 60 * 1000);
+      const reportDate = ymd(reportStart);
+      const cronMeta = await getCronJob().catch((err) => {
+        log('sendcloud-scan-report.cronjob_get_failed', { error: messageOf(err) });
+        return undefined;
+      });
+      const annotations = cronMeta?.metadata?.annotations ?? {};
+      if (
+        process.env.REPORT_FORCE !== 'true' &&
+        annotations['skirmshop.es/sendcloud-scan-last-report-date'] === reportDate
+      ) {
+        log('sendcloud-scan-report.already_reported', { reportDate });
+        return;
+      }
+
+      const [shopifyLabels, labelsStats] = await Promise.all([
+        loadShopifyFulfillments(reportStart, reportEnd),
+        loadSkirmshopLabelStats(reportStart, reportEnd),
+      ]);
+      const sendcloud = await enrichSendcloudScan(shopifyLabels.sendcloud);
+      const message = buildReport({
+        now,
+        reportDate,
+        reportStart,
+        reportEnd,
+        sendcloud,
+        labelsStats,
+        otherExternal: shopifyLabels.otherExternal,
+        noTracking: shopifyLabels.noTracking,
+        isFinalReport: todayKey === config.stopDate,
+      });
+
+      await sendTelegram(message);
+      await patchCronJob({
+        metadata: {
+          annotations: {
+            'skirmshop.es/sendcloud-scan-last-report-date': reportDate,
+            'skirmshop.es/sendcloud-scan-last-report-at': now.toISOString(),
+          },
+        },
+      }).catch((err) => {
+        log('sendcloud-scan-report.annotation_patch_failed', { error: messageOf(err) });
+      });
+
+      if (todayKey === config.stopDate) {
+        const result = await patchCronJob({
+          spec: { suspend: true },
+          metadata: {
+            annotations: {
+              'skirmshop.es/sendcloud-scan-status': `completed:${todayKey}`,
+            },
+          },
+        });
+        const text = result.ok
+          ? 'Cron temporal Sendcloud/Labels suspendido automaticamente tras el informe final del 1 de julio.'
+          : `No he podido suspender automaticamente el cron temporal Sendcloud/Labels: ${result.error}`;
+        await sendTelegram(text).catch((err) =>
+          log('sendcloud-scan-report.final_suspend_notify_failed', { error: messageOf(err) }),
+        );
+      }
+
+      log('sendcloud-scan-report.done', {
+        reportDate,
+        sendcloud: sendcloud.total,
+        skirmshopLabels: labelsStats.total,
+      });
+    }
+
+    async function loadShopifyFulfillments(reportStart, reportEnd) {
+      const auth = await shopifyAuth();
+      const queryDate = ymd(reportStart);
+      const search = `updated_at:>=${queryDate}`;
+      const query = `
+        query SendcloudScanReport($q: String!, $after: String) {
+          orders(first: 250, after: $after, query: $q, sortKey: UPDATED_AT, reverse: true) {
+            edges {
+              node {
+                id
+                name
+                updatedAt
+                fulfillments(first: 20) {
+                  id
+                  createdAt
+                  status
+                  displayStatus
+                  deliveredAt
+                  trackingInfo(first: 5) { company number url }
+                  events(first: 5) {
+                    edges { node { status message happenedAt } }
+                  }
+                }
+              }
+            }
+            pageInfo { hasNextPage endCursor }
+          }
+        }`;
+
+      const sendcloud = [];
+      const otherExternal = [];
+      const noTracking = [];
+      let after;
+      for (let page = 0; page < config.maxShopifyPages; page += 1) {
+        const body = await shopifyGraphql(auth, query, { q: search, after });
+        const orders = body.data?.orders?.edges ?? [];
+        for (const edge of orders) {
+          const order = edge.node;
+          for (const fulfillment of order.fulfillments ?? []) {
+            const createdAt = new Date(fulfillment.createdAt);
+            if (!(createdAt >= reportStart && createdAt < reportEnd)) continue;
+            const infos = fulfillment.trackingInfo ?? [];
+            const first = infos.find((item) => item.number || item.url || item.company);
+            const url = first?.url ?? '';
+            const source = sourceFromTrackingUrl(url);
+            const row = {
+              orderId: order.id,
+              orderName: order.name,
+              fulfillmentId: fulfillment.id,
+              createdAt: fulfillment.createdAt,
+              status: fulfillment.status,
+              displayStatus: fulfillment.displayStatus,
+              deliveredAt: fulfillment.deliveredAt,
+              trackingCompany: first?.company,
+              trackingNumber: first?.number,
+              trackingUrl: first?.url,
+              carrier: carrierFromTracking(first?.company, first?.number, first?.url),
+              shopifyEventCount: (fulfillment.events?.edges ?? []).length,
+            };
+            if (source === 'sendcloud') sendcloud.push(row);
+            else if (first?.number || first?.url) otherExternal.push(row);
+            else noTracking.push(row);
+          }
+        }
+        const pageInfo = body.data?.orders?.pageInfo;
+        if (!pageInfo?.hasNextPage || !pageInfo.endCursor) break;
+        after = pageInfo.endCursor;
+      }
+      return { sendcloud, otherExternal, noTracking };
+    }
+
+    async function enrichSendcloudScan(rows) {
+      const shipmentIds = rows
+        .map((row) => externalShipmentId(row))
+        .filter((value) => value !== undefined);
+      const trackingRows = new Map();
+      if (shipmentIds.length > 0) {
+        const result = await pool.query(
+          `
+            SELECT shipment_id,
+                   count(*)::int AS events,
+                   max(occurred_at) AS latest_at,
+                   (array_agg(normalized_status ORDER BY occurred_at DESC))[1] AS latest_status
+              FROM tracking_event
+             WHERE shipment_id = ANY($1::text[])
+             GROUP BY shipment_id
+          `,
+          [shipmentIds],
+        );
+        for (const row of result.rows) trackingRows.set(row.shipment_id, row);
+      }
+      const items = rows.map((row) => {
+        const shipmentId = externalShipmentId(row);
+        const internal = shipmentId ? trackingRows.get(shipmentId) : undefined;
+        const hasScan = Boolean(
+          row.deliveredAt ||
+            row.shopifyEventCount > 0 ||
+            (internal && Number(internal.events) > 0),
+        );
+        return {
+          ...row,
+          shipmentId,
+          scanStatus: hasScan ? 'confirmed' : 'not_checked',
+          latestTrackingAt: internal?.latest_at?.toISOString?.() ?? undefined,
+          latestTrackingStatus: internal?.latest_status ?? undefined,
+        };
+      });
+      return {
+        total: items.length,
+        withTracking: items.filter((item) => item.trackingNumber || item.trackingUrl).length,
+        withoutTracking: items.filter((item) => !item.trackingNumber && !item.trackingUrl).length,
+        scanConfirmed: items.filter((item) => item.scanStatus === 'confirmed').length,
+        notChecked: items.filter((item) => item.scanStatus === 'not_checked').length,
+        byCarrier: countBy(items, (item) => item.carrier ?? 'unknown'),
+        items,
+      };
+    }
+
+    async function loadSkirmshopLabelStats(reportStart, reportEnd) {
+      const result = await pool.query(
+        `
+          WITH labels AS (
+            SELECT aggregate_id AS order_id,
+                   payload->>'shipmentId' AS shipment_id,
+                   payload->>'carrier' AS carrier,
+                   COALESCE(payload->>'trackingNumber', payload->>'carrierShipmentId') AS tracking_number,
+                   occurred_at
+              FROM event_store
+             WHERE event_type = 'CarrierAccepted'
+               AND occurred_at >= $1::timestamptz
+               AND occurred_at < $2::timestamptz
+          )
+          SELECT l.*,
+                 count(te.id)::int AS tracking_events,
+                 max(te.occurred_at) AS latest_tracking_at,
+                 (array_agg(te.normalized_status ORDER BY te.occurred_at DESC)
+                   FILTER (WHERE te.normalized_status IS NOT NULL))[1] AS latest_tracking_status
+            FROM labels l
+            LEFT JOIN tracking_event te ON te.shipment_id = l.shipment_id
+           GROUP BY l.order_id, l.shipment_id, l.carrier, l.tracking_number, l.occurred_at
+           ORDER BY l.occurred_at ASC
+        `,
+        [reportStart.toISOString(), reportEnd.toISOString()],
+      );
+      const items = result.rows.map((row) => ({
+        orderId: row.order_id,
+        shipmentId: row.shipment_id,
+        carrier: row.carrier,
+        trackingNumber: row.tracking_number,
+        createdAt: row.occurred_at.toISOString(),
+        trackingEvents: Number(row.tracking_events ?? 0),
+        latestTrackingAt: row.latest_tracking_at?.toISOString?.() ?? undefined,
+        latestTrackingStatus: row.latest_tracking_status ?? undefined,
+      }));
+      return {
+        total: items.length,
+        withMovements: items.filter((item) => item.trackingEvents > 0).length,
+        noMovements: items.filter((item) => item.trackingEvents === 0).length,
+        byCarrier: countBy(items, (item) => item.carrier ?? 'unknown'),
+        items,
+      };
+    }
+
+    function buildReport(input) {
+      const sendcloud = input.sendcloud;
+      const labels = input.labelsStats;
+      const lines = [
+        'Informe temporal Sendcloud vs Skirmshop Labels',
+        `Periodo auditado: ${input.reportDate} (Europe/Madrid, ultimo dia cerrado)`,
+        '',
+        `Se generaron ${sendcloud.total} etiquetas desde Sendcloud y ${labels.total} desde Skirmshop Labels.`,
+        'Objetivo 1 de julio: Sendcloud debe estar en 0.',
+        '',
+        `Sendcloud: ${sendcloud.total} total · ${sendcloud.scanConfirmed} con escaneo confirmado en Shopify/Labels · ${sendcloud.notChecked} sin escaneo comprobable · ${sendcloud.withoutTracking} sin tracking.`,
+        `Sendcloud por carrier: ${formatCounts(sendcloud.byCarrier)}`,
+        `Skirmshop Labels: ${labels.total} total · ${labels.withMovements} con movimientos · ${labels.noMovements} sin movimientos.`,
+        `Skirmshop Labels por carrier: ${formatCounts(labels.byCarrier)}`,
+      ];
+
+      if (input.otherExternal.length > 0 || input.noTracking.length > 0) {
+        lines.push(
+          `Otros fulfillments del dia: ${input.otherExternal.length} externos no Sendcloud · ${input.noTracking.length} sin tracking.`,
+        );
+      }
+      if (sendcloud.total > 0) {
+        lines.push('', 'Atencion: aun hay etiquetas Sendcloud. Revisar para llevarlo a 0 antes del 1 de julio.');
+      }
+      const pending = sendcloud.items
+        .filter((item) => item.scanStatus === 'not_checked')
+        .slice(0, config.maxListItems);
+      if (pending.length > 0) {
+        lines.push('', 'Sendcloud sin escaneo comprobable:');
+        for (const item of pending) {
+          lines.push(`- ${item.orderName} · ${item.carrier ?? 'carrier?'} · ${item.trackingNumber ?? 'sin tracking'}`);
+        }
+        if (sendcloud.notChecked > pending.length) {
+          lines.push(`- ... y ${sendcloud.notChecked - pending.length} mas`);
+        }
+      }
+      const labelsNoMove = labels.items
+        .filter((item) => item.trackingEvents === 0)
+        .slice(0, config.maxListItems);
+      if (labelsNoMove.length > 0) {
+        lines.push('', 'Skirmshop Labels sin movimientos:');
+        for (const item of labelsNoMove) {
+          lines.push(`- ${shortOrderId(item.orderId)} · ${item.carrier ?? 'carrier?'} · ${item.trackingNumber ?? 'sin tracking'}`);
+        }
+        if (labels.noMovements > labelsNoMove.length) {
+          lines.push(`- ... y ${labels.noMovements - labelsNoMove.length} mas`);
+        }
+      }
+      lines.push('', 'Nota: no hay credenciales Sendcloud en Labels; el escaneo Sendcloud solo se confirma si Shopify o Labels ya tienen eventos.');
+      if (input.isFinalReport) {
+        lines.push('', 'Informe final programado: despues de esta pasada el CronJob se suspende.');
+      }
+      return lines.join('\n');
+    }
+
+    async function shopifyAuth() {
+      const response = await fetch(`https://${config.shopDomain}/admin/oauth/access_token`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded', accept: 'application/json' },
+        body: new URLSearchParams({
+          grant_type: 'client_credentials',
+          client_id: config.shopifyApiKey,
+          client_secret: config.shopifyApiSecret,
+        }).toString(),
+      });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok || !body.access_token) {
+        throw new Error(`Shopify OAuth ${response.status}: ${JSON.stringify(body)}`);
+      }
+      return { accessToken: body.access_token };
+    }
+
+    async function shopifyGraphql(auth, query, variables) {
+      const response = await fetch(
+        `https://${config.shopDomain}/admin/api/${config.shopifyApiVersion}/graphql.json`,
+        {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-shopify-access-token': auth.accessToken,
+          },
+          body: JSON.stringify({ query, variables }),
+        },
+      );
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok || body.errors) {
+        throw new Error(`Shopify GraphQL ${response.status}: ${JSON.stringify(body)}`);
+      }
+      return body;
+    }
+
+    function sourceFromTrackingUrl(url) {
+      if (!url) return 'unknown';
+      try {
+        const parsed = new URL(url);
+        if (parsed.hostname.includes('sendcloud')) return 'sendcloud';
+        if (parsed.hostname === 'track.skirmshop.es') return 'skirmshop';
+        return 'external';
+      } catch {
+        return url.includes('sendcloud') ? 'sendcloud' : 'external';
+      }
+    }
+
+    function carrierFromTracking(company, trackingNumber, trackingUrl) {
+      const urlCarrier = carrierFromUrl(trackingUrl);
+      if (urlCarrier) return urlCarrier;
+      const normalized = String(company ?? '').toLowerCase();
+      if (normalized.includes('ups') || /^1Z/i.test(String(trackingNumber ?? ''))) return 'ups';
+      if (normalized.includes('correos')) return 'correos_express';
+      return company || undefined;
+    }
+
+    function carrierFromUrl(url) {
+      if (!url) return undefined;
+      try {
+        const parsed = new URL(url);
+        const carrier = parsed.searchParams.get('carrier');
+        if (carrier === 'ups') return 'ups';
+        if (carrier === 'correos_express') return 'correos_express';
+        if (carrier) return carrier;
+      } catch {
+        return undefined;
+      }
+      return undefined;
+    }
+
+    function externalShipmentId(row) {
+      if (!row.trackingNumber) return undefined;
+      const carrier = row.carrier ?? carrierFromTracking(row.trackingCompany, row.trackingNumber, row.trackingUrl);
+      if (!carrier) return undefined;
+      return `external:sendcloud:${carrier}:${String(row.trackingNumber).trim()}`;
+    }
+
+    async function sendTelegram(text) {
+      const payload = {
+        chat_id: config.telegramChatId,
+        text,
+        disable_web_page_preview: true,
+      };
+      if (config.telegramThreadId !== undefined) {
+        payload.message_thread_id = config.telegramThreadId;
+      }
+      const response = await fetch(`https://api.telegram.org/bot${config.telegramToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok || body.ok === false) {
+        throw new Error(`Telegram ${response.status}: ${JSON.stringify(body)}`);
+      }
+      return body;
+    }
+
+    async function getCronJob() {
+      const response = await kubeRequest('GET', cronJobUrl());
+      if (!response.ok) throw new Error(response.error);
+      return response.body;
+    }
+
+    async function patchCronJob(patch) {
+      return kubeRequest('PATCH', cronJobUrl(), patch, 'application/merge-patch+json');
+    }
+
+    async function kubeRequest(method, url, body, contentType = 'application/json') {
+      const token = await readFile('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8');
+      const response = await fetch(url, {
+        method,
+        headers: {
+          authorization: `Bearer ${token.trim()}`,
+          accept: 'application/json',
+          ...(body ? { 'content-type': contentType } : {}),
+        },
+        ...(body ? { body: JSON.stringify(body) } : {}),
+      });
+      const text = await response.text();
+      let parsed;
+      try {
+        parsed = text ? JSON.parse(text) : undefined;
+      } catch {
+        parsed = text;
+      }
+      return response.ok
+        ? { ok: true, body: parsed }
+        : { ok: false, status: response.status, body: parsed, error: `Kubernetes ${response.status}: ${text}` };
+    }
+
+    function cronJobUrl() {
+      return `https://kubernetes.default.svc/apis/batch/v1/namespaces/${config.namespace}/cronjobs/${config.cronJobName}`;
+    }
+
+    function countBy(items, fn) {
+      const counts = {};
+      for (const item of items) {
+        const key = fn(item) || 'unknown';
+        counts[key] = (counts[key] ?? 0) + 1;
+      }
+      return counts;
+    }
+
+    function formatCounts(counts) {
+      const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+      return entries.length > 0 ? entries.map(([key, value]) => `${key} ${value}`).join(' · ') : '0';
+    }
+
+    function shortOrderId(orderId) {
+      const match = /Order\/(\d+)$/.exec(orderId);
+      return match ? `gid:${match[1]}` : orderId;
+    }
+
+    function ymd(date) {
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    }
+
+    function pad(value) {
+      return String(value).padStart(2, '0');
+    }
+
+    function required(name) {
+      const value = process.env[name];
+      if (!value || value.trim() === '') throw new Error(`${name} is required`);
+      return value;
+    }
+
+    function optionalNumber(name) {
+      const value = process.env[name];
+      if (!value || value.trim() === '') return undefined;
+      const parsed = Number(value);
+      if (!Number.isInteger(parsed) || parsed <= 0) throw new Error(`${name} must be positive integer`);
+      return parsed;
+    }
+
+    function positiveInt(value, fallback) {
+      const parsed = Number(value ?? fallback);
+      return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+    }
+
+    function messageOf(err) {
+      return err instanceof Error ? err.message : String(err);
+    }
+
+    function log(message, data = {}) {
+      console.log(JSON.stringify({ message, ...data }));
+    }
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: labels-sendcloud-scan-report
+  namespace: skirmshop
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: labels-sendcloud-scan-report
+  namespace: skirmshop
+rules:
+  - apiGroups: ["batch"]
+    resources: ["cronjobs"]
+    resourceNames: ["labels-sendcloud-scan-report"]
+    verbs: ["get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: labels-sendcloud-scan-report
+  namespace: skirmshop
+subjects:
+  - kind: ServiceAccount
+    name: labels-sendcloud-scan-report
+    namespace: skirmshop
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: labels-sendcloud-scan-report
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: labels-sendcloud-scan-report
+  namespace: skirmshop
+  annotations:
+    skirmshop.es/temporary-until: "2026-07-01"
+spec:
+  schedule: "0 7 * * *"
+  timeZone: Europe/Madrid
+  suspend: false
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 7
+  startingDeadlineSeconds: 1800
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 2592000
+      backoffLimit: 1
+      activeDeadlineSeconds: 900
+      template:
+        metadata:
+          labels:
+            app: labels-sendcloud-scan-report
+        spec:
+          serviceAccountName: labels-sendcloud-scan-report
+          restartPolicy: Never
+          enableServiceLinks: false
+          nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+          tolerations:
+            - { key: role, operator: Equal, value: edge, effect: NoSchedule }
+          containers:
+            - name: sendcloud-scan-report
+              image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:ade2fa013036eaf0aa991c745c8bb90c8a31df44c010ac3a0927d613567fc58a
+              command: ["node", "/app/cron/sendcloud-scan-report.mjs"]
+              env:
+                - { name: TZ, value: "Europe/Madrid" }
+                - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
+                - { name: DATABASE_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
+                - { name: SHOPIFY_API_VERSION, value: "2026-04" }
+                - { name: CRONJOB_NAME, value: "labels-sendcloud-scan-report" }
+                - { name: CRONJOB_NAMESPACE, value: "skirmshop" }
+                - { name: REPORT_STOP_DATE, value: "2026-07-01" }
+                - { name: OPS_TELEGRAM_CHAT_ID, value: "-1003984393379" }
+                - { name: OPS_TELEGRAM_LABELS_THREAD_ID, value: "6921" }
+                - { name: NODE_EXTRA_CA_CERTS, value: "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt" }
+                - name: OPS_TELEGRAM_BOT_TOKEN
+                  valueFrom:
+                    secretKeyRef: { name: labels-telegram-bot, key: bot_token }
+              envFrom: [{ secretRef: { name: labels-secrets } }]
+              volumeMounts:
+                - { name: report-script, mountPath: /app/cron, readOnly: true }
+              resources:
+                requests: { cpu: 25m, memory: 96Mi }
+                limits: { memory: 384Mi }
+          volumes:
+            - name: report-script
+              configMap:
+                name: labels-sendcloud-scan-report
