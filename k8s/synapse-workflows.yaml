@@ -14,8 +14,8 @@ data:
     #   2. createShipment                    → emits CarrierRequested (async)
     #   3. wait for CarrierAccepted          → listen, CE Correlator matches on subject=orderId
     #   4. persistLabel                      → store carrier label bytes to S3/R2
-    #   5. notifyOpsLabelCreated             → Telegram OP ES topic "etiquetas"
-    #   6. updateShopify                     → fulfillmentCreate GraphQL
+    #   5. updateShopify                     → fulfillmentCreate GraphQL
+    #   6. notifyOpsLabelCreated             → Telegram OP ES topic "etiquetas" (non-critical)
     #   7. complete                          → emit ShipmentCompleted
     #
     # Compensation (DSL v1.0 has no `compensate` verb — we use try/catch + explicit
@@ -35,7 +35,7 @@ data:
       dsl: '1.0.0'
       namespace: skirmshop
       name: generate-shipment-label
-      version: '1.2.18'
+      version: '1.2.19'
       summary: |
         Full shipping saga for a paid Shopify order. Routes to UPS, Correos
         Express or Correos matriz, persists the label, updates
@@ -467,10 +467,13 @@ data:
                           compensationApplied: false
               - raise:
                   error: { status: 500, detail: label persist failed }
+          then: updateShopify
 
       # -- 5. Notify Skirmshop ops that the label exists ---------------------
-      # Best-effort: label creation must not fail if Telegram or Shopify
-      # enrichment is temporarily unavailable.
+      # Temporarily bypassed from the normal route by `persistLabel.then:
+      # updateShopify`. Synapse HTTP communication failures are not reliably
+      # caught as best-effort errors in the current runtime, so ops
+      # notification must not sit before customer fulfillment.
       - notifyOpsLabelCreated:
           try:
             - notifyOpsLabelCreatedCall:
@@ -491,7 +494,7 @@ data:
                     labelCost: '${ .quotedTotal }'
                     insuredValue: '${ .insuredValue }'
                     insurancePremium: '${ .insurancePremium // .carrierConfirmed.data.insurancePremium // null }'
-                    saturdayDelivery: '${ .saturdayDelivery // false }'
+                    saturdayDelivery: false
                     trackingNumber: '${ .carrierConfirmed.data.trackingNumber }'
                     trackingUrl: '${ .carrierConfirmed.data.trackingUrl }'
                     labelBytesRef: '${ .labelStored.labelBytesRef }'
