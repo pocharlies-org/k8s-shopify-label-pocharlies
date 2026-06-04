@@ -51,11 +51,11 @@ spec:
                   }
                 - {
                     name: PICKUP_REMINDER_PICKUP_SELECTOR_URL_BASE,
-                    value: "https://skirmshop.es/apps/track",
+                    value: "https://track.skirmshop.es/labels/track",
                   }
                 - {
                     name: PICKUP_REMINDER_PUBLIC_TRACKING_URL_BASE,
-                    value: "https://skirmshop.es/apps/track",
+                    value: "https://track.skirmshop.es/labels/track",
                   }
                 - { name: PICKUP_CUSTOMER_NOTIFICATIONS_ENABLED, value: "true" }
                 - { name: PICKUP_CUSTOMER_REMINDER_DELAY_MINUTES, value: "2" }
