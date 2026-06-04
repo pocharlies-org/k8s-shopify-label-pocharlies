@@ -27,7 +27,7 @@ spec:
             - { key: role, operator: Equal, value: edge, effect: NoSchedule }
           containers:
             - name: pickup-point-reminder
-              image: harbor.e-dani.com/homelab/skirmshop-labels-pickup-point-reminder@sha256:54a1afc18ac2ba65592a4d2dacf21b97f53a5868973a13a08633d694212f5f81
+              image: harbor.e-dani.com/homelab/skirmshop-labels-pickup-point-reminder@sha256:b4d7f376ee6fbea4bd406bbd12ac25d348b5fb7756edf3bff7feb5fd17ebed56
               env:
                 - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
                 - { name: DATABASE_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
@@ -40,7 +40,8 @@ spec:
                 - { name: OPS_TELEGRAM_LABELS_THREAD_ID, value: "6921" }
                 - { name: OPS_TELEGRAM_ENABLED, value: "true" }
                 - { name: PICKUP_REMINDER_ADMIN_BASE_URL, value: "https://track.skirmshop.es/labels" }
-                - { name: PICKUP_REMINDER_PUBLIC_TRACKING_URL_BASE, value: "https://track.skirmshop.es/labels/track" }
+                - { name: PICKUP_REMINDER_PICKUP_SELECTOR_URL_BASE, value: "https://skirmshop.es/apps/track" }
+                - { name: PICKUP_REMINDER_PUBLIC_TRACKING_URL_BASE, value: "https://skirmshop.es/apps/track" }
                 - { name: PICKUP_CUSTOMER_NOTIFICATIONS_ENABLED, value: "true" }
                 - { name: PICKUP_CUSTOMER_REMINDER_DELAY_MINUTES, value: "10" }
                 - { name: NOTIFICATION_DISPATCHER_URL, value: "http://labels-notification-dispatcher.skirmshop.svc.cluster.local:3007" }
