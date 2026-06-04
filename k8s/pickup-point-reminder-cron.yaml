@@ -4,7 +4,7 @@ metadata:
   name: labels-pickup-point-reminder
   namespace: skirmshop
 spec:
-  schedule: "*/5 * * * *"
+  schedule: "*/2 * * * *"
   timeZone: Etc/UTC
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
@@ -27,7 +27,7 @@ spec:
             - { key: role, operator: Equal, value: edge, effect: NoSchedule }
           containers:
             - name: pickup-point-reminder
-              image: harbor.e-dani.com/homelab/skirmshop-labels-pickup-point-reminder@sha256:b4d7f376ee6fbea4bd406bbd12ac25d348b5fb7756edf3bff7feb5fd17ebed56
+              image: harbor.e-dani.com/homelab/skirmshop-labels-pickup-point-reminder@sha256:2b7b8aa26566398b9e01768ce0b2854ffe3d765346678d01f89d1a1dbda87e65
               env:
                 - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
                 - { name: DATABASE_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
@@ -43,7 +43,7 @@ spec:
                 - { name: PICKUP_REMINDER_PICKUP_SELECTOR_URL_BASE, value: "https://skirmshop.es/apps/track" }
                 - { name: PICKUP_REMINDER_PUBLIC_TRACKING_URL_BASE, value: "https://skirmshop.es/apps/track" }
                 - { name: PICKUP_CUSTOMER_NOTIFICATIONS_ENABLED, value: "true" }
-                - { name: PICKUP_CUSTOMER_REMINDER_DELAY_MINUTES, value: "10" }
+                - { name: PICKUP_CUSTOMER_REMINDER_DELAY_MINUTES, value: "2" }
                 - { name: NOTIFICATION_DISPATCHER_URL, value: "http://labels-notification-dispatcher.skirmshop.svc.cluster.local:3007" }
               envFrom: [{ secretRef: { name: labels-secrets } }]
               resources:
