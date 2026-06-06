@@ -61,9 +61,10 @@ spec:
           restartPolicy: Never
           serviceAccountName: synapse-pod-reaper
           enableServiceLinks: false
-          nodeSelector: { kubernetes.io/arch: amd64, role: edge }
-          tolerations:
-            - { key: role, operator: Equal, value: edge, effect: NoSchedule }
+          # This job only uses the Kubernetes API; do not pin it to the edge
+          # node. If sauvage is under disk/ContainerCreating pressure, pinning
+          # the reaper there causes false CronJob failures and delays cleanup.
+          nodeSelector: { kubernetes.io/arch: amd64 }
           containers:
             - name: reaper
               image: alpine/k8s:1.32.5 # alpine base → has /bin/sh + kubectl
