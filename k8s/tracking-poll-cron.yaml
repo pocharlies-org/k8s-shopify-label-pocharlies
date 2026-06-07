@@ -223,9 +223,7 @@ spec:
         spec:
           restartPolicy: Never
           enableServiceLinks: false
-          nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
-          tolerations:
-            - { key: role, operator: Equal, value: edge, effect: NoSchedule }
+          nodeSelector: { kubernetes.io/arch: amd64 }
           containers:
             - name: tracking-poll-scheduler
               # Promoted to a first-class app (was the saga-launcher image running an
