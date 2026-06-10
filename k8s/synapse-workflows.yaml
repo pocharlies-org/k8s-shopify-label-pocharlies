@@ -677,17 +677,34 @@ data:
     # ============================================================================
     # poll-tracking.yaml — fallback tracking poller
     # ============================================================================
-    # Triggered by an internal PollTrackingRequested event for one accepted
-    # shipment. UPS, Correos Express and Correos matriz are wired; Correos matriz
-    # remains constrained to peninsular recambios/accessories by routing policy.
+    # Triggered by the tracking-poll-scheduler for one accepted shipment. UPS,
+    # Correos Express and Correos matriz are wired; Correos matriz remains
+    # constrained to peninsular recambios/accessories by routing policy.
+    #
+    # v1.3.0 — RESILIENCE (2026-05): the carrier poll is now wrapped in try/catch.
+    # A freshly-accepted parcel that the carrier has not indexed yet makes the
+    # adapter throw (CEX errCode 10/100 "not found", or an empty estado). Before
+    # this version that bubbled up as a FAULTED workflow instance, and because no
+    # TrackingEventReceived was written the scheduler re-selected the shipment
+    # every 15 min — forever — piling thousands of faulted instances into Redis
+    # and crash-looping the operator. Now a transient/no-data poll ends the
+    # instance cleanly (COMPLETED, no event emitted) instead of faulting.
+    #
+    # Trade-off: this also swallows hard carrier errors (adapter 5xx) into a
+    # clean completion. That is acceptable because (a) the primary tracking path
+    # is the UPS Track-Alert / CEX TEIDE push webhook — polling is the fallback —
+    # and (b) the scheduler now caps attempts/age per shipment and a
+    # TrackingIngestionSilent alert fires if real tracking stops landing.
+    # v1.3.1 — occurredAt fallback emits ISO string (todate), jq now (number)
+    # violated the domain contract and tracking-ingestion dropped every CEX poll.
     # ============================================================================
 
     document:
       dsl: '1.0.0'
       namespace: skirmshop
       name: poll-tracking
-      version: '1.2.7'
-      summary: 'Poll UPS/CEX tracking and publish a canonical TrackingEventReceived event to the shipping bus.'
+      version: '1.3.1'
+      summary: 'Poll UPS/CEX/Correos tracking and emit a canonical TrackingEventReceived event. Transient/no-data polls complete cleanly instead of faulting.'
 
     input:
       schema:
@@ -717,74 +734,132 @@ data:
                 when: '${ .carrier == "correos" }'
                 then: pollCorreos
             - unsupported:
+                when: '${ true }'
                 then: failUnsupportedCarrier
 
+      # Each carrier branch polls and emits INSIDE the try, so the
+      # TrackingEventReceived event is emitted only on a successful poll. On any
+      # error the catch records a no-data marker and the instance exits cleanly
+      # (COMPLETED) — it does NOT raise, so the instance never faults.
       - pollUps:
-          call: http
-          with:
-            method: get
-            endpoint: 'http://labels-ups-adapter.skirmshop.svc.cluster.local:3002/tracking/{trackingNumber}'
-            headers:
-              accept: application/json
-              x-correlation-id: '${ .correlationId }'
-          output:
-            as: '${ $input + { tracking: $output } }'
-          then: publishTrackingEvent
+          try:
+            - pollUpsCall:
+                call: http
+                with:
+                  method: get
+                  endpoint: 'http://ups-adapter:3002/tracking/${ .trackingNumber | @uri }'
+                  headers:
+                    accept: application/json
+                    x-correlation-id: '${ .correlationId }'
+                output:
+                  as: '.tracking'
+            - emitUpsTracking:
+                emit:
+                  event:
+                    with:
+                      type: com.skirmshop.shipping.trackingeventreceived.v1
+                      source: urn:skirmshop:shipping-app:synapse:poll-tracking
+                      subject: '${ .orderId }'
+                      data:
+                        shipmentId: '${ .shipmentId }'
+                        carrier: '${ .carrier }'
+                        trackingNumber: '${ .trackingNumber }'
+                        rawCode: '${ .tracking.rawStatusCode }'
+                        normalizedStatus: '${ .tracking.normalizedStatus }'
+                        description: '${ .tracking.description // "" }'
+                        location: '${ .tracking.location // "" }'
+                        occurredAt: '${ .tracking.occurredAt // (now | todate) }'
+                        rawPayload: '${ .tracking }'
+          catch:
+            errors:
+              with:
+                type: all
+            as: err
+            do:
+              - upsNoData:
+                  set:
+                    trackingPollOutcome: no-data
+          then: exit
 
       - pollCex:
-          call: http
-          with:
-            method: get
-            endpoint: 'http://labels-correos-express-adapter.skirmshop.svc.cluster.local:3003/tracking/{trackingNumber}'
-            headers:
-              accept: application/json
-              x-correlation-id: '${ .correlationId }'
-          output:
-            as: '${ $input + { tracking: $output } }'
-          then: publishTrackingEvent
+          try:
+            - pollCexCall:
+                call: http
+                with:
+                  method: get
+                  endpoint: 'http://correos-express-adapter:3003/tracking/${ .trackingNumber | @uri }'
+                  headers:
+                    accept: application/json
+                    x-correlation-id: '${ .correlationId }'
+                output:
+                  as: '.tracking'
+            - emitCexTracking:
+                emit:
+                  event:
+                    with:
+                      type: com.skirmshop.shipping.trackingeventreceived.v1
+                      source: urn:skirmshop:shipping-app:synapse:poll-tracking
+                      subject: '${ .orderId }'
+                      data:
+                        shipmentId: '${ .shipmentId }'
+                        carrier: '${ .carrier }'
+                        trackingNumber: '${ .trackingNumber }'
+                        rawCode: '${ .tracking.rawStatusCode }'
+                        normalizedStatus: '${ .tracking.normalizedStatus }'
+                        description: '${ .tracking.description // "" }'
+                        location: '${ .tracking.location // "" }'
+                        occurredAt: '${ .tracking.occurredAt // (now | todate) }'
+                        rawPayload: '${ .tracking }'
+          catch:
+            errors:
+              with:
+                type: all
+            as: err
+            do:
+              - cexNoData:
+                  set:
+                    trackingPollOutcome: no-data
+          then: exit
 
       - pollCorreos:
-          call: http
-          with:
-            method: get
-            endpoint: 'http://labels-correos-adapter.skirmshop.svc.cluster.local:3011/tracking/{trackingNumber}'
-            headers:
-              accept: application/json
-              x-correlation-id: '${ .correlationId }'
-          output:
-            as: '${ $input + { tracking: $output } }'
-          then: publishTrackingEvent
-
-      - publishTrackingEvent:
-          call: http
-          with:
-            method: post
-            endpoint: 'http://labels-event-gateway.skirmshop.svc.cluster.local:3006/events'
-            headers:
-              Content-Type: application/cloudevents+json
-              x-correlation-id: '${ .correlationId }'
-            body:
-              specversion: '1.0'
-              id: '${ .correlationId }'
-              source: urn:skirmshop:shipping-app:synapse:poll-tracking
-              type: com.skirmshop.shipping.trackingeventreceived.v1
-              subject: '${ .orderId }'
-              datacontenttype: application/json
-              correlationid: '${ .correlationId }'
-              causationid: '${ .shipmentId }'
-              schemaversion: '1'
-              data:
-                shipmentId: '${ .shipmentId }'
-                carrier: '${ .carrier }'
-                rawCode: '${ .tracking.rawStatusCode }'
-                normalizedStatus: '${ .tracking.normalizedStatus }'
-                description: '${ .tracking.description // "" }'
-                location: '${ .tracking.location // "" }'
-                occurredAt: '${ .tracking.occurredAt // now }'
-                rawPayload: '${ .tracking }'
-          output:
-            as: '.trackingEventPublished'
-          then: end
+          try:
+            - pollCorreosCall:
+                call: http
+                with:
+                  method: get
+                  endpoint: 'http://correos-adapter:3011/tracking/${ .trackingNumber | @uri }'
+                  headers:
+                    accept: application/json
+                    x-correlation-id: '${ .correlationId }'
+                output:
+                  as: '.tracking'
+            - emitCorreosTracking:
+                emit:
+                  event:
+                    with:
+                      type: com.skirmshop.shipping.trackingeventreceived.v1
+                      source: urn:skirmshop:shipping-app:synapse:poll-tracking
+                      subject: '${ .orderId }'
+                      data:
+                        shipmentId: '${ .shipmentId }'
+                        carrier: '${ .carrier }'
+                        trackingNumber: '${ .trackingNumber }'
+                        rawCode: '${ .tracking.rawStatusCode }'
+                        normalizedStatus: '${ .tracking.normalizedStatus }'
+                        description: '${ .tracking.description // "" }'
+                        location: '${ .tracking.location // "" }'
+                        occurredAt: '${ .tracking.occurredAt // (now | todate) }'
+                        rawPayload: '${ .tracking }'
+          catch:
+            errors:
+              with:
+                type: all
+            as: err
+            do:
+              - correosNoData:
+                  set:
+                    trackingPollOutcome: no-data
+          then: exit
 
       - failUnsupportedCarrier:
           raise:

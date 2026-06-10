@@ -93,7 +93,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:b2f0c91c3bf7709fcce966ff2eee2014e0af8b308ffd6a784623318577e5488a
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:7dadf87781841883a1dd6736d2e885fafc2fe81cce225bc7c042a178e8485da7
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -394,7 +394,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: tracking-ingestion
-          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion:20260522-synapse
+          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:3d493c616c860328c77fc1c0739f8e96c334fa3f4b46b8d3b4cc75378bd41179
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -417,7 +417,7 @@ spec:
 ---
 apiVersion: v1
 kind: Service
-metadata: { name: labels-tracking-ingestion, namespace: skirmshop }
+metadata: { name: labels-tracking-ingestion, namespace: skirmshop, labels: { app: labels-tracking-ingestion } }
 spec:
   selector: { app: labels-tracking-ingestion }
   ports: [{ name: http, port: 3008, targetPort: 3000 }]

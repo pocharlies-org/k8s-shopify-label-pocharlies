@@ -1,0 +1,124 @@
+# Monitoring for the skirmshop-labels tracking pipeline.
+#
+# Until 2026-06-10 the alert rules for this system only existed as an
+# unapplied PrometheusRule inside the monorepo (infra/monitoring/), and the
+# labels services were never scraped — the tracking-ingestion bad-event storm
+# that silently dropped every CEX poll for weeks was invisible. This file is
+# the deployed source of truth: VMServiceScrapes for the two services whose
+# metrics back the alerts, plus the VMRule (ns monitoring, where VMAlert
+# loads rules from).
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: labels-tracking-ingestion
+  namespace: skirmshop
+spec:
+  selector:
+    matchLabels:
+      app: labels-tracking-ingestion
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: labels-synapse-janitor
+  namespace: skirmshop
+spec:
+  selector:
+    matchLabels:
+      app: labels-synapse-janitor
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMRule
+metadata:
+  name: skirmshop-labels
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/part-of: skirmshop-labels
+spec:
+  groups:
+    - name: skirmshop-labels-tracking
+      rules:
+        - alert: TrackingIngestionBadEvents
+          # Any sustained schema-rejected event is a contract violation between
+          # an emitter (workflow/adapters) and the domain schema. A low but
+          # steady drip (2-4/h) is exactly how the occurredAt number bug hid
+          # below TrackingIngestionBacklog's >1/s threshold for weeks.
+          expr: sum(increase(shipping_tracking_events_total{outcome="bad-event"}[1h])) > 0
+          for: 1h
+          labels:
+            severity: warn
+          annotations:
+            summary: 'tracking-ingestion is rejecting events (bad-event)'
+            description: '{{ $value }} schema-rejected tracking events in the last hour. An emitter violates the TrackingEventReceived contract — check tracking-ingestion logs for "tracking.ingestion.bad-event" reasons.'
+        - alert: TrackingIngestionBacklog
+          expr: sum(rate(shipping_tracking_events_total{outcome=~"bad-event|transient"}[10m])) > 1
+          for: 10m
+          labels:
+            severity: warn
+          annotations:
+            summary: 'tracking-ingestion failing >1/sec'
+            description: 'Sustained bad-event or transient outcomes on tracking-ingestion. Runbook §5.'
+        - alert: TrackingIngestionSilent
+          expr: sum(rate(shipping_tracking_events_total[30m])) == 0
+          for: 30m
+          labels:
+            severity: warn
+          annotations:
+            summary: 'tracking-ingestion silent for 30 min'
+            description: 'No tracking events processed in 30 min. Check TEIDE webhook + NATS consumer state.'
+    - name: skirmshop-labels-synapse
+      rules:
+        - alert: SynapseOrphanIndexEntries
+          expr: synapse_redis_orphan_index_entries_total > 0
+          for: 10m
+          labels:
+            severity: page
+          annotations:
+            summary: 'Synapse index has {{ $value }} orphan entries'
+            description: 'workflow-instances.synapse.io has index fields pointing at missing keys — can crash labels-synapse-operator. Runbook §3.'
+        - alert: LabelGenerationStuck
+          expr: labels_manual_label_stuck_total > 0
+          for: 5m
+          labels:
+            severity: page
+          annotations:
+            summary: '{{ $value }} shipment-label workflow(s) stuck non-terminal'
+            description: 'generate-shipment-label launched but not terminal beyond threshold. Check operator health + poll backlog. Runbook §1.'
+        - alert: SynapsePollFaultedBacklog
+          expr: sum(synapse_redis_workflow_instances_total{workflow="poll-tracking",phase="faulted"}) > 500
+          for: 15m
+          labels:
+            severity: warn
+          annotations:
+            summary: 'poll-tracking faulted backlog >500'
+            description: 'Faulted poll-tracking instances accumulating ({{ $value }}). Confirm poll-tracking v1.3.1 + scheduler guards. Runbook §2.'
+        - alert: SynapseJanitorStalled
+          expr: time() - max(synapse_cleanup_last_run_timestamp_seconds) > 3600
+          for: 10m
+          labels:
+            severity: warn
+          annotations:
+            summary: 'synapse-janitor has not completed a pass in >1h'
+            description: 'Backlog will grow unchecked. Check the synapse-janitor deployment. Runbook §6.'
+        - alert: SynapseJanitorArchiveFailing
+          expr: increase(synapse_cleanup_archive_failed_total[15m]) > 0
+          labels:
+            severity: warn
+          annotations:
+            summary: 'synapse-janitor archive failures'
+            description: '{{ $value }} archive failures in 15 min — deletes skipped (safe) but backlog will not drain. Check Postgres. Runbook §6.'
+        - alert: SynapseOperatorRestarts
+          expr: increase(kube_pod_container_status_restarts_total{namespace="skirmshop",pod=~"labels-synapse-operator.*"}[15m]) > 2
+          labels:
+            severity: page
+          annotations:
+            summary: 'labels-synapse-operator restarting'
+            description: '{{ $value }} restarts in 15 min — likely choking on the workflow-instance backlog. Check orphan entries + poll backlog. Runbook §3.'
