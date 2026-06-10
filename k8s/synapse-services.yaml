@@ -407,6 +407,10 @@ spec:
                 value: "nats://labels-nats-cluster.skirmshop.svc.cluster.local:4222",
               }
             - { name: NATS_STREAM, value: "SHIPPING_EVENTS" }
+            # Customer-notify fan-out (replaces the never-wired
+            # handle-tracking-event workflow). TRACK_TOKEN_SECRET +
+            # PUBLIC_TRACKING_URL_BASE arrive via labels-secrets.
+            - { name: TRACKING_NOTIFY_ENABLED, value: "true" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 20m, memory: 64Mi }
@@ -451,7 +455,7 @@ spec:
             - { name: WORKFLOWS_DIR, value: "/workflows" }
             - {
                 name: WORKFLOW_FILES,
-                value: "generate-shipment-label.yaml,handle-tracking-event.yaml,process-return.yaml,poll-tracking.yaml",
+                value: "generate-shipment-label.yaml,process-return.yaml,poll-tracking.yaml",
               }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           volumeMounts:

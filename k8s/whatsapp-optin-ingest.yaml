@@ -1,0 +1,85 @@
+# whatsapp-optin-ingest — registers tracking opt-ins from inbound wa.me
+# messages on the professional WhatsApp (+34628534490), replies with a
+# confirmation and triggers a catch-up /notify through the dispatcher.
+#
+#   customer taps "Recibe seguimiento por WhatsApp" → sends the prefilled
+#   message → connector (whatsapp-mcp ns) persists it in the whatsappmcp DB →
+#   this worker polls it (read-only role labels_wa_reader) → upserts
+#   tracking_notification_subscription → dispatcher fans out via the
+#   WhatsAppDeliveryGateChannel.
+#
+# Secret `labels-wa-reader` (WHATSAPP_MESSAGES_PG_URL) is hand-managed
+# (kubectl, NOT in git): the Vault path secret/skirmshop/labels needs an
+# admin token to extend — same situation as backup-hub's minio-hub-reader.
+# Move it into Vault + ExternalSecret when an admin token is available.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-whatsapp-optin-ingest
+  namespace: skirmshop
+spec:
+  replicas: 1
+  strategy: { type: Recreate }
+  selector: { matchLabels: { app: labels-whatsapp-optin-ingest } }
+  template:
+    metadata: { labels: { app: labels-whatsapp-optin-ingest } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      tolerations:
+        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
+      containers:
+        - name: whatsapp-optin-ingest
+          image: harbor.e-dani.com/homelab/skirmshop-labels-whatsapp-optin-ingest:latest
+          ports: [{ name: http, containerPort: 3000 }]
+          env:
+            - { name: PORT, value: "3000" }
+            - { name: OPTIN_INGEST_ENABLED, value: "true" }
+            - {
+                name: PG_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - name: WHATSAPP_MESSAGES_PG_URL
+              valueFrom:
+                secretKeyRef: { name: labels-wa-reader, key: WHATSAPP_MESSAGES_PG_URL }
+            - { name: WHATSAPP_ACCOUNT, value: "professional" }
+            - {
+                name: WHATSAPP_HTTP_URL,
+                value: "http://whatsapp-connector-professional.whatsapp-mcp.svc.cluster.local:3001",
+              }
+            - name: WHATSAPP_CONNECTOR_SHARED_SECRET
+              valueFrom:
+                secretKeyRef: { name: labels-socialmedia-secrets, key: CONNECTOR_SHARED_SECRET }
+          # TRACK_TOKEN_SECRET + PUBLIC_TRACKING_URL_BASE (+ DB_USER/DB_PASSWORD
+          # for the PG_URL interpolation) come from labels-secrets.
+          envFrom: [{ secretRef: { name: labels-secrets } }]
+          resources:
+            requests: { cpu: 20m, memory: 64Mi }
+            limits: { memory: 256Mi }
+          readinessProbe:
+            httpGet: { path: /ready, port: 3000 }
+            initialDelaySeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: labels-whatsapp-optin-ingest
+  namespace: skirmshop
+  labels: { app: labels-whatsapp-optin-ingest }
+spec:
+  selector: { app: labels-whatsapp-optin-ingest }
+  ports: [{ name: http, port: 3013, targetPort: 3000 }]
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: labels-whatsapp-optin-ingest
+  namespace: skirmshop
+spec:
+  selector:
+    matchLabels:
+      app: labels-whatsapp-optin-ingest
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
