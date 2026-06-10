@@ -1,0 +1,23 @@
+# Correos matriz surcharges — editable sin rebuild (mismo patrón que
+# labels-cex-surcharges). Los precios de la tabla contractual de Correos son
+# NETOS: la oferta de Emilio Torres (27/04/2026) suma un suplemento de
+# combustible que varía mes a mes (6,50% en abril 2026).
+#
+# El adapter relee el fichero montado en cada /rate → un edit aquí (o vía el
+# panel admin) llega a checkout en <60s sin reiniciar pods. El mount es de
+# DIRECTORIO completo (no subPath) o el kubelet no refresca.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: labels-correos-surcharges
+  namespace: skirmshop
+  annotations:
+    skirmshop.labels/loaded-at: "2026-06-10"
+    skirmshop.labels/fuel-source: "Correos matriz - propuesta Emilio Torres 27/04/2026"
+data:
+  surcharges.json: |
+    {
+      "fuel_surcharge_pct": 6.5,
+      "fuel_surcharge_effective_from": "2026-06-01",
+      "fuel_surcharge_source": "Correos matriz - propuesta Emilio Torres 27/04/2026 (6,50% abril, varia mensual)"
+    }

@@ -189,6 +189,12 @@ spec:
                 name: LABEL_STORAGE_URL,
                 value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007",
               }
+            # Fuel surcharge Correos matriz (tabla NETA + % mensual). Releído
+            # por request → hot-reload del ConfigMap sin restart.
+            - {
+                name: CORREOS_SURCHARGES_FILE,
+                value: /etc/correos/surcharges/surcharges.json,
+              }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 20m, memory: 64Mi }
@@ -196,6 +202,17 @@ spec:
           readinessProbe:
             httpGet: { path: /health, port: 3000 }
             initialDelaySeconds: 10
+          volumeMounts:
+            # Directorio completo (NO subPath): el kubelet remonta el ConfigMap
+            # editado (~60s) y el adapter lo relee en el siguiente /rate.
+            - { name: correos-surcharges, mountPath: /etc/correos/surcharges, readOnly: true }
+      volumes:
+        - name: correos-surcharges
+          configMap:
+            name: labels-correos-surcharges
+            # optional: el loader cae a defaults (fuel 0%) si falta el CM y el
+            # pod debe arrancar aunque el ConfigMap aún no exista.
+            optional: true
 ---
 apiVersion: v1
 kind: Service
