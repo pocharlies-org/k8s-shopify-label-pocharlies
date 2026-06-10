@@ -207,6 +207,7 @@ rules:
     resourceNames:
       - labels-cex-rate-table
       - labels-cex-surcharges
+      - labels-correos-surcharges
       - labels-vat-rates
     verbs: ["get", "patch"]
 ---
