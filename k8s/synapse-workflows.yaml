@@ -695,6 +695,9 @@ data:
     # is the UPS Track-Alert / CEX TEIDE push webhook — polling is the fallback —
     # and (b) the scheduler now caps attempts/age per shipment and a
     # TrackingIngestionSilent alert fires if real tracking stops landing.
+    # v1.3.2 — adapter endpoints use the k8s Service FQDNs (labels-*.skirmshop.svc);
+    # the compose-era short hostnames resolved nowhere in-cluster and the catch
+    # swallowed the DNS failure as no-data, so v1.3.1 polled nothing.
     # v1.3.1 — occurredAt fallback emits ISO string (todate), jq now (number)
     # violated the domain contract and tracking-ingestion dropped every CEX poll.
     # ============================================================================
@@ -703,7 +706,7 @@ data:
       dsl: '1.0.0'
       namespace: skirmshop
       name: poll-tracking
-      version: '1.3.1'
+      version: '1.3.2'
       summary: 'Poll UPS/CEX/Correos tracking and emit a canonical TrackingEventReceived event. Transient/no-data polls complete cleanly instead of faulting.'
 
     input:
@@ -747,7 +750,7 @@ data:
                 call: http
                 with:
                   method: get
-                  endpoint: 'http://ups-adapter:3002/tracking/${ .trackingNumber | @uri }'
+                  endpoint: 'http://labels-ups-adapter.skirmshop.svc.cluster.local:3002/tracking/${ .trackingNumber | @uri }'
                   headers:
                     accept: application/json
                     x-correlation-id: '${ .correlationId }'
@@ -787,7 +790,7 @@ data:
                 call: http
                 with:
                   method: get
-                  endpoint: 'http://correos-express-adapter:3003/tracking/${ .trackingNumber | @uri }'
+                  endpoint: 'http://labels-correos-express-adapter.skirmshop.svc.cluster.local:3003/tracking/${ .trackingNumber | @uri }'
                   headers:
                     accept: application/json
                     x-correlation-id: '${ .correlationId }'
@@ -827,7 +830,7 @@ data:
                 call: http
                 with:
                   method: get
-                  endpoint: 'http://correos-adapter:3011/tracking/${ .trackingNumber | @uri }'
+                  endpoint: 'http://labels-correos-adapter.skirmshop.svc.cluster.local:3011/tracking/${ .trackingNumber | @uri }'
                   headers:
                     accept: application/json
                     x-correlation-id: '${ .correlationId }'
