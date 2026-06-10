@@ -262,7 +262,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: notification-dispatcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:143f781ecc9f986d24aa763feaff88526f9db239a06b1ce19ec9da87bae85b46
+          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:4b8f8c677c596a6c3dbdbda97144dca2e8d3afcd92888303a9aaa39ebeeaf87c
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -394,7 +394,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: tracking-ingestion
-          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:191d368805dd82e11e28f0c1e0d28a67b29fc8faf274e78062b4fb2a78e13749
+          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:f009a738a75283e487584de5a72fa6c719b866eaad2a5ac3df88a3a5a123bc7a
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -407,6 +407,10 @@ spec:
                 value: "nats://labels-nats-cluster.skirmshop.svc.cluster.local:4222",
               }
             - { name: NATS_STREAM, value: "SHIPPING_EVENTS" }
+            # Customer-notify fan-out (replaces the never-wired
+            # handle-tracking-event workflow). TRACK_TOKEN_SECRET +
+            # PUBLIC_TRACKING_URL_BASE arrive via labels-secrets.
+            - { name: TRACKING_NOTIFY_ENABLED, value: "true" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 20m, memory: 64Mi }
@@ -451,7 +455,7 @@ spec:
             - { name: WORKFLOWS_DIR, value: "/workflows" }
             - {
                 name: WORKFLOW_FILES,
-                value: "generate-shipment-label.yaml,handle-tracking-event.yaml,process-return.yaml,poll-tracking.yaml",
+                value: "generate-shipment-label.yaml,process-return.yaml,poll-tracking.yaml",
               }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           volumeMounts:
