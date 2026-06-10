@@ -28,7 +28,7 @@ spec:
               # guards that stop the unbounded "new poll instance every 15 min" growth.
               # poll-tracking v1.3.1 publishes TrackingEventReceived through the
               # event gateway so tracking-ingestion persists carrier movement.
-              image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-poll-scheduler@sha256:e538191c3a1f931495ef2682cb1aefdc9e638a1eb1bff1c1cbdbd1c0a9a6d0ed
+              image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-poll-scheduler@sha256:3c2c50e8b02ccee5221a24ad2503c2f8291ec99e8af9587581d57675f8bd5536
               env:
                 - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
                 - { name: SYNAPSE_API_URL, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }
