@@ -394,7 +394,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: tracking-ingestion
-          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:3d493c616c860328c77fc1c0739f8e96c334fa3f4b46b8d3b4cc75378bd41179
+          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:191d368805dd82e11e28f0c1e0d28a67b29fc8faf274e78062b4fb2a78e13749
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
