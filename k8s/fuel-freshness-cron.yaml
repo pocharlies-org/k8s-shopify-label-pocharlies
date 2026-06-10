@@ -1,0 +1,66 @@
+# Daily fuel-surcharge freshness watchdog (CEX + Correos matriz).
+#
+# Both carriers communicate their fuel % monthly by email; someone applies it
+# in the admin "Tarifas de envío" panel. This job curls the shopify-app
+# internal endpoint, which reads each adapter's live surcharges, evaluates
+# month-of-effective_from vs current month (Europe/Madrid) and posts ONE
+# aggregated Telegram alert to the labels thread while anything is stale.
+# It re-alerts daily until the month is confirmed in the panel.
+#
+# Idempotency/failure semantics (audited):
+#   - concurrencyPolicy Forbid + backoffLimit 0: a failed run does NOT retry
+#     the same day (avoids duplicate alerts); the daily schedule is the retry.
+#   - The endpoint returns 502 if the Telegram send fails → Job marked failed
+#     (visible in kubectl + metrics), never a silent skip.
+# Security invariant: /api/internal/* is NOT exposed by any IngressRoute —
+# this endpoint is reachable only via the ClusterIP service.
+#
+# Manual run:
+#   kubectl create job -n skirmshop --from=cronjob/labels-fuel-freshness fuel-fresh-$(date +%s)
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: labels-fuel-freshness
+  namespace: skirmshop
+spec:
+  schedule: "0 9 * * *"
+  timeZone: Europe/Madrid
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 4
+  failedJobsHistoryLimit: 4
+  startingDeadlineSeconds: 3600
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      ttlSecondsAfterFinished: 604800   # 7 days
+      template:
+        metadata:
+          labels:
+            app: labels-fuel-freshness
+        spec:
+          restartPolicy: Never
+          nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+          tolerations:
+            - { key: role, operator: Equal, value: edge, effect: NoSchedule }
+          containers:
+            - name: trigger
+              image: curlimages/curl:8.13.0
+              command:
+                - sh
+                - -c
+                - |
+                  set -eu
+                  ENDPOINT='http://labels-shopify-app.skirmshop.svc.cluster.local:3004/api/internal/check-fuel-freshness'
+                  echo "[fuel-freshness] POST $ENDPOINT"
+                  HTTP_CODE=$(curl -sS -o /tmp/resp.json -w "%{http_code}" \
+                    -X POST -H "Content-Type: application/json" "$ENDPOINT" || true)
+                  echo "[fuel-freshness] HTTP $HTTP_CODE"
+                  cat /tmp/resp.json || true
+                  echo
+                  if [ "$HTTP_CODE" != "200" ]; then
+                    echo "[fuel-freshness] non-200, exiting 1 so the Job marks failed"
+                    exit 1
+                  fi
+              resources:
+                requests: { cpu: 10m, memory: 16Mi }
+                limits:   { memory: 64Mi }
