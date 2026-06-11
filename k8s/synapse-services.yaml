@@ -93,7 +93,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:451886b6347aa792c39dcae2668aff3ec34e22b3f5e8f82aa9104665fbe544e7
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:aa4dbfce277aa26ad5f101f526c302e48f2cfe8aa4049bc4efe264ffd3203750
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -173,7 +173,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: correos-adapter
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:304623e4ff7b533c957bccae6b062d304e484365b0122a78dee25612bc64e5fb
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:3a6b023952ed51041b032c14548a2094e92c7e625cfed1fb0688d4408c967eb9
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -195,6 +195,15 @@ spec:
                 name: CORREOS_SURCHARGES_FILE,
                 value: /etc/correos/surcharges/surcharges.json,
               }
+            # Service-point directory (oficinas + Citypaq). El nodo edge NO corre
+            # CSI → emptyDir: el adapter auto-descarga el ZIP público de Correos
+            # al arrancar + cada 24h, y el CronJob labels-correos-directory-refresh
+            # fuerza un POST /service-points/refresh diario determinista.
+            - { name: CORREOS_DIRECTORY_MODE, value: "file" }
+            - {
+                name: CORREOS_DIRECTORY_DATA_PATH,
+                value: /data/correos-service-points.csv,
+              }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 20m, memory: 64Mi }
@@ -206,6 +215,7 @@ spec:
             # Directorio completo (NO subPath): el kubelet remonta el ConfigMap
             # editado (~60s) y el adapter lo relee en el siguiente /rate.
             - { name: correos-surcharges, mountPath: /etc/correos/surcharges, readOnly: true }
+            - { name: directory-cache, mountPath: /data }
       volumes:
         - name: correos-surcharges
           configMap:
@@ -213,6 +223,8 @@ spec:
             # optional: el loader cae a defaults (fuel 0%) si falta el CM y el
             # pod debe arrancar aunque el ConfigMap aún no exista.
             optional: true
+        # Cache del directorio de service points (se repuebla solo al arrancar).
+        - { name: directory-cache, emptyDir: {} }
 ---
 apiVersion: v1
 kind: Service
@@ -279,7 +291,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: notification-dispatcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:562671c6542cc782c1fd809266be976c6e2de527e9016d68aab9b11eb92103e1
+          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:bc38e809157f44e5e155abc627e0d0757ac9695cb1c920f21c3cb78ba7808c5f
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -362,7 +374,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: event-projector
-          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:90bdc635d7fa98ed84181a09ec731daf60eaadc786f5298550492bad7d750daa
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:6da8f9568eb24d233c88b02e605b3f76ff3db527c67ee804607e4cb6ea2bef27
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

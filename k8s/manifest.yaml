@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:f59536419301306195a328c90ac1ed4f5da8e9920651a2db6b04714d412b6a2a # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:55fe9b4b06e84915dbfe81da263302f036f459b9af61048715348d6af8e62659 # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -346,7 +346,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:690d2fb4e01c3036e0371372736ff1620c0c7f24f0f5599e34b22fb8004a1f16 # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:fd0f83f143eee39037b5ae6219bd58c9a32c3f4de96f8a31fa7f571bae4e1989 # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -397,7 +397,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: saga-launcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:39469c164e1539f5207652bbb6b571edf08a2011c827411e791becf8346ad095 # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:ea37c2d71a0e41a6bcb59b3b37bd37649914484d8b6bc326a660ed52c79e057f # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -421,7 +421,7 @@ spec:
                 name: SYNAPSE_API_URL,
                 value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080",
               }
-            - { name: SYNAPSE_WORKFLOW_VERSION, value: "1.2.20" }
+            - { name: SYNAPSE_WORKFLOW_VERSION, value: "1.2.21" }
             - {
                 name: SHOPIFY_APP_INTERNAL_URL,
                 value: "http://labels-shopify-app.skirmshop.svc.cluster.local:3004",
@@ -532,7 +532,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:be0156c15b320a4f321a586b34522a22d1a9759be9fe2915088003f2aacdde0c # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:386a85255a3ec864947499b2a09922323159fbcb49b2a09c8fbdeb97f867f485 # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

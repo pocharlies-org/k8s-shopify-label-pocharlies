@@ -35,7 +35,7 @@ data:
       dsl: '1.0.0'
       namespace: skirmshop
       name: generate-shipment-label
-      version: '1.2.20'
+      version: '1.2.21'
       summary: |
         Full shipping saga for a paid Shopify order. Routes to UPS, Correos
         Express or Correos matriz, persists the label, updates
@@ -160,7 +160,7 @@ data:
       - pickupPointGate:
           switch:
             - pickupPointPending:
-                when: (.routing.decision.carrier == "ups" or .routing.decision.carrier == "correos_express") and .pickupPointRequired == true and .pickupPointId == null
+                when: (.routing.decision.carrier == "ups" or .routing.decision.carrier == "correos_express" or .routing.decision.carrier == "correos") and .pickupPointRequired == true and .pickupPointId == null
                 then: pickupPointRequired
             - shipmentReady:
                 then: saturdayDeliveryGate
@@ -353,6 +353,12 @@ data:
                       origin: '${ .origin }'
                       destination: '${ .destination }'
                       items: '${ .items }'
+                    # Correos pickup (oficina OFUAOF / Citypaq CIUAOF): the adapter
+                    # expects pickupPoint at the TOP LEVEL of the body (sibling of
+                    # order/routing), unlike ups/cex which carry pickupPointId inside
+                    # `order`. The adapter schema tolerates null (nullish) when the
+                    # customer hasn't selected a point yet.
+                    pickupPoint: '${ if .pickupPointId == null then null else { id: .pickupPointId } end }'
                 output:
                   as: '${ $input }'
           catch:

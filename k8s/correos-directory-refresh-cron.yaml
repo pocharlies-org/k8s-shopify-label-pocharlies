@@ -1,0 +1,43 @@
+# Refresco diario del directorio de service points de Correos (oficinas +
+# Citypaq). El adapter ya se auto-refresca al arrancar y cada 24h in-process;
+# este CronJob añade timing determinista (~09:30 Madrid, tras la publicación
+# diaria del ZIP de Correos ~09:00) + visibilidad ops (Job history).
+#
+# Usa la MISMA imagen del adapter (node fetch, sin imagen extra → Kyverno-OK).
+# El nodo edge no corre CSI: el directorio vive en el emptyDir del adapter,
+# por eso el refresh es un POST al servicio y no un Job con volumen.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: labels-correos-directory-refresh
+  namespace: skirmshop
+spec:
+  schedule: "30 9 * * *"
+  timeZone: Europe/Madrid
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 600
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 120
+      backoffLimit: 2
+      template:
+        metadata: { labels: { app: labels-correos-directory-refresh } }
+        spec:
+          restartPolicy: OnFailure
+          enableServiceLinks: false
+          containers:
+            - name: trigger
+              # Misma imagen que el Deployment labels-correos-adapter — bumpear
+              # los dos digests A LA VEZ.
+              image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:3a6b023952ed51041b032c14548a2094e92c7e625cfed1fb0688d4408c967eb9
+              command: ["node", "-e"]
+              args:
+                - >
+                  fetch('http://labels-correos-adapter.skirmshop.svc.cluster.local:3011/service-points/refresh',{method:'POST'})
+                  .then(async r=>{const t=await r.text();console.log('refresh',r.status,t);process.exit(r.ok?0:1)})
+                  .catch(e=>{console.error('refresh failed',e);process.exit(1)})
+              resources:
+                requests: { cpu: 10m, memory: 32Mi }
+                limits: { memory: 96Mi }
