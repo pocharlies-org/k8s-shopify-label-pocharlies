@@ -593,7 +593,7 @@ spec:
             - { key: role, operator: Equal, value: edge, effect: NoSchedule }
           containers:
             - name: sendcloud-scan-report
-              image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:dc2afc48ffd0de681fefc6eaebbf5c046cc6138558b01a2edfcb56b0aa4c34f9
+              image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:d2dca0c4ab70df80670cdeac6c7695f7b46bc4bafbd798da37ab588b5e5e375a
               command: ["node", "/app/cron/sendcloud-scan-report.mjs"]
               env:
                 - { name: TZ, value: "Europe/Madrid" }
