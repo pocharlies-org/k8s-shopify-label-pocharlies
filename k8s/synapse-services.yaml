@@ -279,7 +279,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: notification-dispatcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:4b8f8c677c596a6c3dbdbda97144dca2e8d3afcd92888303a9aaa39ebeeaf87c
+          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:b4d41d29b1ea79a928f24791d85f6c3e588943e9a1c091e40b5a48b0142834e8
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -308,7 +308,11 @@ spec:
                     name: labels-socialmedia-secrets,
                     key: CONNECTOR_SHARED_SECRET,
                   }
-            - { name: TELEGRAM_ENABLED, value: "false" }
+            - { name: TELEGRAM_ENABLED, value: "true" }
+            - name: TELEGRAM_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  { name: labels-telegram-track-bot, key: TELEGRAM_BOT_TOKEN }
             - {
                 name: LABEL_STORAGE_URL,
                 value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007",

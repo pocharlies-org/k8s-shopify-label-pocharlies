@@ -1,0 +1,82 @@
+# telegram-optin-ingest — registers tracking opt-ins from the @SkirmshopTrackBot
+# Telegram bot via getUpdates long-polling (no public webhook).
+#
+#   customer taps "Abrir Telegram" on the track page → t.me deep-link carries a
+#   compact AES-GCM start code → /start <code> lands here → decode to the order
+#   GID → upsert tracking_notification_subscription (channel telegram,
+#   transport_target = chat_id) → confirmation reply + catch-up /notify →
+#   dispatcher fans out via the TelegramDeliveryGateChannel.
+#
+# replicas MUST stay 1: Telegram allows a single concurrent getUpdates per bot
+# (a second replica earns 409 Conflict). Strategy Recreate for the same reason.
+#
+# Secret `labels-telegram-track-bot` (TELEGRAM_BOT_TOKEN, bot id 8963591918) is
+# hand-managed (kubectl, NOT in git) — same situation as labels-wa-reader; move
+# into Vault + ExternalSecret when an admin token is available.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-telegram-optin-ingest
+  namespace: skirmshop
+spec:
+  replicas: 1
+  strategy: { type: Recreate }
+  selector: { matchLabels: { app: labels-telegram-optin-ingest } }
+  template:
+    metadata: { labels: { app: labels-telegram-optin-ingest } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      tolerations:
+        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
+      containers:
+        - name: telegram-optin-ingest
+          image: harbor.e-dani.com/homelab/skirmshop-labels-telegram-optin-ingest@sha256:f94d9c54bec11288f1c037b33b8843fb4fbd91a4e6a443ae35871e274c758dde
+          ports: [{ name: http, containerPort: 3000 }]
+          env:
+            - { name: PORT, value: "3000" }
+            - { name: TELEGRAM_OPTIN_ENABLED, value: "true" }
+            - {
+                name: PG_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - name: TELEGRAM_BOT_TOKEN
+              valueFrom:
+                secretKeyRef: { name: labels-telegram-track-bot, key: TELEGRAM_BOT_TOKEN }
+            - {
+                name: NOTIFICATION_DISPATCHER_URL,
+                value: "http://labels-notification-dispatcher.skirmshop.svc.cluster.local:3007",
+              }
+          # TRACK_TOKEN_SECRET + PUBLIC_TRACKING_URL_BASE (+ DB_USER/DB_PASSWORD
+          # for the PG_URL interpolation) come from labels-secrets.
+          envFrom: [{ secretRef: { name: labels-secrets } }]
+          resources:
+            requests: { cpu: 20m, memory: 64Mi }
+            limits: { memory: 256Mi }
+          readinessProbe:
+            httpGet: { path: /ready, port: 3000 }
+            initialDelaySeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: labels-telegram-optin-ingest
+  namespace: skirmshop
+  labels: { app: labels-telegram-optin-ingest }
+spec:
+  selector: { app: labels-telegram-optin-ingest }
+  ports: [{ name: http, port: 3014, targetPort: 3000 }]
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: labels-telegram-optin-ingest
+  namespace: skirmshop
+spec:
+  selector:
+    matchLabels:
+      app: labels-telegram-optin-ingest
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
