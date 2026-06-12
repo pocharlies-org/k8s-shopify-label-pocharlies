@@ -1,19 +1,21 @@
 # Daily fuel-surcharge freshness watchdog (CEX + Correos matriz).
 #
 # Both carriers communicate their fuel % monthly by email; someone applies it
-# in the admin "Tarifas de envío" panel. This job curls the shopify-app
-# internal endpoint, which reads each adapter's live surcharges, evaluates
-# month-of-effective_from vs current month (Europe/Madrid) and posts ONE
-# aggregated Telegram alert to the labels thread while anything is stale.
+# in the admin "Tarifas de envío" panel. This job reads each adapter's
+# surcharge ConfigMap directly, evaluates month-of-effective_from vs current
+# month (Europe/Madrid) and posts ONE aggregated Telegram alert to the labels
+# thread while anything is stale.
 # It re-alerts daily until the month is confirmed in the panel.
 #
 # Idempotency/failure semantics (audited):
 #   - concurrencyPolicy Forbid + backoffLimit 0: a failed run does NOT retry
 #     the same day (avoids duplicate alerts); the daily schedule is the retry.
-#   - The endpoint returns 502 if the Telegram send fails → Job marked failed
+#   - Stale fuel values are a business warning, not a Kubernetes failure.
+#   - Telegram send failure returns non-zero → Job marked failed
 #     (visible in kubectl + metrics), never a silent skip.
-# Security invariant: /api/internal/* is NOT exposed by any IngressRoute —
-# this endpoint is reachable only via the ClusterIP service.
+# Security invariant: only the Telegram bot token is mounted, from the same
+# namespace Secret already used by labels-shopify-app. Surcharge ConfigMaps are
+# read-only volumes.
 #
 # Manual run:
 #   kubectl create job -n skirmshop --from=cronjob/labels-fuel-freshness fuel-fresh-$(date +%s)
@@ -45,22 +47,66 @@ spec:
           containers:
             - name: trigger
               image: curlimages/curl:8.13.0
+              env:
+                - { name: OPS_TELEGRAM_CHAT_ID, value: "-1003984393379" }
+                - { name: OPS_TELEGRAM_LABELS_THREAD_ID, value: "6921" }
+                - name: OPS_TELEGRAM_BOT_TOKEN
+                  valueFrom:
+                    secretKeyRef: { name: labels-telegram-bot, key: bot_token }
               command:
                 - sh
                 - -c
                 - |
                   set -eu
-                  ENDPOINT='http://labels-shopify-app.skirmshop.svc.cluster.local:3004/api/internal/check-fuel-freshness'
-                  echo "[fuel-freshness] POST $ENDPOINT"
-                  HTTP_CODE=$(curl -sS -o /tmp/resp.json -w "%{http_code}" \
-                    -X POST -H "Content-Type: application/json" "$ENDPOINT" || true)
-                  echo "[fuel-freshness] HTTP $HTTP_CODE"
-                  cat /tmp/resp.json || true
+                  current_ym="$(TZ=Europe/Madrid date +%Y-%m)"
+                  stale=''
+
+                  check_carrier() {
+                    name="$1"
+                    file="$2"
+                    effective_from="$(sed -n 's/.*"fuel_surcharge_effective_from"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$file" | head -n1)"
+                    pct="$(sed -n 's/.*"fuel_surcharge_pct"[[:space:]]*:[[:space:]]*\([0-9.][0-9.]*\).*/\1/p' "$file" | head -n1)"
+                    source="$(sed -n 's/.*"fuel_surcharge_source"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$file" | head -n1)"
+                    effective_ym="$(printf '%s' "$effective_from" | cut -c1-7)"
+                    echo "[fuel-freshness] $name pct=${pct:-unknown} effective_from=${effective_from:-missing} source=${source:-missing}"
+                    if [ -z "$effective_ym" ] || [ "$effective_ym" != "$current_ym" ]; then
+                      stale="${stale}- ${name}: fuel ${pct:-?}% efectivo ${effective_from:-missing} (${source:-sin fuente})\n"
+                    fi
+                  }
+
+                  check_carrier 'CEX' /etc/fuel/cex/surcharges.json
+                  check_carrier 'Correos matriz' /etc/fuel/correos/surcharges.json
+
+                  if [ -z "$stale" ]; then
+                    echo "[fuel-freshness] all carrier fuel surcharges are fresh for $current_ym"
+                    exit 0
+                  fi
+
+                  text="$(printf '⚠️ Recargo fuel pendiente de revisar (%s)\n\n%b\nActualiza Tarifas de envío → Recargos cuando esté confirmado.' "$current_ym" "$stale")"
+
+                  echo "[fuel-freshness] sending Telegram stale-fuel alert"
+                  HTTP_CODE=$(curl -sS -o /tmp/telegram.json -w "%{http_code}" \
+                    -X POST \
+                    -d "chat_id=${OPS_TELEGRAM_CHAT_ID}" \
+                    -d "message_thread_id=${OPS_TELEGRAM_LABELS_THREAD_ID}" \
+                    -d "disable_web_page_preview=true" \
+                    --data-urlencode "text=${text}" \
+                    "https://api.telegram.org/bot${OPS_TELEGRAM_BOT_TOKEN}/sendMessage" || true)
+                  echo "[fuel-freshness] Telegram HTTP $HTTP_CODE"
+                  cat /tmp/telegram.json || true
                   echo
                   if [ "$HTTP_CODE" != "200" ]; then
-                    echo "[fuel-freshness] non-200, exiting 1 so the Job marks failed"
+                    echo "[fuel-freshness] Telegram send failed, exiting 1 so the Job marks failed"
                     exit 1
                   fi
               resources:
                 requests: { cpu: 10m, memory: 16Mi }
                 limits:   { memory: 64Mi }
+              volumeMounts:
+                - { name: cex-surcharges, mountPath: /etc/fuel/cex, readOnly: true }
+                - { name: correos-surcharges, mountPath: /etc/fuel/correos, readOnly: true }
+          volumes:
+            - name: cex-surcharges
+              configMap: { name: labels-cex-surcharges }
+            - name: correos-surcharges
+              configMap: { name: labels-correos-surcharges }
