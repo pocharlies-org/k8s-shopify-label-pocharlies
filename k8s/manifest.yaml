@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:21ee76b93f0e13e2f8a9d3380ab3a678e4de15ac8ba589bbba0d61fe373f7330 # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:110a7e4368c680ecf7b9ecbccdaf25063cdc12788b221d7b6df58f35c6008ba7 # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -346,7 +346,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:fd0f83f143eee39037b5ae6219bd58c9a32c3f4de96f8a31fa7f571bae4e1989 # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:277d07e38df60e01a81d22e302c2a6553ce82fd0eca362f673839549ebe58f9e # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
