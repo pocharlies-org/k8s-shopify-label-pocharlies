@@ -115,7 +115,6 @@ spec:
   serviceName: labels-nats-cluster-headless
   template:
     metadata:
-      annotations: null
       labels:
         app.kubernetes.io/component: nats
         app.kubernetes.io/instance: labels-nats-cluster
@@ -221,7 +220,12 @@ spec:
       - emptyDir: {}
         name: pid
   volumeClaimTemplates:
-  - metadata:
+  # apiVersion/kind explícitos: el apiserver los persiste en el objeto live y
+  # volumeClaimTemplates es atómico/inmutable bajo SSA — sin ellos en git el
+  # diff de ArgoCD nunca converge (patrón ya probado en aiops-redis-ks5).
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
       name: labels-nats-cluster-js
     spec:
       accessModes:

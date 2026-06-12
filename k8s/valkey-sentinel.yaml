@@ -152,7 +152,11 @@ spec:
         - name: scripts
           configMap: { name: labels-valkey-scripts, defaultMode: 0755 }
   volumeClaimTemplates:
-    - metadata:
+    # apiVersion/kind explícitos — mismo motivo que en nats-cluster.yaml: sin
+    # TypeMeta en git el diff SSA de ArgoCD nunca converge (VCT inmutable).
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
         name: data
       spec:
         accessModes: ["ReadWriteOnce"]

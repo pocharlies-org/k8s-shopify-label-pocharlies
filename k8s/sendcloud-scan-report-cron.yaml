@@ -534,6 +534,11 @@ kind: ServiceAccount
 metadata:
   name: labels-sendcloud-scan-report
   namespace: skirmshop
+# Sin esto el primer pull real de un digest recién bumpeado falla con 401
+# (la SA dedicada no hereda el pull secret de `default`) y el Job muere en
+# activeDeadlineSeconds → CronJob Degraded → gatea el sync de todo el app.
+imagePullSecrets:
+  - name: harbor-pull
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -568,7 +573,7 @@ metadata:
   annotations:
     skirmshop.es/temporary-until: "2026-07-01"
 spec:
-  schedule: "0 7 * * *"
+  schedule: "15 14 * * *" # TEMPORAL un run hoy 2026-06-12 (limpia Degraded tras fix pull secret); revertir a "0 7 * * *"
   timeZone: Europe/Madrid
   suspend: false
   concurrencyPolicy: Forbid
