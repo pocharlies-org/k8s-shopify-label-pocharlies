@@ -25,7 +25,7 @@ spec:
           nodeSelector: { kubernetes.io/arch: amd64 }
           containers:
             - name: pickup-point-reminder
-              image: harbor.e-dani.com/homelab/skirmshop-labels-pickup-point-reminder@sha256:cdd5548a11cb00bcc55fa111c3066c43343b450ecddf1b17eb37637ec885c034
+              image: harbor.e-dani.com/homelab/skirmshop-labels-pickup-point-reminder@sha256:8ca72d5114c22f7af0f5d62ec5034db80b5b451245b2388119d38966f76fe9e7
               env:
                 - {
                     name: PG_URL,
