@@ -67,13 +67,19 @@ spec:
             summary: 'tracking-ingestion failing >1/sec'
             description: 'Sustained bad-event or transient outcomes on tracking-ingestion. Runbook §5.'
         - alert: TrackingIngestionSilent
-          expr: sum(rate(shipping_tracking_events_total[30m])) == 0
-          for: 30m
+          # Low-volume periods with zero candidate shipments are normal; only
+          # alert when ingestion is silent while the NATS consumer is unhealthy
+          # or has backlog waiting to be delivered.
+          expr: |
+            (max(tracking_ingestion_nats_connected) == 0)
+            or
+            (max(tracking_ingestion_consumer_pending) > 0 and sum(rate(shipping_tracking_events_total[30m])) == 0)
+          for: 10m
           labels:
             severity: warn
           annotations:
-            summary: 'tracking-ingestion silent for 30 min'
-            description: 'No tracking events processed in 30 min. Check TEIDE webhook + NATS consumer state.'
+            summary: 'tracking-ingestion silent with unhealthy consumer/backlog'
+            description: 'tracking-ingestion is not processing events while NATS is disconnected or the JetStream consumer has pending messages. Check NATS consumer state/runbook §5.'
     - name: skirmshop-labels-synapse
       rules:
         - alert: SynapseOrphanIndexEntries
