@@ -289,6 +289,10 @@ spec:
       nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
       tolerations:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
+      # Run as uid 1000 to read the host /etc/synapse/credentials/*.rmq.password
+      # files (owned 1000:1000, mode 0600) — same access the picker has. The
+      # EmailSynapseChannel needs skirmshop_picker.rmq.password to publish.
+      securityContext: { runAsUser: 1000, runAsGroup: 1000 }
       containers:
         - name: notification-dispatcher
           image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:bc38e809157f44e5e155abc627e0d0757ac9695cb1c920f21c3cb78ba7808c5f
