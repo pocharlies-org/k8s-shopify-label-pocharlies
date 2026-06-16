@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:0beae6d668735e36b1b3e7e16e3bd83f9af7d97255790a81b5cf623e5f01877e # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:da8ced3e48acf9d1b9494aca4bdeda173209851721ec2d36e91af174e4a6f3b0 # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -131,6 +131,10 @@ spec:
             - { name: PUBLIC_WHATSAPP_NUMBER_E164, value: "+34628534490" }
             - { name: PUBLIC_TELEGRAM_BOT_USERNAME, value: "SkirmshopTrackBot" }
             - { name: CORREOS_ENABLED, value: "false" }
+            # Customer post-purchase order editing (change shipping / add
+            # products). Routes register only when true. Gated behind the Picqer
+            # hold reconciler (labels-ops-edit-hold-reconciler) + replicas=1.
+            - { name: ORDER_EDIT_ENABLED, value: "true" }
             # Per-destination VAT applied to checkout rates so the customer
             # pays the all-in price under taxesIncluded:true + taxShipping:
             # true. ConfigMap is refreshed weekly by labels-vat-sync from

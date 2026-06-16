@@ -1,0 +1,52 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: labels-ops-edit-hold-reconciler
+  namespace: skirmshop
+spec:
+  schedule: "*/2 * * * *"
+  timeZone: Etc/UTC
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 600
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 86400
+      backoffLimit: 1
+      activeDeadlineSeconds: 600
+      template:
+        metadata:
+          labels:
+            app: labels-ops-edit-hold-reconciler
+        spec:
+          restartPolicy: Never
+          enableServiceLinks: false
+          nodeSelector: { kubernetes.io/arch: amd64 }
+          containers:
+            - name: ops-edit-hold-reconciler
+              image: harbor.e-dani.com/homelab/skirmshop-labels-ops-edit-hold-reconciler@sha256:733b80e39a02b6e26c0c3d3d09ddd02fcc81bd6e2e9d3cedf6041fcdaff6aafb
+              env:
+                - {
+                    name: PG_URL,
+                    value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+                  }
+                - name: OPS_TELEGRAM_BOT_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: labels-telegram-bot
+                      key: bot_token
+                - { name: OPS_TELEGRAM_CHAT_ID, value: "-1003984393379" }
+                - { name: OPS_TELEGRAM_LABELS_THREAD_ID, value: "6921" }
+                # Picqer creds: PICQER_API_KEY comes from labels-secrets (envFrom).
+                - { name: PICQER_BASE_URL, value: "https://skirmshop.picqer.com/api/v1" }
+                - { name: PICQER_USER_AGENT, value: "SkirmshopLabels (info@e-dani.com)" }
+                - { name: PICQER_WEBSHOPORDERS_PATH, value: "webshoporders" }
+                - { name: EDIT_HOLD_ADMIN_BASE_URL, value: "https://track.skirmshop.es/labels" }
+                - { name: EDIT_HOLD_GRACE_HOURS, value: "24" }
+                - { name: EDIT_HOLD_LOOKBACK_DAYS, value: "30" }
+                - { name: EDIT_HOLD_PAGE_SIZE, value: "250" }
+              envFrom: [{ secretRef: { name: labels-secrets } }]
+              resources:
+                requests: { cpu: 20m, memory: 64Mi }
+                limits: { memory: 256Mi }
