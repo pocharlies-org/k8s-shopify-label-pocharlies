@@ -364,7 +364,7 @@ spec:
               }
             - { name: PUBLIC_WHATSAPP_NUMBER_E164, value: "+34628534490" }
             - { name: SHOPIFY_ADMIN_STORE, value: "skirmshop-spain" }
-            - { name: OPS_TELEGRAM_ENABLED, value: "true" }
+            - { name: OPS_TELEGRAM_ENABLED, value: "false" }
             - { name: OPS_TELEGRAM_CHAT_ID, value: "-1003984393379" }
             - { name: OPS_TELEGRAM_LABELS_THREAD_ID, value: "6921" }
             - name: OPS_TELEGRAM_BOT_TOKEN

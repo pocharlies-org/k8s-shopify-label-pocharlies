@@ -144,7 +144,7 @@ spec:
                 name: CEX_SURCHARGES_FILE,
                 value: "/etc/cex/surcharges/surcharges.json",
               }
-            - { name: OPS_TELEGRAM_ENABLED, value: "true" }
+            - { name: OPS_TELEGRAM_ENABLED, value: "false" }
             - { name: OPS_TELEGRAM_CHAT_ID, value: "-1003984393379" }
             - { name: OPS_TELEGRAM_LABELS_THREAD_ID, value: "6921" }
             - name: OPS_TELEGRAM_BOT_TOKEN

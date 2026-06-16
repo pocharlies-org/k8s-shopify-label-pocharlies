@@ -42,7 +42,7 @@ spec:
                       key: bot_token
                 - { name: OPS_TELEGRAM_CHAT_ID, value: "-1003984393379" }
                 - { name: OPS_TELEGRAM_LABELS_THREAD_ID, value: "6921" }
-                - { name: OPS_TELEGRAM_ENABLED, value: "true" }
+                - { name: OPS_TELEGRAM_ENABLED, value: "false" }
                 - {
                     name: PICKUP_REMINDER_ADMIN_BASE_URL,
                     value: "https://track.skirmshop.es/labels",
