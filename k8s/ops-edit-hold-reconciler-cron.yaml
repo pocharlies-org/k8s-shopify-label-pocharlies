@@ -43,7 +43,9 @@ spec:
                 - { name: PICQER_USER_AGENT, value: "SkirmshopLabels (info@e-dani.com)" }
                 - { name: PICQER_WEBSHOPORDERS_PATH, value: "webshoporders" }
                 - { name: EDIT_HOLD_ADMIN_BASE_URL, value: "https://track.skirmshop.es/labels" }
-                - { name: EDIT_HOLD_GRACE_HOURS, value: "24" }
+                # During the Synapse noise audit, keep only hard failures immediate:
+                # Picqer pause failures still alert; unpaid edit reminders wait a week.
+                - { name: EDIT_HOLD_GRACE_HOURS, value: "168" }
                 - { name: EDIT_HOLD_LOOKBACK_DAYS, value: "30" }
                 - { name: EDIT_HOLD_PAGE_SIZE, value: "250" }
               envFrom: [{ secretRef: { name: labels-secrets } }]
