@@ -314,7 +314,7 @@ spec:
       securityContext: { runAsUser: 1000, runAsGroup: 1000 }
       containers:
         - name: notification-dispatcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:5fd8bd5b82718ae58a36f7ecbf21f6ad1c2eee6d4d12257915b272b33d72ac11
+          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:a67c8fcfd7a01676b2426360d908f22ea90858df36950d32888c409d90925bdc
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
