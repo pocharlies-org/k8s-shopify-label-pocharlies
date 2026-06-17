@@ -408,7 +408,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: event-projector
-          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:6da8f9568eb24d233c88b02e605b3f76ff3db527c67ee804607e4cb6ea2bef27
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:7bd53c04850a967e225849b844f11a2ccff79fb47b636dbf4fe2422070491032
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
