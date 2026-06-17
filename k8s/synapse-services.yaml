@@ -206,11 +206,13 @@ spec:
                 name: CORREOS_REQUESTS_BASE_URL_PRE,
                 value: "https://api1.correospre.es/logistics/requests/api/v1",
               }
-            # Identificadores de contrato de recogidas (RCG) confirmados por SITCE
-            # 2026-06-16 (caso 23950054): codContract=contrato, codSpecificContract=
-            # código de usuario/cliente, codAnnex=091 (anexo general de paquetería).
+            # Identificadores de contrato de recogidas (RCG) — caso 23950054.
+            # codSpecificContract: SITCE dijo "9981619716" pero su cURL de ejemplo
+            # enviaba la base ("60026334") y la API la devolvía como "99"+base
+            # ("9960026334"). Probamos la base sin el prefijo 99 (9981619716 ->
+            # 81619716) para resolver el HTTP 400 del create. Revertir si no.
             - { name: CORREOS_REQUESTS_COD_CONTRACT, value: "54097436" }
-            - { name: CORREOS_REQUESTS_COD_SPECIFIC_CONTRACT, value: "9981619716" }
+            - { name: CORREOS_REQUESTS_COD_SPECIFIC_CONTRACT, value: "81619716" }
             - { name: CORREOS_REQUESTS_COD_ANNEX, value: "091" }
             # Service-point directory (oficinas + Citypaq). El nodo edge NO corre
             # CSI → emptyDir: el adapter auto-descarga el ZIP público de Correos
