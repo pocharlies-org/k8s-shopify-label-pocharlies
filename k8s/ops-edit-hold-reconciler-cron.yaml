@@ -25,7 +25,7 @@ spec:
           nodeSelector: { kubernetes.io/arch: amd64 }
           containers:
             - name: ops-edit-hold-reconciler
-              image: harbor.e-dani.com/homelab/skirmshop-labels-ops-edit-hold-reconciler@sha256:733b80e39a02b6e26c0c3d3d09ddd02fcc81bd6e2e9d3cedf6041fcdaff6aafb
+              image: harbor.e-dani.com/homelab/skirmshop-labels-ops-edit-hold-reconciler@sha256:2f5803c5fcc00476f05aa5c59d5f0219dbf72be8ce8378fe203ca636e6477c5a
               env:
                 - {
                     name: PG_URL,
