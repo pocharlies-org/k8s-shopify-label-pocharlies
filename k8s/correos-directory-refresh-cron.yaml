@@ -31,7 +31,7 @@ spec:
             - name: trigger
               # Misma imagen que el Deployment labels-correos-adapter — bumpear
               # los dos digests A LA VEZ.
-              image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:8854da8f9f8160a5bc61c7b0c0c8986f4ceb137a531e322e20a6b9fb550b01d8
+              image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:aed222083526ce1221d99f47e078427eee9faf6184013c232b263971571ce3cd
               command: ["node", "-e"]
               args:
                 - >
