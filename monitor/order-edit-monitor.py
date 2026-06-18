@@ -70,6 +70,7 @@ def psql(query: str) -> list[list[str]]:
 
 
 def http(method: str, url: str, headers: dict, body: bytes | None = None) -> tuple[int, bytes]:
+    headers = {"User-Agent": "SkirmshopOrderEditMonitor/1.0", **headers}
     req = urllib.request.Request(url, data=body, headers=headers, method=method)
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
@@ -233,8 +234,18 @@ def main() -> int:
     except Exception as e:  # noqa: BLE001
         problems.append(f"endpoint health check failed: {e}")
 
-    # Decide whether to notify
+    # Observability: always log the full picture to stdout (Telegram may be
+    # throttled to heartbeats, but the logs must always show what was found).
     is_heartbeat = now.hour == HEARTBEAT_HOUR_UTC
+    log(f"summary: real_edits={len(real_lines)} anomalies={len(problems)} heartbeat={is_heartbeat}")
+    for p in problems:
+        log("ANOMALY: " + p)
+    for n in notes:
+        log("note: " + n)
+    for rl in real_lines:
+        log("edit: " + rl)
+
+    # Decide whether to notify
     if real_lines or problems or is_heartbeat:
         head = "🩺 <b>Order-edit monitor</b>"
         if problems:
