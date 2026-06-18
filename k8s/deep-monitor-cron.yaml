@@ -1,0 +1,188 @@
+# Deep monitor for the order-page label buttons (order-label-action modal +
+# order-label-link). Active-probe CronJob every 12h: checks deployment health,
+# greps recent error logs, and smoke-tests the 3 endpoints in-cluster (bypassing
+# Cloudflare). Incidents → Telegram "🚨 Alertas" topic (14990); a daily OK
+# heartbeat → "Labels" topic (6921). Same conventions as labels-order-edit-monitor.
+# Image alpine/k8s ships kubectl + curl + jq + bash → no custom image to build.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: labels-deep-monitor
+  namespace: skirmshop
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: labels-deep-monitor
+  namespace: skirmshop
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: labels-deep-monitor
+  namespace: skirmshop
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: labels-deep-monitor
+subjects:
+  - kind: ServiceAccount
+    name: labels-deep-monitor
+    namespace: skirmshop
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: labels-deep-monitor-script
+  namespace: skirmshop
+data:
+  monitor.sh: |
+    #!/usr/bin/env bash
+    # Deep monitor: pod health + log errors + in-cluster smoke of the order-page
+    # label buttons. Alerts Telegram on incident; daily OK heartbeat otherwise.
+    set -uo pipefail
+    NS="${NS:-skirmshop}"
+    DEPLOY="${DEPLOY:-labels-shopify-app}"
+    SVC="${SVC:-http://labels-shopify-app.skirmshop.svc.cluster.local:3004}"
+    ORIGIN="${ORIGIN:-https://extensions.shopifycdn.com}"
+    ENC="${ENC:-gid%253A%252F%252Fshopify%252FOrder%252F1}"
+    THRESH="${LOG_ERROR_THRESHOLD:-25}"
+    CHAT_ID="${OPS_TELEGRAM_CHAT_ID:-}"
+    NOW_H=$(date -u +%H); NOW_H=$((10#${NOW_H}))
+    incidents=""; report=""
+
+    note(){ report+="$1"$'\n'; echo "$1"; }
+    inc(){ incidents+="• $1"$'\n'; echo "INCIDENT: $1" >&2; }
+
+    # --- A. deployment health ---
+    desired=$(kubectl -n "$NS" get deploy "$DEPLOY" -o jsonpath='{.spec.replicas}' 2>/dev/null || echo "")
+    ready=$(kubectl -n "$NS" get deploy "$DEPLOY" -o jsonpath='{.status.readyReplicas}' 2>/dev/null || echo "")
+    [ -z "$ready" ] && ready=0
+    if [ -z "$desired" ]; then
+      inc "deployment $DEPLOY no encontrado (¿sin acceso o borrado?)"
+    else
+      note "deploy ready=${ready}/${desired}"
+      [ "$ready" != "$desired" ] && inc "réplicas no listas: ${ready}/${desired}"
+    fi
+    specimg=$(kubectl -n "$NS" get deploy "$DEPLOY" -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null || echo "?")
+    note "image=${specimg##*@}"
+    restarts=$(kubectl -n "$NS" get pods -l app="$DEPLOY" -o jsonpath='{range .items[*]}{.status.containerStatuses[0].restartCount} {end}' 2>/dev/null || echo "")
+    note "restarts=[${restarts}]"
+    for r in $restarts; do [ "${r:-0}" -gt 5 ] 2>/dev/null && inc "pod con restartCount=${r} (>5)"; done
+
+    # --- B. in-cluster smoke (bypass Cloudflare) ---
+    opts_code=$(curl -s -o /dev/null -w '%{http_code}' -m 15 -X OPTIONS "$SVC/api/shipments/$ENC" -H "Origin: $ORIGIN" -H "Access-Control-Request-Method: GET" -H "Access-Control-Request-Headers: authorization,content-type" || echo "000")
+    opts_acao=$(curl -s -o /dev/null -D - -m 15 -X OPTIONS "$SVC/api/shipments/$ENC" -H "Origin: $ORIGIN" -H "Access-Control-Request-Method: GET" 2>/dev/null | tr -d '\r' | awk -F': ' 'tolower($1)=="access-control-allow-origin"{print $2}')
+    note "preflight: code=${opts_code} acao=${opts_acao:-<none>}"
+    { [ "$opts_code" = "204" ] && [ "$opts_acao" = "$ORIGIN" ]; } || inc "CORS preflight roto (code=${opts_code} acao=${opts_acao:-none}; esperado 204 + ${ORIGIN})"
+
+    ol_code=$(curl -s -o /dev/null -w '%{http_code}' -m 15 "$SVC/admin/order-label?id=12345" || echo "000")
+    note "order-label: code=${ol_code}"
+    [ "$ol_code" = "200" ] || inc "ruta order-label rota (code=${ol_code}; esperado 200)"
+
+    sh_code=$(curl -s -o /dev/null -w '%{http_code}' -m 15 "$SVC/api/shipments/$ENC" -H "Origin: $ORIGIN" || echo "000")
+    sh_acao=$(curl -s -o /dev/null -D - -m 15 "$SVC/api/shipments/$ENC" -H "Origin: $ORIGIN" 2>/dev/null | tr -d '\r' | awk -F': ' 'tolower($1)=="access-control-allow-origin"{print $2}')
+    note "gated GET: code=${sh_code} acao=${sh_acao:-<none>}"
+    [ "$sh_code" = "200" ] && inc "SEGURIDAD: /api/shipments devuelve 200 SIN auth (gate JWT roto)"
+    { [ "$sh_code" = "401" ] || [ "$sh_code" = "403" ]; } || inc "/api/shipments code inesperado=${sh_code} (esperado 401/403)"
+    [ -n "${sh_acao:-}" ] || inc "falta cabecera CORS en respuesta gated de /api/shipments"
+
+    # --- C. error logs (last 12h, feature-scoped) ---
+    errlines=$(kubectl -n "$NS" logs -l app="$DEPLOY" --tail=5000 --since=12h 2>/dev/null | grep '"level":"error"' | grep -iE 'shipment|extension-cors|retry|saga|label|cors' || true)
+    errcount=$(printf '%s' "$errlines" | grep -c . || true); errcount=${errcount:-0}
+    note "error-logs(12h, feature)=${errcount}"
+    [ "$errcount" -gt "$THRESH" ] 2>/dev/null && inc "${errcount} errores en logs (12h) sobre shipments/cors/saga (>${THRESH})"
+
+    # --- verdict + telegram ---
+    # Plain text (no parse_mode): the message only contains our own safe values
+    # (codes, counts, digest); avoiding HTML means a stray < or & can never make
+    # Telegram reject the alert with a 400.
+    send_tg(){ # $1=thread_id  $2=text
+      [ -n "${OPS_TELEGRAM_BOT_TOKEN:-}" ] && [ -n "$CHAT_ID" ] || { echo "telegram: sin token/chat, omito"; return 0; }
+      jq -n --arg c "$CHAT_ID" --arg t "$1" --arg x "$2" '{chat_id:($c|tonumber),message_thread_id:($t|tonumber),text:$x,disable_web_page_preview:true}' \
+        | curl -sS -m 30 -X POST "https://api.telegram.org/bot${OPS_TELEGRAM_BOT_TOKEN}/sendMessage" -H 'Content-Type: application/json' -d @- -w '\ntg_http=%{http_code}\n' || true
+    }
+    ts=$(date -u +"%Y-%m-%d %H:%M UTC")
+    if [ -n "$incidents" ]; then
+      send_tg "${OPS_TELEGRAM_ALERTS_THREAD_ID:-14990}" "$(printf '🚨 INCIDENTE — botones etiqueta (labels)\n%s\n\n%s\nResumen:\n%s' "$ts" "$incidents" "$report")"
+      [ -n "$errlines" ] && echo "--- error log sample ---" && printf '%s\n' "$errlines" | tail -8
+      echo "=== INCIDENTE ==="; printf '%s' "$incidents"
+      exit 1
+    fi
+    if [ "${FORCE_HEARTBEAT:-0}" = "1" ] || [ "${NOW_H}" = "$((10#${HEARTBEAT_HOUR_UTC:-6}))" ]; then
+      send_tg "${OPS_TELEGRAM_LABELS_THREAD_ID:-6921}" "$(printf '✅ OK — botones etiqueta (labels)\n%s\nSin incidentes.\n\n%s' "$ts" "$report")"
+    fi
+    echo "=== OK ==="; printf '%s' "$report"
+    exit 0
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: labels-deep-monitor
+  namespace: skirmshop
+  # Monitoreo del rollout de los botones de etiqueta en la página de pedido.
+spec:
+  schedule: "0 6,18 * * *" # cada 12h UTC = 08:00 y 20:00 Europe/Madrid (CEST)
+  timeZone: Etc/UTC
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 600
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 86400
+      backoffLimit: 0 # 1 alerta por slot: sin reintento que duplique el mensaje Telegram
+      activeDeadlineSeconds: 300
+      template:
+        metadata:
+          labels:
+            app: labels-deep-monitor
+        spec:
+          restartPolicy: Never
+          enableServiceLinks: false
+          serviceAccountName: labels-deep-monitor
+          nodeSelector: { kubernetes.io/arch: amd64 }
+          containers:
+            - name: deep-monitor
+              image: alpine/k8s:1.32.5 # kubectl + curl + jq + bash (Kyverno-clean, ya cacheada)
+              command: ["bash", "/scripts/monitor.sh"]
+              env:
+                - { name: HOME, value: "/tmp" }
+                - name: OPS_TELEGRAM_BOT_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: labels-telegram-bot
+                      key: bot_token
+                - { name: OPS_TELEGRAM_CHAT_ID, value: "-1003984393379" }
+                # OK / heartbeat diario → topic Labels; incidentes → topic 🚨 Alertas.
+                - { name: OPS_TELEGRAM_LABELS_THREAD_ID, value: "6921" }
+                - { name: OPS_TELEGRAM_ALERTS_THREAD_ID, value: "14990" }
+                - { name: HEARTBEAT_HOUR_UTC, value: "6" } # heartbeat OK 1×/día en el run de 06:00 UTC
+                # Umbral con margen sobre el baseline observado (~7 errores/12h)
+                # para evitar flapping; el conteo real va en el heartbeat diario.
+                - { name: LOG_ERROR_THRESHOLD, value: "25" }
+              volumeMounts:
+                - { name: script, mountPath: /scripts, readOnly: true }
+                - { name: tmp, mountPath: /tmp }
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities: { drop: ["ALL"] }
+                seccompProfile: { type: RuntimeDefault }
+              resources:
+                requests: { cpu: 20m, memory: 64Mi }
+                limits: { memory: 256Mi }
+          volumes:
+            - name: script
+              configMap: { name: labels-deep-monitor-script, defaultMode: 0555 }
+            - name: tmp
+              emptyDir: {}
