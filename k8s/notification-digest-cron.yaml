@@ -1,11 +1,12 @@
-# Daily notification-health DIGEST → Telegram general (ops) channel.
+# Daily notification-health DIGEST dry run.
 #
 # Added 2026-06-18 (owner request: 1-week watch of WhatsApp/Email/Telegram
 # notifications, report every 24h). Reuses the notification-dispatcher image
 # (node 22 + pg bundled at /app/node_modules) running a ConfigMap-mounted CJS
-# script — no new image. Reads the tracking_notification_delivery ledger +
-# subscriptions (AGGREGATE counts only, PII-free) and posts to the ops bot's
-# General topic. REMOVE / re-evaluate after ~1 week (delete this file).
+# script, no new image. Reads the tracking_notification_delivery ledger +
+# subscriptions (AGGREGATE counts only, PII-free). Telegram posting is disabled
+# while the Synapse/ops group is kept alert-only. REMOVE / re-evaluate after
+# ~1 week (delete this file).
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -20,6 +21,7 @@ data:
     const CHAT = process.env.TELEGRAM_CHAT_ID;
     const THREAD = process.env.TELEGRAM_THREAD_ID; // optional; empty => General topic
     const WINDOW = process.env.DIGEST_WINDOW_HOURS || '24';
+    const POST_MODE = (process.env.POST_MODE || 'always').toLowerCase();
 
     async function main() {
       if (!TOKEN || !CHAT) {
@@ -76,6 +78,10 @@ data:
       L.push(`<b>Suscripciones totales</b>: ${subsTotal.map((r) => `${r.channel}=${r.n}`).join(' · ') || '0'}`);
       const text = L.join('\n');
       console.log('digest.report\n' + text);
+      if (POST_MODE === 'never') {
+        console.log('digest.telegram.skipped POST_MODE=never');
+        return;
+      }
       const body = { chat_id: CHAT, text, parse_mode: 'HTML', disable_web_page_preview: true };
       if (THREAD) body.message_thread_id = Number(THREAD);
       const res = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
@@ -127,6 +133,7 @@ spec:
                     value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
                   }
                 - { name: DIGEST_WINDOW_HOURS, value: "24" }
+                - { name: POST_MODE, value: "never" }
                 - { name: TELEGRAM_CHAT_ID, value: "-1003984393379" }
                 # Leave thread empty => posts to the supergroup "General" topic.
                 - { name: TELEGRAM_THREAD_ID, value: "" }
