@@ -1,0 +1,146 @@
+# Daily notification-health DIGEST → Telegram general (ops) channel.
+#
+# Added 2026-06-18 (owner request: 1-week watch of WhatsApp/Email/Telegram
+# notifications, report every 24h). Reuses the notification-dispatcher image
+# (node 22 + pg bundled at /app/node_modules) running a ConfigMap-mounted CJS
+# script — no new image. Reads the tracking_notification_delivery ledger +
+# subscriptions (AGGREGATE counts only, PII-free) and posts to the ops bot's
+# General topic. REMOVE / re-evaluate after ~1 week (delete this file).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: labels-notification-digest-script
+  namespace: skirmshop
+data:
+  report.cjs: |
+    'use strict';
+    // PII-free daily digest of notification activity. Aggregate counts only.
+    const { Pool } = require('pg');
+    const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+    const CHAT = process.env.TELEGRAM_CHAT_ID;
+    const THREAD = process.env.TELEGRAM_THREAD_ID; // optional; empty => General topic
+    const WINDOW = process.env.DIGEST_WINDOW_HOURS || '24';
+
+    async function main() {
+      if (!TOKEN || !CHAT) {
+        console.error('digest: missing TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID');
+        process.exit(1);
+      }
+      const pool = new Pool({ connectionString: process.env.PG_URL });
+      const q = (sql, p) => pool.query(sql, p).then((r) => r.rows);
+      const W = `${WINDOW} hours`;
+      let byChannel, keepalive, optins, fails, subsTotal;
+      try {
+        byChannel = await q(
+          `SELECT channel, status, count(*)::int AS n FROM tracking_notification_delivery
+            WHERE updated_at >= now() - ($1)::interval GROUP BY channel, status`, [W]);
+        keepalive = await q(
+          `SELECT count(*)::int AS n FROM tracking_notification_delivery
+            WHERE channel='whatsapp' AND status_key='wa_keepalive' AND status='sent'
+              AND updated_at >= now() - ($1)::interval`, [W]);
+        optins = await q(
+          `SELECT channel, count(*)::int AS n FROM tracking_notification_subscription
+            WHERE opt_in_at >= now() - ($1)::interval GROUP BY channel`, [W]);
+        fails = await q(
+          `SELECT channel, status_key, count(*)::int AS n FROM tracking_notification_delivery
+            WHERE status='failed' AND updated_at >= now() - ($1)::interval
+            GROUP BY channel, status_key ORDER BY n DESC LIMIT 12`, [W]);
+        subsTotal = await q(
+          `SELECT channel, count(*)::int AS n FROM tracking_notification_subscription
+            GROUP BY channel`, []);
+      } finally {
+        await pool.end();
+      }
+      const m = {};
+      for (const r of byChannel) { (m[r.channel] ||= {})[r.status] = r.n; }
+      const line = (ch) => {
+        const s = m[ch] || {};
+        return `  ${ch}: ✅ ${s.sent || 0} sent · ❌ ${s.failed || 0} failed · ⏭️ ${s.skipped_no_optin || 0} no-optin`
+          + (s.skipped_invalid_phone ? ` · ⚠️ ${s.skipped_invalid_phone} invalid` : '');
+      };
+      const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
+      const L = [];
+      L.push(`📊 <b>Skirmshop — Notificaciones (últimas ${WINDOW}h)</b>`);
+      L.push(`🕒 ${now} UTC`);
+      L.push('');
+      L.push('<b>Envíos por canal</b>');
+      L.push(line('whatsapp'));
+      L.push(line('email'));
+      L.push(line('telegram'));
+      L.push('');
+      L.push(`<b>WhatsApp keep-alive enviados</b>: ${keepalive[0] ? keepalive[0].n : 0}`);
+      L.push(`<b>Nuevos opt-ins</b>: ${optins.length ? optins.map((r) => `${r.channel}=${r.n}`).join(' · ') : '0'}`);
+      L.push(`<b>Fallos (atención)</b>: ${fails.length ? '' : '✅ ninguno'}`);
+      for (const r of fails) L.push(`  ❌ ${r.channel}/${r.status_key}: ${r.n}`);
+      L.push('');
+      L.push(`<b>Suscripciones totales</b>: ${subsTotal.map((r) => `${r.channel}=${r.n}`).join(' · ') || '0'}`);
+      const text = L.join('\n');
+      console.log('digest.report\n' + text);
+      const body = { chat_id: CHAT, text, parse_mode: 'HTML', disable_web_page_preview: true };
+      if (THREAD) body.message_thread_id = Number(THREAD);
+      const res = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok || !j.ok) {
+        console.error('digest.telegram.failed', res.status, JSON.stringify(j).slice(0, 300));
+        process.exit(1);
+      }
+      console.log('digest.telegram.sent message_id=' + (j.result && j.result.message_id));
+    }
+    main().catch((e) => { console.error('digest.error', (e && e.message) || e); process.exit(1); });
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: labels-notification-digest
+  namespace: skirmshop
+spec:
+  schedule: "0 8 * * *" # 08:00 UTC daily (10:00 Europe/Madrid)
+  timeZone: Etc/UTC
+  suspend: false
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 7
+  startingDeadlineSeconds: 600
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 172800
+      backoffLimit: 1
+      activeDeadlineSeconds: 300
+      template:
+        metadata:
+          labels:
+            app: labels-notification-digest
+        spec:
+          restartPolicy: Never
+          enableServiceLinks: false
+          nodeSelector: { kubernetes.io/arch: amd64 }
+          containers:
+            - name: notification-digest
+              image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:02ef8a5ace1c4e872b074ee14779c8c344a33bdce960beac96e9e641ceb5f076
+              command: ["node", "/digest/report.cjs"]
+              env:
+                - { name: NODE_PATH, value: "/app/node_modules" }
+                - {
+                    name: PG_URL,
+                    value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+                  }
+                - { name: DIGEST_WINDOW_HOURS, value: "24" }
+                - { name: TELEGRAM_CHAT_ID, value: "-1003984393379" }
+                # Leave thread empty => posts to the supergroup "General" topic.
+                - { name: TELEGRAM_THREAD_ID, value: "" }
+                - name: TELEGRAM_BOT_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: labels-telegram-bot
+                      key: bot_token
+              envFrom: [{ secretRef: { name: labels-secrets } }]
+              volumeMounts:
+                - { name: digest-script, mountPath: /digest, readOnly: true }
+              resources:
+                requests: { cpu: 20m, memory: 64Mi }
+                limits: { memory: 256Mi }
+          volumes:
+            - name: digest-script
+              configMap: { name: labels-notification-digest-script }
