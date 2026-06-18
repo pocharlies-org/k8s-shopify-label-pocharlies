@@ -10,9 +10,14 @@ order-editing feature went live (2026-06-18). Each run:
   2. For each REAL customer order-edit, validates the lifecycle against Shopify
      (edit committed, hold consistent with balance/payment, settle on payment)
      and against Picqer (no comment-spam regression).
-  3. Health-checks the public endpoint.
-  4. Reports to the ops Telegram topic: detail on real usage, alert on anomalies,
-     a once-a-day heartbeat otherwise (to avoid spamming "no usage").
+  3. Health-checks the order-edit endpoint (internal Service, bypassing the
+     Cloudflare edge which 403s a non-browser OPTIONS).
+  4. Reports to Telegram, ROUTED BY SEVERITY:
+       - anomalies / crashes  → the alerts topic (OPS_TELEGRAM_ALERTS_THREAD_ID)
+       - healthy usage detail + the once-a-day heartbeat → the labels topic
+         (OPS_TELEGRAM_LABELS_THREAD_ID)
+     If the alerts topic is unset, alerts fall back to the labels topic so an
+     anomaly is never silently dropped.
 
 Self-contained: Python stdlib + `psql`. All creds come from the environment
 (mounted from labels-secrets / labels-telegram-bot, mirroring the reconciler).
@@ -37,7 +42,10 @@ PICQER_BASE = os.environ.get("PICQER_BASE_URL", "https://skirmshop.picqer.com/ap
 PICQER_UA = os.environ.get("PICQER_USER_AGENT", "SkirmshopLabels (info@e-dani.com)")
 TG_TOKEN = os.environ["OPS_TELEGRAM_BOT_TOKEN"]
 TG_CHAT = os.environ["OPS_TELEGRAM_CHAT_ID"]
+# Healthy/heartbeat detail goes to the labels topic; anomalies/crashes go to the
+# dedicated alerts topic (falling back to labels if it is unset).
 TG_THREAD = os.environ.get("OPS_TELEGRAM_LABELS_THREAD_ID", "")
+TG_ALERTS_THREAD = os.environ.get("OPS_TELEGRAM_ALERTS_THREAD_ID", "")
 PUBLIC_BASE = os.environ.get(
     "ORDER_EDIT_PUBLIC_BASE", "https://track.skirmshop.es/labels/api/customer/order-edit"
 )
@@ -118,10 +126,12 @@ def picqer(path: str) -> object:
     return json.loads(raw or b"null")
 
 
-def telegram(text: str) -> None:
+def telegram(text: str, thread: str = "") -> None:
     payload = {"chat_id": TG_CHAT, "text": text, "parse_mode": "HTML", "disable_web_page_preview": True}
-    if TG_THREAD:
-        payload["message_thread_id"] = int(TG_THREAD)
+    # Explicit thread wins; otherwise default to the labels topic.
+    target = thread or TG_THREAD
+    if target:
+        payload["message_thread_id"] = int(target)
     status, raw = http(
         "POST",
         f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
@@ -257,8 +267,15 @@ def main() -> int:
             parts.append("\n<b>⚠️ Anomalies:</b>\n" + "\n".join(f"• {p}" for p in problems))
         if not real_lines and not problems:
             parts.append("\n" + " · ".join(notes) + "\n<i>(daily heartbeat)</i>")
-        telegram("\n".join(parts))
-        log("notified telegram")
+        # Route by severity: anomalies → alerts topic (fallback labels), healthy
+        # usage detail + heartbeat → labels topic. Keeps the labels topic as the
+        # operational log and the alerts topic clean for actionable signals.
+        if problems:
+            telegram("\n".join(parts), TG_ALERTS_THREAD or TG_THREAD)
+            log("notified telegram (alerts topic)")
+        else:
+            telegram("\n".join(parts), TG_THREAD)
+            log("notified telegram (labels topic)")
     else:
         log("silent run: " + " · ".join(notes))
     return 0
@@ -269,9 +286,12 @@ if __name__ == "__main__":
         sys.exit(main())
     except Exception as e:  # noqa: BLE001
         log(f"fatal: {e}")
-        # best-effort alert on a fatal monitor failure
+        # best-effort alert on a fatal monitor failure → alerts topic
         try:
-            telegram(f"🚨 <b>Order-edit monitor crashed</b>\n<code>{str(e)[:300]}</code>")
+            telegram(
+                f"🚨 <b>Order-edit monitor crashed</b>\n<code>{str(e)[:300]}</code>",
+                TG_ALERTS_THREAD or TG_THREAD,
+            )
         except Exception:  # noqa: BLE001
             pass
         sys.exit(1)

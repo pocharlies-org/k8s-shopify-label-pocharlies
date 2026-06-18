@@ -27,7 +27,7 @@ spec:
           nodeSelector: { kubernetes.io/arch: amd64 }
           containers:
             - name: order-edit-monitor
-              image: harbor.e-dani.com/homelab/skirmshop-order-edit-monitor@sha256:ec0b1264f3825d4be4d7549eb8eee344bef49aefce38149395f6248b0ecf44ff
+              image: harbor.e-dani.com/homelab/skirmshop-order-edit-monitor@sha256:d140204a0c94382dd4a6e80e3191313df971eafe6320fc0143e4b2cc5a4877c4
               env:
                 - {
                     name: PG_URL,
@@ -43,7 +43,10 @@ spec:
                       name: labels-telegram-bot
                       key: bot_token
                 - { name: OPS_TELEGRAM_CHAT_ID, value: "-1003984393379" }
+                # Healthy usage detail + daily heartbeat → labels topic.
                 - { name: OPS_TELEGRAM_LABELS_THREAD_ID, value: "6921" }
+                # Anomalies + crashes → dedicated "🚨 Alertas" topic (thread 14990).
+                - { name: OPS_TELEGRAM_ALERTS_THREAD_ID, value: "14990" }
                 - { name: PICQER_BASE_URL, value: "https://skirmshop.picqer.com/api/v1" }
                 - { name: PICQER_USER_AGENT, value: "SkirmshopLabels (info@e-dani.com)" }
                 # Internal Service (bypasses Cloudflare, which 403s a non-browser
