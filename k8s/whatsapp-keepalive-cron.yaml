@@ -1,0 +1,69 @@
+# WhatsApp in-transit keep-alive — SHIPPED INERT (double-gated).
+#
+#   suspend: true  AND  WHATSAPP_KEEPALIVE_ENABLED=false
+#
+# To activate (only on a HEALTHY professional WhatsApp number — see below):
+#   1. re-link + bring whatsapp-connector-professional online (it is replicas:0
+#      / ENABLE_SENDING=false today; the number was banned 2026-06-04 for
+#      automated Baileys probing),
+#   2. set WHATSAPP_KEEPALIVE_ENABLED=true,
+#   3. set suspend: false.
+#
+# IMPORTANT: 23h55m (INTERVAL_MINUTES=1435) is BEHAVIOURAL ONLY — Baileys
+# (WhatsApp Web) has NO Meta 24h customer-service window (that exists only in
+# the dormant WhatsAppCloudChannel). Daily automated Baileys sends are the
+# pattern that got this number banned. For reliable proactive cadence migrate
+# to the official WhatsApp Cloud API. Keep INTERVAL_MINUTES in sync with the
+# notification-dispatcher's WHATSAPP_KEEPALIVE_INTERVAL_MINUTES (gate re-claim
+# window) — a mismatch cannot double-send (the gate caps at one per its window)
+# but would under/over-fire.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: labels-whatsapp-keepalive
+  namespace: skirmshop
+spec:
+  schedule: "*/30 * * * *"
+  timeZone: Etc/UTC
+  suspend: true
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 600
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 86400
+      backoffLimit: 1
+      activeDeadlineSeconds: 600
+      template:
+        metadata:
+          labels:
+            app: labels-whatsapp-keepalive
+        spec:
+          restartPolicy: Never
+          enableServiceLinks: false
+          nodeSelector: { kubernetes.io/arch: amd64 }
+          containers:
+            - name: whatsapp-keepalive
+              image: harbor.e-dani.com/homelab/skirmshop-labels-whatsapp-keepalive@sha256:910c50b7da1c0d2d0f6d2f0d5111a0d7f2f75367852e7566a85c5e0747d43cc9
+              env:
+                - { name: WHATSAPP_KEEPALIVE_ENABLED, value: "false" }
+                - { name: WHATSAPP_KEEPALIVE_INTERVAL_MINUTES, value: "1435" }
+                - { name: WHATSAPP_KEEPALIVE_BATCH_SIZE, value: "100" }
+                - { name: WHATSAPP_KEEPALIVE_MAX_AGE_DAYS, value: "21" }
+                - {
+                    name: PG_URL,
+                    value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+                  }
+                - {
+                    name: DATABASE_URL,
+                    value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+                  }
+                - {
+                    name: NOTIFICATION_DISPATCHER_URL,
+                    value: "http://labels-notification-dispatcher.skirmshop.svc.cluster.local:3007",
+                  }
+              envFrom: [{ secretRef: { name: labels-secrets } }]
+              resources:
+                requests: { cpu: 20m, memory: 64Mi }
+                limits: { memory: 256Mi }
