@@ -173,7 +173,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: correos-adapter
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:26e5c1113c5706b53a6b7e1ef3e9e6cff29fdc67f1925a1a3cded4dd13961da6
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:79af8774e68fbf5b906e89ada40d435be114364e16d1caf7c26af21a675e8811
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -207,10 +207,11 @@ spec:
                 value: "https://api1.correospre.es/logistics/requests/api/v1",
               }
             # Identificadores de contrato de recogidas (RCG) — caso 23950054.
-            # codSpecificContract: SITCE dijo "9981619716" pero su cURL de ejemplo
-            # enviaba la base ("60026334") y la API la devolvía como "99"+base
-            # ("9960026334"). Probamos la base sin el prefijo 99 (9981619716 ->
-            # 81619716) para resolver el HTTP 400 del create. Revertir si no.
+            # codSpecificContract: SITCE dijo "9981619716" pero la API antepone
+            # "99" a la base que enviamos; hay que mandar la BASE sin el prefijo.
+            # CONFIRMADO en create real (2026-06-18, codRequest SR…002EB): la base
+            # 81619716 → la API la eco como "9981619716" y el create devuelve 200.
+            # NO revertir: este es el valor correcto del contrato de recogidas.
             - { name: CORREOS_REQUESTS_COD_CONTRACT, value: "54097436" }
             - { name: CORREOS_REQUESTS_COD_SPECIFIC_CONTRACT, value: "81619716" }
             - { name: CORREOS_REQUESTS_COD_ANNEX, value: "091" }
