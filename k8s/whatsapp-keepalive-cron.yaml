@@ -1,13 +1,10 @@
-# WhatsApp in-transit keep-alive — SHIPPED INERT (double-gated).
+# WhatsApp in-transit keep-alive — ACTIVE (2026-06-18, owner request).
 #
-#   suspend: true  AND  WHATSAPP_KEEPALIVE_ENABLED=false
+#   suspend: false  AND  WHATSAPP_KEEPALIVE_ENABLED=true
 #
-# To activate (only on a HEALTHY professional WhatsApp number — see below):
-#   1. re-link + bring whatsapp-connector-professional online (it is replicas:0
-#      / ENABLE_SENDING=false today; the number was banned 2026-06-04 for
-#      automated Baileys probing),
-#   2. set WHATSAPP_KEEPALIVE_ENABLED=true,
-#   3. set suspend: false.
+# whatsapp-connector-professional is operational (replicas=1, ENABLE_SENDING=true,
+# /health CONNECTED) — the owner confirmed the number is NOT banned. To pause:
+# set suspend: true (cron stops) and/or WHATSAPP_KEEPALIVE_ENABLED=false (no-op run).
 #
 # IMPORTANT: 23h55m (INTERVAL_MINUTES=1435) is BEHAVIOURAL ONLY — Baileys
 # (WhatsApp Web) has NO Meta 24h customer-service window (that exists only in
@@ -25,7 +22,7 @@ metadata:
 spec:
   schedule: "*/30 * * * *"
   timeZone: Etc/UTC
-  suspend: true
+  suspend: false
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
@@ -47,7 +44,7 @@ spec:
             - name: whatsapp-keepalive
               image: harbor.e-dani.com/homelab/skirmshop-labels-whatsapp-keepalive@sha256:910c50b7da1c0d2d0f6d2f0d5111a0d7f2f75367852e7566a85c5e0747d43cc9
               env:
-                - { name: WHATSAPP_KEEPALIVE_ENABLED, value: "false" }
+                - { name: WHATSAPP_KEEPALIVE_ENABLED, value: "true" }
                 - { name: WHATSAPP_KEEPALIVE_INTERVAL_MINUTES, value: "1435" }
                 - { name: WHATSAPP_KEEPALIVE_BATCH_SIZE, value: "100" }
                 - { name: WHATSAPP_KEEPALIVE_MAX_AGE_DAYS, value: "21" }
