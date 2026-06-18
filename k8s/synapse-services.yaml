@@ -173,7 +173,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: correos-adapter
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:47c54e72f60b16d31ccb3f01e23802ceadfb2874318ee6864e5292e210d883dc
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:739c23c9d5994b082e396b7c48c8092ae858f6aad0fe429cdb9721eb32142c04
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -207,14 +207,11 @@ spec:
                 value: "https://api1.correospre.es/logistics/requests/api/v1",
               }
             # Identificadores de contrato de recogidas (RCG) — caso 23950054.
-            # codSpecificContract: SITCE dijo "9981619716" pero la API antepone
-            # "99" a la base que enviamos; hay que mandar la BASE sin el prefijo.
-            # CONFIRMADO en create real (2026-06-18, codRequest SR…002EB): la base
-            # 81619716 → la API la eco como "9981619716" y el create devuelve 200.
-            # NO revertir: este es el valor correcto del contrato de recogidas.
-            - { name: CORREOS_REQUESTS_COD_CONTRACT, value: "54097436" }
-            - { name: CORREOS_REQUESTS_COD_SPECIFIC_CONTRACT, value: "81619716" }
-            - { name: CORREOS_REQUESTS_COD_ANNEX, value: "091" }
+            # Ahora son DEFAULTS en el código (config.ts, PR #73): codContract
+            # 54097436, codSpecificContract base 81619716 (la API lo eco como
+            # "9981619716"), codAnnex 091. Confirmados por SITCE y probados en
+            # create+cancel real (2026-06-18). No hace falta env aquí; añade un
+            # override SOLO si cambia el contrato/tenant.
             # Service-point directory (oficinas + Citypaq). El nodo edge NO corre
             # CSI → emptyDir: el adapter auto-descarga el ZIP público de Correos
             # al arrancar + cada 24h, y el CronJob labels-correos-directory-refresh
