@@ -1,12 +1,12 @@
-# Daily notification-health DIGEST dry run.
+# Daily notification-health DIGEST → Telegram ops General.
 #
 # Added 2026-06-18 (owner request: 1-week watch of WhatsApp/Email/Telegram
 # notifications, report every 24h). Reuses the notification-dispatcher image
 # (node 22 + pg bundled at /app/node_modules) running a ConfigMap-mounted CJS
 # script, no new image. Reads the tracking_notification_delivery ledger +
-# subscriptions (AGGREGATE counts only, PII-free). Telegram posting is disabled
-# while the Synapse/ops group is kept alert-only. REMOVE / re-evaluate after
-# ~1 week (delete this file).
+# subscriptions (AGGREGATE counts only, PII-free) and posts to the ops bot's
+# General topic (-1003984393379). POST_MODE=always (re-enabled per owner
+# 2026-06-18). REMOVE / re-evaluate after ~1 week (delete this file).
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -133,7 +133,7 @@ spec:
                     value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
                   }
                 - { name: DIGEST_WINDOW_HOURS, value: "24" }
-                - { name: POST_MODE, value: "never" }
+                - { name: POST_MODE, value: "always" }
                 - { name: TELEGRAM_CHAT_ID, value: "-1003984393379" }
                 # Leave thread empty => posts to the supergroup "General" topic.
                 - { name: TELEGRAM_THREAD_ID, value: "" }
