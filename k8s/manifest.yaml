@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:4d8d6b184aec3d236802470581510c7b7b3c0403761c2c53db0f742e4cbac165 # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:75b31f37ac1ab418ea67352551d24d82c8991bbcb2ed14cb94dd624cdbcbe01a # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
