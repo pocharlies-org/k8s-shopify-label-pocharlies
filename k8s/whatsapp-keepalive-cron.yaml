@@ -1,6 +1,14 @@
-# WhatsApp in-transit keep-alive — ACTIVE (2026-06-18, owner request).
+# WhatsApp in-transit keep-alive — PAUSED (2026-06-23, owner request).
 #
-#   suspend: false  AND  WHATSAPP_KEEPALIVE_ENABLED=true
+#   suspend: true  AND  WHATSAPP_KEEPALIVE_ENABLED=false
+#
+# Paused after the ORD18525 incident: a DELIVERED order kept receiving a daily
+# "tu pedido va en camino" Baileys message (labels pipeline never recorded the
+# terminal/DELIVERED scan, so the order stayed keepalive-eligible for 21d) with
+# a broken track URL and in the wrong language. Re-enabling daily Baileys sends
+# is exactly the pattern that got the professional number banned on 2026-06-04
+# (see below). Do NOT re-enable until keepalive is gated on terminal status,
+# capped, and migrated off the milestone copy / onto the official Cloud API.
 #
 # whatsapp-connector-professional is operational (replicas=1, ENABLE_SENDING=true,
 # /health CONNECTED) — the owner confirmed the number is NOT banned. To pause:
@@ -22,7 +30,7 @@ metadata:
 spec:
   schedule: "*/30 * * * *"
   timeZone: Etc/UTC
-  suspend: false
+  suspend: true
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
@@ -44,7 +52,7 @@ spec:
             - name: whatsapp-keepalive
               image: harbor.e-dani.com/homelab/skirmshop-labels-whatsapp-keepalive@sha256:910c50b7da1c0d2d0f6d2f0d5111a0d7f2f75367852e7566a85c5e0747d43cc9
               env:
-                - { name: WHATSAPP_KEEPALIVE_ENABLED, value: "true" }
+                - { name: WHATSAPP_KEEPALIVE_ENABLED, value: "false" }
                 - { name: WHATSAPP_KEEPALIVE_INTERVAL_MINUTES, value: "1435" }
                 - { name: WHATSAPP_KEEPALIVE_BATCH_SIZE, value: "100" }
                 - { name: WHATSAPP_KEEPALIVE_MAX_AGE_DAYS, value: "21" }
