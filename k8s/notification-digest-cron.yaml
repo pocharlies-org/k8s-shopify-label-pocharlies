@@ -125,7 +125,7 @@ spec:
           nodeSelector: { kubernetes.io/arch: amd64 }
           containers:
             - name: notification-digest
-              image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:02ef8a5ace1c4e872b074ee14779c8c344a33bdce960beac96e9e641ceb5f076
+              image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:013eae35c18484ab1df437ccc899a1444335500560daeaf9ed715df2c1bf0221
               command: ["node", "/digest/report.cjs"]
               env:
                 - { name: NODE_PATH, value: "/app/node_modules" }
