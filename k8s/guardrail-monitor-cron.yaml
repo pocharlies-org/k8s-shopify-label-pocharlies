@@ -1,0 +1,283 @@
+# Guardrail monitor for the notification + tracking pipeline — the ORD18525
+# incident class ("stuck order that keeps getting keepalive-pinged").
+#
+# Added 2026-06-23. Reuses the notification-dispatcher image (node 22 + pg
+# bundled at /app/node_modules) running a ConfigMap-mounted CJS script — no new
+# image to build, same pattern as labels-notification-digest. Reads the labels
+# DB (AGGREGATE counts + order_ids only, NO phones/emails) and alerts to the
+# Telegram "🚨 Alertas" topic (14990) when a guardrail threshold is exceeded.
+#
+# IMPORTANT — schema reality (verified 2026-06-23 against the live DB):
+#   * tracking_notification_delivery + tracking_notification_subscription key on
+#     order_id (gid://shopify/Order/...). They JOIN cleanly.
+#   * tracking_event keys on shipment_id (external:<src>:<carrier>:<tracking>
+#     or a bare uuid). There is NO shipment↔order mapping table in this DB, so
+#     tracking_event does NOT join to order_id. The two checks below are
+#     therefore driven off the order_id-keyed ledger (the population the
+#     keepalive worker actually re-pings) plus a standalone tracking_event scan.
+#   * normalized_status values seen live: DELIVERED, CREATED, IN_TRANSIT,
+#     PICKED_UP, OUT_FOR_DELIVERY, EXCEPTION. Terminal = DELIVERED/RETURNED/
+#     CANCELLED (RETURNED/CANCELLED kept for forward-compat); CREATED excluded
+#     (label printed, not yet in transit); the rest are the danger zone.
+#
+# POST_MODE (default "alert") posts to Telegram ONLY when a threshold trips.
+# Set POST_MODE=always for a daily "all clear" heartbeat too; POST_MODE=never
+# for dry-run (logs only). Thresholds are env vars. Exit 0 on success even when
+# alerting (the alert is the Telegram message, not a job failure) — except a
+# hard DB/Telegram error, which exits 1 so K8sCronJobFailed catches it.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: labels-guardrail-monitor-script
+  namespace: skirmshop
+data:
+  monitor.cjs: |
+    'use strict';
+    // Guardrail monitor for the keepalive / stuck-tracking incident class.
+    // PII-FREE: emits order_ids + counts only, never phones/emails/identifiers.
+    const { Pool } = require('pg');
+
+    const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+    const CHAT = process.env.TELEGRAM_CHAT_ID;
+    const THREAD = process.env.TELEGRAM_THREAD_ID; // 14990 = 🚨 Alertas
+    const POST_MODE = (process.env.POST_MODE || 'alert').toLowerCase(); // alert|always|never
+    const CAP = parseInt(process.env.KEEPALIVE_CAP || '4', 10);          // keepalive_sends >= CAP
+    const STALE_DAYS = parseInt(process.env.STALE_DAYS || '10', 10);     // stuck threshold (days)
+    const OPTIN_DAYS = parseInt(process.env.OPTIN_WINDOW_DAYS || '21', 10); // active opt-in window
+    const SAMPLE = parseInt(process.env.SAMPLE_IDS || '8', 10);          // how many order_ids to show
+
+    // Notification-ledger status_keys that are still keepalive-eligible (non-terminal,
+    // not yet delivered/failed). These mirror the keepalive worker's candidate set.
+    const NONTERMINAL_KEYS = ['shipped', 'in_transit', 'picked_up', 'out_for_delivery', 'exception'];
+    // tracking_event.normalized_status terminal set (no further keepalive should happen).
+    const TERMINAL_STATUS = ['DELIVERED', 'RETURNED', 'CANCELLED'];
+
+    function short(id) {
+      // gid://shopify/Order/123  -> #123 ; otherwise pass through trimmed.
+      const m = /Order\/(\d+)/.exec(id || '');
+      return m ? ('#' + m[1]) : String(id || '').slice(0, 24);
+    }
+
+    async function main() {
+      if (!process.env.PG_URL && !process.env.DATABASE_URL) {
+        console.error('guardrail: missing PG_URL/DATABASE_URL');
+        process.exit(1);
+      }
+      const pool = new Pool({ connectionString: process.env.PG_URL || process.env.DATABASE_URL });
+      const q = (sql, p) => pool.query(sql, p).then((r) => r.rows);
+
+      let capRows, capCount, stuckRows, stuckCount, transitRow;
+      try {
+        // (a) keepalive send-cap hit: any order at/over the cap = stuck order that
+        //     would have been spammed indefinitely pre-cap (the ORD18525 failure).
+        capRows = await q(
+          `SELECT order_id, max(keepalive_sends) AS sends
+             FROM tracking_notification_delivery
+            WHERE keepalive_sends >= $1
+            GROUP BY order_id
+            ORDER BY max(keepalive_sends) DESC, order_id
+            LIMIT $2`,
+          [CAP, SAMPLE]
+        );
+        capCount = (await q(
+          `SELECT count(DISTINCT order_id)::int AS n
+             FROM tracking_notification_delivery
+            WHERE keepalive_sends >= $1`,
+          [CAP]
+        ))[0].n;
+
+        // (b) stuck-in-transit + still keepalive-eligible (the ORD18525 shape):
+        //     latest whatsapp delivery row per order is in a NON-TERMINAL state,
+        //     the order has an ACTIVE whatsapp opt-in (opt_in_at within OPTIN_DAYS),
+        //     and the row has not advanced for STALE_DAYS. Keyed on order_id (the
+        //     only column that joins delivery↔subscription in this DB).
+        stuckRows = await q(
+          `WITH latest AS (
+             SELECT DISTINCT ON (order_id) order_id, status_key, updated_at
+               FROM tracking_notification_delivery
+              WHERE channel = 'whatsapp'
+              ORDER BY order_id, updated_at DESC
+           )
+           SELECT l.order_id, l.status_key, l.updated_at
+             FROM latest l
+             JOIN tracking_notification_subscription s
+               ON s.order_id = l.order_id
+              AND s.channel = 'whatsapp'
+              AND s.opt_in_at >= now() - ($3)::interval
+            WHERE l.status_key = ANY($1)
+              AND l.updated_at < now() - ($2)::interval
+            ORDER BY l.updated_at ASC
+            LIMIT $4`,
+          [NONTERMINAL_KEYS, `${STALE_DAYS} days`, `${OPTIN_DAYS} days`, SAMPLE]
+        );
+        stuckCount = (await q(
+          `WITH latest AS (
+             SELECT DISTINCT ON (order_id) order_id, status_key, updated_at
+               FROM tracking_notification_delivery
+              WHERE channel = 'whatsapp'
+              ORDER BY order_id, updated_at DESC
+           )
+           SELECT count(*)::int AS n
+             FROM latest l
+             JOIN tracking_notification_subscription s
+               ON s.order_id = l.order_id
+              AND s.channel = 'whatsapp'
+              AND s.opt_in_at >= now() - ($3)::interval
+            WHERE l.status_key = ANY($1)
+              AND l.updated_at < now() - ($2)::interval`,
+          [NONTERMINAL_KEYS, `${STALE_DAYS} days`, `${OPTIN_DAYS} days`]
+        ))[0].n;
+
+        // (b-aux) standalone tracking_event scan: shipments whose latest event is
+        //   NON-TERMINAL (and not CREATED) with oldest event older than STALE_DAYS.
+        //   tracking_event does NOT join order_id, so this is a corroborating count
+        //   only (no order_ids). It quantifies the raw stuck-in-transit population.
+        transitRow = (await q(
+          `WITH per AS (
+             SELECT shipment_id,
+                    (array_agg(normalized_status ORDER BY occurred_at DESC))[1] AS latest_status,
+                    min(occurred_at) AS first_seen
+               FROM tracking_event
+              GROUP BY shipment_id
+           )
+           SELECT count(*)::int AS n
+             FROM per
+            WHERE latest_status <> 'CREATED'
+              AND latest_status <> ALL($1)
+              AND first_seen < now() - ($2)::interval`,
+          [TERMINAL_STATUS, `${STALE_DAYS} days`]
+        ))[0];
+      } finally {
+        await pool.end();
+      }
+
+      const breaches = [];
+      const L = [];
+      const ts = new Date().toISOString().replace('T', ' ').slice(0, 16);
+      L.push('Skirmshop — Guardrail tracking/keepalive');
+      L.push(ts + ' UTC');
+      L.push('');
+
+      if (capCount > 0) {
+        breaches.push('keepalive-cap');
+        L.push('CAP keepalive (>=' + CAP + ' envios): ' + capCount + ' pedido(s)');
+        L.push('  ' + capRows.map((r) => short(r.order_id) + '(' + r.sends + ')').join(' '));
+      } else {
+        L.push('CAP keepalive (>=' + CAP + '): 0 — OK');
+      }
+
+      if (stuckCount > 0) {
+        breaches.push('stuck-keepalive-eligible');
+        L.push('STUCK con opt-in activo + no avanza >' + STALE_DAYS + 'd: ' + stuckCount + ' pedido(s)');
+        L.push('  ' + stuckRows.map((r) => short(r.order_id) + '[' + r.status_key + ']').join(' '));
+      } else {
+        L.push('STUCK keepalive-elegible >' + STALE_DAYS + 'd: 0 — OK');
+      }
+
+      // tracking_event corroboration (count only; never joins to order_id here)
+      L.push('In-transit eventos parados >' + STALE_DAYS + 'd (envios, no pedidos): ' + transitRow.n);
+
+      const text = L.join('\n');
+      console.log('guardrail.report\n' + text);
+
+      const tripped = breaches.length > 0;
+      const wantPost =
+        POST_MODE === 'always' || (POST_MODE === 'alert' && tripped);
+      if (POST_MODE === 'never') {
+        console.log('guardrail.telegram.skipped POST_MODE=never tripped=' + tripped);
+        return;
+      }
+      if (!wantPost) {
+        console.log('guardrail.telegram.skipped no-breach POST_MODE=' + POST_MODE);
+        return;
+      }
+      if (!TOKEN || !CHAT) {
+        console.error('guardrail: breach but missing TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID');
+        process.exit(1);
+      }
+      const header = tripped ? '🚨 GUARDRAIL — tracking/keepalive\n' : '✅ Guardrail OK — tracking/keepalive\n';
+      // Plain text (no parse_mode): the message only carries our own safe values
+      // (#order ids, counts, status keys); avoiding HTML means a stray char can
+      // never make Telegram reject the alert with a 400.
+      const body = { chat_id: Number(CHAT), text: header + text, disable_web_page_preview: true };
+      if (THREAD) body.message_thread_id = Number(THREAD);
+      const res = await fetch('https://api.telegram.org/bot' + TOKEN + '/sendMessage', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok || !j.ok) {
+        console.error('guardrail.telegram.failed', res.status, JSON.stringify(j).slice(0, 300));
+        process.exit(1);
+      }
+      console.log('guardrail.telegram.sent message_id=' + (j.result && j.result.message_id) + ' breaches=' + breaches.join(','));
+    }
+    main().catch((e) => { console.error('guardrail.error', (e && e.message) || e); process.exit(1); });
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: labels-guardrail-monitor
+  namespace: skirmshop
+spec:
+  schedule: "0 7 * * *" # 07:00 UTC daily (09:00 Europe/Madrid)
+  timeZone: Etc/UTC
+  suspend: false
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 7
+  startingDeadlineSeconds: 600
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 172800
+      backoffLimit: 0 # one alert per slot: no retry that would duplicate the Telegram message
+      activeDeadlineSeconds: 300
+      template:
+        metadata:
+          labels:
+            app: labels-guardrail-monitor
+        spec:
+          restartPolicy: Never
+          enableServiceLinks: false
+          nodeSelector: { kubernetes.io/arch: amd64 }
+          containers:
+            - name: guardrail-monitor
+              image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:d4336a79707e7f98e88bbc69ff380a3e493826c10a7e614306068202d3658e4c
+              command: ["node", "/guardrail/monitor.cjs"]
+              env:
+                - { name: NODE_PATH, value: "/app/node_modules" }
+                - {
+                    name: PG_URL,
+                    value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+                  }
+                - {
+                    name: DATABASE_URL,
+                    value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+                  }
+                # Guardrail thresholds — keep KEEPALIVE_CAP in sync with the
+                # dispatcher's WHATSAPP_KEEPALIVE_MAX_SENDS (default 4).
+                - { name: KEEPALIVE_CAP, value: "4" }
+                - { name: STALE_DAYS, value: "10" }
+                - { name: OPTIN_WINDOW_DAYS, value: "21" }
+                - { name: SAMPLE_IDS, value: "8" }
+                # alert = post only on breach; always = daily heartbeat too; never = dry-run.
+                - { name: POST_MODE, value: "alert" }
+                - { name: TELEGRAM_CHAT_ID, value: "-1003984393379" }
+                - { name: TELEGRAM_THREAD_ID, value: "14990" } # 🚨 Alertas topic
+                - name: TELEGRAM_BOT_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: labels-telegram-bot
+                      key: bot_token
+              envFrom: [{ secretRef: { name: labels-secrets } }]
+              volumeMounts:
+                - { name: guardrail-script, mountPath: /guardrail, readOnly: true }
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities: { drop: ["ALL"] }
+                seccompProfile: { type: RuntimeDefault }
+              resources:
+                requests: { cpu: 20m, memory: 64Mi }
+                limits: { memory: 256Mi }
+          volumes:
+            - name: guardrail-script
+              configMap: { name: labels-guardrail-monitor-script, defaultMode: 0555 }

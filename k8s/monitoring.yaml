@@ -35,6 +35,24 @@ spec:
       path: /metrics
       interval: 30s
 ---
+# labels-shopify-app exposes /metrics (prom-client) on its http port (3004 →
+# container 3000) but was never scraped. Without this the public tracking-page
+# 404 rate (route="/track/:trackingNumber") is invisible — the TrackingPage404Spike
+# rule below depends on these series landing in VictoriaMetrics. Added 2026-06-23.
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: labels-shopify-app
+  namespace: skirmshop
+spec:
+  selector:
+    matchLabels:
+      app: labels-shopify-app
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+---
 apiVersion: operator.victoriametrics.com/v1beta1
 kind: VMRule
 metadata:
@@ -153,3 +171,30 @@ spec:
           annotations:
             summary: 'tracking-ingestion backlog not draining'
             description: 'The JetStream consumer has kept >25 pending messages for 30 min straight — consuming slower than the polls publish, or stuck without dying. /ready should already be 503 (idle-with-backlog); check why k8s has not recycled the pod.'
+    # ── Public tracking page health (shopify-app /metrics, added 2026-06-23) ──
+    # ROUTING: alertmanager blackholes severity=warning; only non-warning alerts
+    # reach the Synapse webhook, which dispatches to Telegram by the channel /
+    # telegram_topic labels. So this alert is severity=critical + channel=telegram
+    # + telegram_topic=6921 (Labels). Depends on the labels-shopify-app
+    # VMServiceScrape (above) actually landing http_request_duration_seconds.
+    - name: skirmshop-labels-public-tracking
+      rules:
+        - alert: TrackingPage404Spike
+          # The customer-facing tracking page is route="/track/:trackingNumber"
+          # (templated; /apps/track.* kept for forward-compat but matches nothing
+          # today). A low 404 trickle is normal (mistyped/expired tracking links),
+          # so we alert only on a sustained spike: >0.05 req/s of 404s over 15m
+          # (~45 404s in 15 min) held for 15m. A jump like that means the public
+          # page broke (bad deploy, token resolver down, route regression) and
+          # customers can't see their tracking — the ORD18525-adjacent "customer
+          # sees nothing" failure mode.
+          expr: |
+            sum(rate(http_request_duration_seconds_count{service="shopify-app",route=~"/track/.*|/apps/track.*",status="404"}[15m])) > 0.05
+          for: 15m
+          labels:
+            severity: critical
+            channel: telegram
+            telegram_topic: "6921"
+          annotations:
+            summary: 'Public tracking page 404 spike ({{ $value | printf "%.2f" }}/s)'
+            description: 'The public tracking routes (/track/:trackingNumber) are returning 404 at {{ $value | printf "%.2f" }} req/s sustained over 15m (threshold 0.05/s). The customer tracking page is likely broken — check labels-shopify-app logs/deploy and the public-tracking token resolver. Compare with the 200 rate on the same route.'
