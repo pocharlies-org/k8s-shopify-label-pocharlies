@@ -93,7 +93,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:5c853fc7380e104297abba87736c06ec68eeb87c21b35718b19623dc39274d64
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:f841d1f65177233ea2a602f39a032fcfebdae32b3705e863bf9569abae91a53a
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -312,7 +312,7 @@ spec:
       securityContext: { runAsUser: 1000, runAsGroup: 1000 }
       containers:
         - name: notification-dispatcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:10cc03ca04632416a02ed24cdfd8957e6b5d3dcf910cfd99734885e1da1606ce
+          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:d4336a79707e7f98e88bbc69ff380a3e493826c10a7e614306068202d3658e4c
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
