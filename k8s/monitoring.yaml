@@ -188,8 +188,12 @@ spec:
           # page broke (bad deploy, token resolver down, route regression) and
           # customers can't see their tracking — the ORD18525-adjacent "customer
           # sees nothing" failure mode.
+          # NB: the metric's app-set `service="shopify-app"` label collides with the
+          # scrape target label and is demoted to `exported_service`; the effective
+          # `service` label is the k8s Service name `labels-shopify-app`. Verified in
+          # VictoriaMetrics (service="labels-shopify-app", exported_service="shopify-app").
           expr: |
-            sum(rate(http_request_duration_seconds_count{service="shopify-app",route=~"/track/.*|/apps/track.*",status="404"}[15m])) > 0.05
+            sum(rate(http_request_duration_seconds_count{service="labels-shopify-app",route=~"/track/.*|/apps/track.*",status="404"}[15m])) > 0.05
           for: 15m
           labels:
             severity: critical
