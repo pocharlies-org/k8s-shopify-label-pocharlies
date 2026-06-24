@@ -30,7 +30,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: whatsapp-optin-ingest
-          image: harbor.e-dani.com/homelab/skirmshop-labels-whatsapp-optin-ingest@sha256:30e8666986450ffe8d08839e69019d88903cec79bdad5996181c910acea6728f
+          image: harbor.e-dani.com/homelab/skirmshop-labels-whatsapp-optin-ingest@sha256:b67379047ad09f62104b8efe5eed2b3c7b32b456b3028dad469af99c0e2207bd
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

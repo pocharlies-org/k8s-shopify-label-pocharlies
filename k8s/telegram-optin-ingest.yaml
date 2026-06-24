@@ -31,7 +31,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: telegram-optin-ingest
-          image: harbor.e-dani.com/homelab/skirmshop-labels-telegram-optin-ingest@sha256:66f4a30e0ecfce1018a52e3a8245fad91ea02ab1aa270ffbfa9bdc5b23d22fe6
+          image: harbor.e-dani.com/homelab/skirmshop-labels-telegram-optin-ingest@sha256:fda7e1c91650de9e5e1ed18b59389d33f19b499b4c59d2abe0e16ab16049d3fe
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
