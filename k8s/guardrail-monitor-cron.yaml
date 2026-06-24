@@ -241,7 +241,7 @@ spec:
           nodeSelector: { kubernetes.io/arch: amd64 }
           containers:
             - name: guardrail-monitor
-              image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:0b2edeeeda6bd73b96495d5ec887058e3dabe7f7aea9d354c5d0688c70ed29b5
+              image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:ffb29a3d50a15506432d421c8acb3846ac2165716ed0716a673de08c0fa4aa68
               command: ["node", "/guardrail/monitor.cjs"]
               env:
                 - { name: NODE_PATH, value: "/app/node_modules" }
