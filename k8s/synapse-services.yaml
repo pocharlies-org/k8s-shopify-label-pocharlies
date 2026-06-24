@@ -93,7 +93,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:f841d1f65177233ea2a602f39a032fcfebdae32b3705e863bf9569abae91a53a
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:5d50bc7b7ad4329d73d97945c28be78a47c251a5c2458a0908537b177ef8ae61
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
