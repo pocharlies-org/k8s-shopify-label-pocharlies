@@ -823,6 +823,25 @@ spec:
     prefixes:
       - /labels-ups
 ---
+# deny-public: returns 403 for every source IP. Attached to a higher-priority
+# route that matches /labels/api/internal so the labels app's server-to-server
+# /api/internal/* endpoints (return-context PII, order-by-shipment, sync-vat-rates,
+# grounded-reply) cannot be reached through the public Traefik /labels ingress.
+# Mechanism: an ipAllowList whose sourceRange is the RFC 5737 TEST-NET-1 block
+# (192.0.2.0/24) — no real client or load-balancer/Cloudflare source IP can match,
+# so Traefik rejects (403) before the request reaches the app, regardless of XFF.
+# In-cluster callers use the ClusterIP labels-shopify-app.skirmshop.svc:3004
+# directly (not this ingress) and are unaffected.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: deny-public
+  namespace: skirmshop
+spec:
+  ipAllowList:
+    sourceRange:
+      - 192.0.2.0/24
+---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
@@ -836,6 +855,14 @@ spec:
   entryPoints: [websecure]
   ingressClassName: traefik-edge
   routes:
+    - match: Host(`track.skirmshop.es`) && PathPrefix(`/labels/api/internal`)
+      kind: Rule
+      priority: 400
+      middlewares:
+        - name: deny-public
+      services:
+        - name: labels-shopify-app
+          port: 3004
     - match: Host(`track.skirmshop.es`) && PathPrefix(`/labels`)
       kind: Rule
       priority: 300
@@ -872,8 +899,17 @@ spec:
   entryPoints: [websecure]
   ingressClassName: traefik-edge
   routes:
+    - match: Host(`skirmshop.e-dani.com`) && PathPrefix(`/labels/api/internal`)
+      kind: Rule
+      priority: 400
+      middlewares:
+        - name: deny-public
+      services:
+        - name: labels-shopify-app
+          port: 3004
     - match: Host(`skirmshop.e-dani.com`) && PathPrefix(`/labels`)
       kind: Rule
+      priority: 300
       middlewares:
         - name: strip-labels
       services:
