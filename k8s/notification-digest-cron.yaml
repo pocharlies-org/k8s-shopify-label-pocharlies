@@ -32,15 +32,11 @@ data:
       const pool = new Pool({ connectionString: process.env.PG_URL });
       const q = (sql, p) => pool.query(sql, p).then((r) => r.rows);
       const W = `${WINDOW} hours`;
-      let byChannel, keepalive, optins, fails, subsTotal;
+      let byChannel, optins, fails, subsTotal;
       try {
         byChannel = await q(
           `SELECT channel, status, count(*)::int AS n FROM tracking_notification_delivery
             WHERE updated_at >= now() - ($1)::interval GROUP BY channel, status`, [W]);
-        keepalive = await q(
-          `SELECT count(*)::int AS n FROM tracking_notification_delivery
-            WHERE channel='whatsapp' AND status_key='wa_keepalive' AND status='sent'
-              AND updated_at >= now() - ($1)::interval`, [W]);
         optins = await q(
           `SELECT channel, count(*)::int AS n FROM tracking_notification_subscription
             WHERE opt_in_at >= now() - ($1)::interval GROUP BY channel`, [W]);
@@ -71,7 +67,6 @@ data:
       L.push(line('email'));
       L.push(line('telegram'));
       L.push('');
-      L.push(`<b>WhatsApp keep-alive enviados</b>: ${keepalive[0] ? keepalive[0].n : 0}`);
       L.push(`<b>Nuevos opt-ins</b>: ${optins.length ? optins.map((r) => `${r.channel}=${r.n}`).join(' · ') : '0'}`);
       L.push(`<b>Fallos (atención)</b>: ${fails.length ? '' : '✅ ninguno'}`);
       for (const r of fails) L.push(`  ❌ ${r.channel}/${r.status_key}: ${r.n}`);
