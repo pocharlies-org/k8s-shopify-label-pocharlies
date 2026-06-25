@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:c1203bf3d63a38d1686867c8acc66044af637d60fc966a3c31db5aa8abdd41f0 # pin por digest (no :latest, policy Kyverno disallow-latest-tag) — release grounded-reply-endpoint-20260624-2223 (main 574e1b2, F7 P4)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:859d7d1da21e53248038b47a165b4b5935ad2c93a961a415f56b07db6366418f # pin por digest (no :latest, policy Kyverno disallow-latest-tag) — release wa-sender-identity-20260625-1853 (main 0344755, whatsapp-sender-identity endpoint)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
