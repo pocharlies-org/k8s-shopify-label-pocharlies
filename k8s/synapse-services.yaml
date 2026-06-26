@@ -93,7 +93,11 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
+<<<<<<< HEAD
           image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:fa335c8d6cab85d3f0dda52447e648a1f16e77369493ca6d38a2f6a344d0d9cb
+=======
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:1735465269f6bee847d7073098d155ae39283324e88a12d9686e2226cbfed736
+>>>>>>> 8012e11 (fix(labels): pin CEX Saturday delivery adapter)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
