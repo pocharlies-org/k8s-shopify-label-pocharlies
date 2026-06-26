@@ -35,7 +35,7 @@ data:
       dsl: '1.0.0'
       namespace: skirmshop
       name: generate-shipment-label
-      version: '1.2.22'
+      version: '1.2.23'
       summary: |
         Full shipping saga for a paid Shopify order. Routes to UPS, Correos
         Express or Correos matriz, persists the label, updates
@@ -92,6 +92,8 @@ data:
               type: boolean
             paymentMethod:
               type: string
+            totalAmount:
+              type: object
             insuredValue:
               type: object
             quotedTotal:
@@ -116,6 +118,7 @@ data:
                     destination: '${ .destination }'
                     items: '${ .items }'
                     paymentMethod: '${ .paymentMethod }'
+                    totalAmount: '${ .totalAmount }'
                     shippingMethodTitle: '${ .shippingMethodTitle }'
                     shippingMethodCode: '${ .shippingMethodCode }'
                     shippingMethodSource: '${ .shippingMethodSource }'

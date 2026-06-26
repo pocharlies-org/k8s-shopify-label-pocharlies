@@ -350,7 +350,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:277d07e38df60e01a81d22e302c2a6553ce82fd0eca362f673839549ebe58f9e # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:a8bcd24eae6a2cd45e19dfba9f12c7a66a0d4851b30b850ead131c5ae51262b1 # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -401,7 +401,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: saga-launcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:ea37c2d71a0e41a6bcb59b3b37bd37649914484d8b6bc326a660ed52c79e057f # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:afbc781408ada102dd916030f770cc3c0589f9f0bf39682e10f32cd6633256bb # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
