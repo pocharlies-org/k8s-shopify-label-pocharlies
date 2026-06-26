@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:8cf2bc3a9caaecc54cc31efa9cd8100b4f492f46aebd8c7c17927f760cac07db # pin por digest (no :latest, policy Kyverno disallow-latest-tag) — release labels-carrier-status-20260626-0020 (main 5181f92, carrier status badge + incidents view)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:d1c5b1dd274a5f97c0ec19e6bc671ae14039a5186b668e1e28aad5beee83cde8 # pin por digest (no :latest, policy Kyverno disallow-latest-tag) — main 5181f92 (carrier status badge + incidents view) + /api/internal/shipments read endpoint for the Control Panel Envíos view (branch feat/envios-internal-shipments b093408)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
