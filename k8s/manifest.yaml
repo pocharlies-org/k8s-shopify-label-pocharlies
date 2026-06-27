@@ -350,7 +350,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:a8bcd24eae6a2cd45e19dfba9f12c7a66a0d4851b30b850ead131c5ae51262b1 # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:bc6535fd963bf7c99d23d23b02797970fcff71c5bad8d41d7e032f1566f8a7a8 # pin por digest (no :latest, policy Kyverno disallow-latest-tag) — all peninsular recambios → Correos (any value), tag all-recambios-correos-20260627-0849
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
