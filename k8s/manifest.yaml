@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:6d65604fc732e8e4a473ee122f559ea2076c364567899c213ab1b48abf5910c1 # pin por digest (no :latest, policy Kyverno disallow-latest-tag) — main ba94105: order-edit ownership fix (NOT_YOUR_ORDER, every owner got 403) + /api/internal/shipments (#100)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:3d3836df1c3cbceda2a99e31f1fa7ba829679333ce9c84130fc390ffc99d3273 # pin por digest — main 542b423 (tag correos-estimate-widget-20260628-2131): estimate cablea replicaRateGate → el widget pre-checkout muestra Correos home/Oficina/Citypaq (antes solo CEX/UPS)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
