@@ -130,7 +130,7 @@ spec:
               }
             - { name: PUBLIC_WHATSAPP_NUMBER_E164, value: "+34628534490" }
             - { name: PUBLIC_TELEGRAM_BOT_USERNAME, value: "SkirmshopTrackBot" }
-            - { name: CORREOS_ENABLED, value: "false" }
+            - { name: CORREOS_ENABLED, value: "true" } # Correos pickup ON (oficinas+Citypaq, PR #38): gate shopify-app (adapterBaseFor + consumidor del auto-swap recambios→Correos)
             # Customer post-purchase order editing (change shipping / add
             # products). Routes register only when true. Gated behind the Picqer
             # hold reconciler (labels-ops-edit-hold-reconciler) + replicas=1.
@@ -367,6 +367,10 @@ spec:
                 value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
               }
             - { name: SHOPIFY_SHOP_DOMAIN, value: "ymimst-yh.myshopify.com" }
+            # Override explícito de labels-secrets (Vault sigue "false"): activa la regla
+            # selected-correos-pickup + el auto-swap recambios→Correos en routing-service.
+            # env gana a envFrom para esta key. Alinear el valor en Vault más adelante.
+            - { name: CORREOS_ENABLED, value: "true" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 30m, memory: 64Mi }
