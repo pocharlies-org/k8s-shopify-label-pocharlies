@@ -173,7 +173,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: correos-adapter
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:81675db6102dea510ab6f52871dadc4b32c3c3fb79f30469c06d60e201294aa6
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:89d4a9c428915d61b4537bd1c376d733ce53c35039f029f0f65d6d37a8392712 # pin por digest — main ba94105 (tag order-edit-ownership-fix-20260628-1534): incluye módulo directory/ + GET /service-points (oficinas+Citypaq, PR #38). El pin previo 81675db6 (matriz-tracking-20260624, base pre-#38) carecía de /service-points → 404
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
