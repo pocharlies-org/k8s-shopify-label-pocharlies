@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:3d3836df1c3cbceda2a99e31f1fa7ba829679333ce9c84130fc390ffc99d3273 # pin por digest — main 542b423 (tag correos-estimate-widget-20260628-2131): estimate cablea replicaRateGate → el widget pre-checkout muestra Correos home/Oficina/Citypaq (antes solo CEX/UPS)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:ab3095dcf0bbf7e99c5df503a4ad536a29061a858c00431be347e81ea7d93f07 # pin por digest — main 97528ce (tag return-label-grounder-20260630-0157): grounded-reply distingue etiqueta de devolución del envío original para borradores Synapse
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
