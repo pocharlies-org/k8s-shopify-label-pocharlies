@@ -68,6 +68,9 @@ kind: Service
 metadata:
   name: labels-valkey-headless
   namespace: skirmshop
+  labels:
+    app: labels-valkey
+    metrics.e-dani.com/scrape: "true"
 spec:
   clusterIP: None
   publishNotReadyAddresses: true
@@ -76,6 +79,7 @@ spec:
   ports:
     - { name: valkey, port: 6379 }
     - { name: sentinel, port: 26379 }
+    - { name: metrics, port: 9121, targetPort: 9121 }
 ---
 apiVersion: v1
 kind: Service
@@ -148,6 +152,16 @@ spec:
           resources:
             requests: { cpu: 20m, memory: 32Mi }
             limits: { memory: 96Mi }
+        - name: exporter
+          image: oliver006/redis_exporter:v1.66.0
+          args:
+            - --redis.addr=redis://localhost:6379
+            - --config-command=-
+          ports:
+            - { name: metrics, containerPort: 9121 }
+          resources:
+            requests: { cpu: 10m, memory: 16Mi }
+            limits: { memory: 64Mi }
       volumes:
         - name: scripts
           configMap: { name: labels-valkey-scripts, defaultMode: 0755 }
