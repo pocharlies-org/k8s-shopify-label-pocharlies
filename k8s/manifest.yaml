@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:f73f360b08ff57a2f8b241b0d7e6bc47b7dc7be4d6a0fde1af0a3e57c2def2e0 # pin por digest — main 4b35895 (tag last-order-endpoint-4b35895): + GET /api/internal/last-order (último pedido del cliente) para el aviso START del autopilot
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:cb0f955daaf3ac19f5e5ba1a11fdc2081631ebc49c17d640d5fa8c4603619cc5 # pin por digest — main ada444a (tag order-edit-presentment-fix-20260701-2202): order-edit cotiza+cobra el envío en la divisa presentment del pedido (Shopify Markets) → arregla el cambio de envío en pedidos internacionales (p.ej. ORD18623 US/USD, "The price must be in USD")
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
