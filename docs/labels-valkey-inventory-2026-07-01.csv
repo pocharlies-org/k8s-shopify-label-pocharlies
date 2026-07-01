@@ -1,0 +1,12 @@
+family,count,redis_types,bytes_sum,avg_bytes,strlen_sum,string_count,ttl_noexpire,ttl_expire,ttl_min_seconds,ttl_max_seconds,known_timestamp_count,min_timestamp,max_timestamp,action
+document,48510,string,103825696,2140,95753717,48510,48510,0,,,0,,,archive_then_delete_candidate_needs_code_fix
+poll_payload,4008,string,9385144,2341,8130575,4008,4008,0,,,0,,,ttl_candidate_needs_code_fix
+poll_metadata,4007,string,1132304,282,696613,4007,4007,0,,,4007,2026-05-31T17:45:10.8327391+00:00,2026-07-01T15:45:05.7387681+00:00,ttl_candidate
+other_skirmshop_payload_metadata,272,string,494336,1817,416076,272,272,0,,,136,2026-06-01T10:13:22.1068808+00:00,2026-07-01T12:16:53.3949356+00:00,ttl_candidate_needs_code_fix
+workflow_instances,419,string,1542688,3681,1377954,419,419,0,,,419,2026-06-15T09:49:11.3666126+00:00,2026-07-01T16:00:09.4021306+00:00,keep_janitor_managed
+workflows,4,string,182144,45536,176029,4,4,0,,,0,,,keep
+ups,56,string,10752,192,5554,56,0,56,64129,2571353,0,,,keep_ttl_already
+text_documents_list,1,list,230576,230576,0,0,1,0,,,0,,,needs_code_fix
+tenant_hash_skirmshop,1,hash,1268376,1268376,0,0,1,0,,,0,,,keep
+index_hash,2,hash,89672,44836,0,0,2,0,,,0,,,keep
+other,18,"string:12; hash:6",10334,574,6221,12,18,0,,,0,,,needs_code_fix
