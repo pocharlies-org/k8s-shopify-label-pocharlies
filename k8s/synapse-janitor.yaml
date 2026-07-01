@@ -4,9 +4,12 @@
 # metrics + logs the pass census, and archives-then-deletes ONLY terminal instances
 # older than the retention windows below (protects <6h instances + generate-shipment-
 # label). Proven safe by the one-time remediation (3663 -> 980 instances,
-# archiveFailed=0). It does NOT cover document-* or poll-* payload retention — see
-# docs/labels-valkey-remediation-plan-2026-07-01.md. Connects to the HA Valkey master
-# endpoint labels-valkey-master (REDIS_URL). See app repo docs/RUNBOOK-synapse-cleanup.md.
+# archiveFailed=0). This image also removes the poll-tracking companion payload,
+# metadata, and text-documents-list member only when that same poll-tracking instance
+# is archived+deleted by the janitor. It does NOT cover document-* or historical
+# poll-* bulk retention — see docs/labels-valkey-remediation-plan-2026-07-01.md.
+# Connects to the HA Valkey master endpoint labels-valkey-master (REDIS_URL).
+# See app repo docs/RUNBOOK-synapse-cleanup.md.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -42,7 +45,7 @@ spec:
           value: edge
       containers:
         - name: synapse-janitor
-          image: harbor.e-dani.com/homelab/skirmshop-labels-synapse-janitor@sha256:7b14735b577812fd32473c3e9ad5c7df5046a6705a39f3e517eb4865f819a18d
+          image: harbor.e-dani.com/homelab/skirmshop-labels-synapse-janitor@sha256:663e0017da491578394c71f1ca10af1a62e727fcda27bd3b87a42245916b596f
           imagePullPolicy: IfNotPresent
           envFrom:
             - secretRef:

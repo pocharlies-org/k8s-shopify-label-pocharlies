@@ -179,7 +179,7 @@ archive introduced by the code-fix. If any counter is non-zero → **abort**.
 
 ## Card B — `poll-*` TTL / GC
 
-Status: **blocked / planning only**
+Status: **forward cleanup implemented / historical bulk cleanup blocked**
 Owner: DevOps / Labels
 Classification (from report): `ttl_candidate`, `needs_code_fix`
 
@@ -197,27 +197,61 @@ Classification (from report): `ttl_candidate`, `needs_code_fix`
 - Pairing: `4,007` payload↔metadata pairs; **one unpaired payload** to investigate
   before any bulk action.
 
-### The blocker that makes this code-fix, not a TTL toggle
+### Contract proof and current blocker
 
-`poll-*` Redis IDs do **not** match `tracking_poll_attempt.shipment_id` in
-Postgres (intersection `0`), and no payload ID maps to a live workflow-instance
-key (`0`). So we cannot yet prove a `poll-*` key belongs to a **closed** tracking
-lifecycle purely from Postgres. Expiring by metadata age alone could delete state
-for an in-flight tracking workflow.
+Tanda 2 found the producer contract in the tracking-poll source:
 
-Blocking criterion (must clear before TTL/GC): the poll producer/owner defines and
-documents the **ID contract** — how a `poll-*.skirmshop*` key maps to a shipment /
-workflow and how "tracking closed" is determined — so retention keys off lifecycle
-status, not wall-clock age only.
+- Poll workflow instances are named
+  `poll-${shipmentNameSegment(shipmentId)}-${bucket}`.
+- `shipmentNameSegment()` keeps short UUID-like shipment IDs as-is, and maps
+  external or long shipment IDs to `h${sha256(shipmentId).slice(0,12)}`.
+- The workflow input still carries the raw `shipmentId`; the live
+  `poll-tracking` v1.3.4 ConfigMap accepts external IDs (`maxLength: 120`), not
+  UUID-only shipment IDs.
 
-### Proposed policy (after the contract is known)
+Read-only reconciliation against live Redis/Postgres confirmed the mapping shape
+without printing payloads or tracking numbers:
+
+```text
+redis_unique_segments=327
+pg_unique_segments=423
+intersection=317
+redis_segments_h=124 redis_segments_uuid=193 redis_segments_other=10
+pg_segments_h=222 pg_segments_uuid=201 pg_segments_other=0
+```
+
+So the original `intersection=0` finding was an artifact of comparing the raw
+Postgres shipment ID to the shortened/hash workflow segment. Historical bulk
+cleanup is still **blocked** until a restorable snapshot exists, the 10 legacy
+`redis_segments_other` names and the single unpaired payload are explained, and a
+bounded batch plan is approved.
+
+### Implemented forward policy
+
+Source commit `97df077` in `skirmshop-labels` adds the safe forward cleanup to
+`labels-synapse-janitor`. When an already eligible `poll-tracking` workflow
+instance is archived and deleted by the existing janitor retention decision, the
+same Redis transaction now also removes:
+
+- `poll-<instance>.skirmshop`
+- `poll-<instance>.skirmshop_metadata`
+- that payload key from `text-documents-list`
+
+The deployed image digest is:
+`harbor.e-dani.com/homelab/skirmshop-labels-synapse-janitor@sha256:663e0017da491578394c71f1ca10af1a62e727fcda27bd3b87a42245916b596f`.
+
+This is not a manual historical sweep. It does not touch `document-*`, does not
+delete non-`poll-tracking` workflow artifacts, and only runs after the janitor's
+archive-before-delete and still-deletable re-checks pass.
+
+### Remaining historical policy (not approved yet)
 
 - Expire completed/terminal tracking `poll-*` payload **and** its metadata pair
-  after **30-45 days**.
+  after **30-45 days**, after snapshot and legacy segment review.
 - Retain active / null-status rows until the tracking workflow closes them.
 - Prefer native Redis `EXPIRE`/`PEXPIREAT` set **at write time by the producer**
-  (self-cleaning), or a scoped GC pass in the janitor — not a one-off manual
-  sweep. `noeviction` stays; TTL is per-key, not a policy change.
+  (self-cleaning), or a scoped janitor GC pass — not a one-off manual sweep.
+  `noeviction` stays; TTL is per-key, not a policy change.
 
 ### Read-only dry-run (safe to run after snapshot)
 
@@ -237,16 +271,17 @@ kubectl -n skirmshop exec "$MASTER" -c valkey -- sh -lc '
 
 ```bash
 # READ-ONLY: confirm payload↔metadata pairing count and the single unpaired payload.
-# READ-ONLY (Postgres): re-check that closed tracking maps to these poll IDs once
-# the producer publishes the ID contract:
+# READ-ONLY (Postgres): re-check that closed tracking maps to these poll IDs using
+# shipmentNameSegment(shipment_id), not raw shipment_id:
 # kubectl -n databases exec postgres-shared-2 -- psql -U postgres -d labels -c \
 #   "select count(*) from tracking_poll_attempt;"
-# Until the contract exists, intersection is 0 → do NOT expire by age alone.
+# Do NOT expire by age alone; require terminal lifecycle status plus legacy review.
 ```
 
-Acceptance to leave the dry-run gate: ID contract published + a re-capture shows a
-non-zero, explainable join between terminal tracking rows and the poll keys marked
-for expiry, and the one unpaired payload is explained.
+Acceptance to leave the historical dry-run gate: a re-capture shows a non-zero,
+explainable join between terminal tracking rows and the poll keys marked for
+expiry, the 10 legacy/other Redis segments are classified, and the one unpaired
+payload is explained.
 
 ### Mutating commands — NO EJECUTAR (planning reference only)
 
@@ -347,6 +382,15 @@ deployed but the monitoring outcome is not proven.
       `NO EJECUTAR`. Evidence: Card A sections above.
 - [x] `poll-*` TTL/GC runbook includes the same six elements. Evidence: Card B
       sections above.
+- [x] `poll-*` producer ID contract is documented with direct source/runtime
+      evidence. Evidence: Card B §Contract proof and current blocker.
+- [x] Forward cleanup for future terminal/stale `poll-tracking` artifacts is
+      implemented through the janitor, not a manual Redis sweep. Evidence:
+      source commit `97df077` and `k8s/synapse-janitor.yaml` image digest
+      `sha256:663e0017da491578394c71f1ca10af1a62e727fcda27bd3b87a42245916b596f`.
+- [blocked] Historical `poll-*` bulk cleanup remains blocked pending snapshot,
+      classification of 10 legacy/other Redis segments, explanation of the one
+      unpaired payload, and explicit batch approval. Evidence: Card B blocker.
 - [x] Mutating commands are separated from read-only commands and labelled
       `NO EJECUTAR`. Evidence: the `### NO EJECUTAR` fenced blocks in both cards.
 - [x] `text-documents-list` documented as the current index of `poll`/other
