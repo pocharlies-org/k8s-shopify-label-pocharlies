@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:ab3095dcf0bbf7e99c5df503a4ad536a29061a858c00431be347e81ea7d93f07 # pin por digest — main 97528ce (tag return-label-grounder-20260630-0157): grounded-reply distingue etiqueta de devolución del envío original para borradores Synapse
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:f73f360b08ff57a2f8b241b0d7e6bc47b7dc7be4d6a0fde1af0a3e57c2def2e0 # pin por digest — main 4b35895 (tag last-order-endpoint-4b35895): + GET /api/internal/last-order (último pedido del cliente) para el aviso START del autopilot
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
