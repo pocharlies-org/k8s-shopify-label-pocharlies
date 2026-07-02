@@ -157,7 +157,7 @@ spec:
                     return `*${args.length}\r\n${args
                       .map((arg) => {
                         const value = String(arg);
-                        return `$${Buffer.byteLength(value)}\r\n${value}\r\n`;
+                        return '$' + Buffer.byteLength(value) + '\r\n' + value + '\r\n';
                       })
                       .join('')}`;
                   }
