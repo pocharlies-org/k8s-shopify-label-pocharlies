@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:c39bd96ddc52d78efe2f12667ed88c129a083e2442331bb8204068a60cc93ff8 # pin por digest — main b3debd8 (tag labels-agent-shipment-status-20260702-0140): GET /api/agent/shipment-status/:orderId service-token read (least-privilege 9 campos, sin coste/PII) para autopilot/MCP
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:46c7ec3bd8586efb0e75817bdae76e3587a7f860e4aa06a571fc84d329aade3c # pin por digest — main ca64580 (tag labels-agent-order-name-resolve-20260702-1323): agent shipment-status acepta NOMBRE/número de pedido (ORD18621), resuelve vía Shopify exact-match, sin footgun. security PASS, suite 666/666
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
