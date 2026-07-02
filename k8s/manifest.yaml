@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:3adc11f7f0289afaebcddd0b7e32694a6711e09fcffb3ec6405e589a4dced1fa # pin por digest — main b226087 (tag labels-agent-bare-number-20260702-1303): shipment-status resuelve NÚMERO pelado (18620→ORD18620) prefix-agnóstico via resolveOrderGidByNumber, guard exact-tail anti-leak. security PASS, 48 tests
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:c5e2b14d4fb19081a0494c183278a93e29ff96c43074977b3022cb0f2013a68b # pin por digest — main 2a8d542 (tag labels-agent-ownership-20260703-0011): ownership OBLIGATORIO en /api/agent/shipment-status (?customer=, 404 si no es del cliente). rho-security PASS, suite 20/20
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
