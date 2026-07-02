@@ -6,7 +6,10 @@
 # 4200+ Completed pods and helped crash-loop the operator. These pods are bare
 # (no labels/owner), named "<instanceName>.skirmshop-<hash>"; normal Job pods
 # (sii-invoicing-…, *-sync-…) do NOT contain the ".skirmshop-" infix, so we match
-# on that. Reaps Succeeded/Failed runner pods every 10 min. Idempotent + safe.
+# on that. Reaps Succeeded/Failed runner pods every 10 min. It also reaps
+# old Running poll runners only when they are proven orphaned: old enough,
+# alpha1 runner shape, no labels/owner refs, and no matching Synapse Redis
+# direct key or index field. Idempotent + safe.
 # =============================================================================
 apiVersion: v1
 kind: ServiceAccount
@@ -84,3 +87,226 @@ spec:
               resources:
                 requests: { cpu: 20m, memory: 32Mi }
                 limits: { memory: 96Mi }
+            - name: running-orphan-reaper
+              image: node:22-alpine
+              imagePullPolicy: IfNotPresent
+              command: ["node", "-e"]
+              args:
+                - |
+                  const crypto = require('crypto');
+                  const fs = require('fs');
+                  const https = require('https');
+                  const net = require('net');
+
+                  const namespace = process.env.POD_NAMESPACE || 'skirmshop';
+                  const minAgeHours = Number(process.env.RUNNING_ORPHAN_MIN_AGE_HOURS || '24');
+                  const dryRun = /^true$/i.test(process.env.DRY_RUN || 'false');
+                  const redisHost = process.env.REDIS_HOST || 'labels-valkey-master.skirmshop.svc.cluster.local';
+                  const redisPort = Number(process.env.REDIS_PORT || '6379');
+                  const indexKey = process.env.SYNAPSE_INDEX_KEY || 'workflow-instances.synapse.io';
+                  const apiHost = process.env.KUBERNETES_SERVICE_HOST;
+                  const apiPort = process.env.KUBERNETES_SERVICE_PORT || '443';
+                  const token = fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8');
+                  const ca = fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/ca.crt');
+
+                  function hash(value) {
+                    return crypto.createHash('sha256').update(value).digest('hex').slice(0, 12);
+                  }
+
+                  function k8sRequest(method, path, body) {
+                    return new Promise((resolve, reject) => {
+                      const payload = body ? JSON.stringify(body) : undefined;
+                      const req = https.request(
+                        {
+                          hostname: apiHost,
+                          port: apiPort,
+                          method,
+                          path,
+                          ca,
+                          headers: {
+                            authorization: `Bearer ${token}`,
+                            accept: 'application/json',
+                            ...(payload
+                              ? {
+                                  'content-type': 'application/json',
+                                  'content-length': Buffer.byteLength(payload),
+                                }
+                              : {}),
+                          },
+                        },
+                        (res) => {
+                          const chunks = [];
+                          res.on('data', (chunk) => chunks.push(chunk));
+                          res.on('end', () => {
+                            const text = Buffer.concat(chunks).toString('utf8');
+                            if (res.statusCode < 200 || res.statusCode >= 300) {
+                              reject(new Error(`k8s ${method} ${path} -> ${res.statusCode}: ${text.slice(0, 200)}`));
+                              return;
+                            }
+                            resolve(text ? JSON.parse(text) : {});
+                          });
+                        },
+                      );
+                      req.on('error', reject);
+                      if (payload) req.write(payload);
+                      req.end();
+                    });
+                  }
+
+                  function encodeRedisCommand(args) {
+                    return `*${args.length}\r\n${args
+                      .map((arg) => {
+                        const value = String(arg);
+                        return `$${Buffer.byteLength(value)}\r\n${value}\r\n`;
+                      })
+                      .join('')}`;
+                  }
+
+                  function parseRedisResponse(buffer) {
+                    if (buffer.length === 0) return undefined;
+                    const prefix = String.fromCharCode(buffer[0]);
+                    const text = buffer.toString('utf8');
+                    const firstLineEnd = text.indexOf('\r\n');
+                    if (firstLineEnd < 0) return undefined;
+                    if (prefix === ':' || prefix === '+') {
+                      const line = text.slice(1, firstLineEnd);
+                      return prefix === ':' ? Number(line) : line;
+                    }
+                    if (prefix === '-') throw new Error(text.slice(1, firstLineEnd));
+                    if (prefix !== '$') throw new Error(`unexpected redis response: ${prefix}`);
+                    const length = Number(text.slice(1, firstLineEnd));
+                    if (length === -1) return null;
+                    const start = firstLineEnd + 2;
+                    const end = start + length;
+                    if (buffer.length < end + 2) return undefined;
+                    return buffer.subarray(start, end).toString('utf8');
+                  }
+
+                  function redisCommand(args) {
+                    return new Promise((resolve, reject) => {
+                      const socket = net.createConnection({ host: redisHost, port: redisPort });
+                      const chunks = [];
+                      let done = false;
+                      const finish = (fn, value) => {
+                        if (done) return;
+                        done = true;
+                        socket.destroy();
+                        fn(value);
+                      };
+                      socket.setTimeout(5000, () => finish(reject, new Error('redis timeout')));
+                      socket.on('connect', () => socket.write(encodeRedisCommand(args)));
+                      socket.on('data', (chunk) => {
+                        chunks.push(chunk);
+                        try {
+                          const parsed = parseRedisResponse(Buffer.concat(chunks));
+                          if (parsed !== undefined) finish(resolve, parsed);
+                        } catch (err) {
+                          finish(reject, err);
+                        }
+                      });
+                      socket.on('error', (err) => finish(reject, err));
+                    });
+                  }
+
+                  function candidateInstanceName(pod) {
+                    const name = pod.metadata?.name || '';
+                    const namespaceMarker = `.${namespace}-`;
+                    const markerIndex = name.lastIndexOf(namespaceMarker);
+                    if (!name.startsWith('poll-') || markerIndex < 0) return null;
+                    if (pod.metadata?.deletionTimestamp) return null;
+                    if (pod.status?.phase !== 'Running') return null;
+                    if ((pod.metadata?.ownerReferences || []).length !== 0) return null;
+                    if (Object.keys(pod.metadata?.labels || {}).length !== 0) return null;
+                    if (pod.spec?.restartPolicy !== 'Never') return null;
+                    if (pod.spec?.serviceAccountName !== 'labels-synapse-operator') return null;
+                    const container = (pod.spec?.containers || [])[0] || {};
+                    if (container.image !== 'ghcr.io/serverlessworkflow/synapse/runner:1.0.0-alpha1') return null;
+                    const createdAt = Date.parse(pod.metadata?.creationTimestamp || '');
+                    if (!Number.isFinite(createdAt)) return null;
+                    const ageHours = (Date.now() - createdAt) / 3600000;
+                    if (ageHours < minAgeHours) return null;
+                    return name.slice(0, markerIndex);
+                  }
+
+                  async function main() {
+                    const pods = await k8sRequest('GET', `/api/v1/namespaces/${namespace}/pods`);
+                    let candidates = 0;
+                    let redisPresent = 0;
+                    let deleted = 0;
+                    let dryRunSkipped = 0;
+                    let errors = 0;
+
+                    for (const pod of pods.items || []) {
+                      const instanceName = candidateInstanceName(pod);
+                      if (!instanceName) continue;
+                      candidates += 1;
+                      const podName = pod.metadata.name;
+                      const directKey = `synapse.io/v1/workflow-instances/namespaced/{${namespace}}/${instanceName}`;
+                      const indexField = `${namespace}.${instanceName}`;
+                      try {
+                        const directExists = await redisCommand(['EXISTS', directKey]);
+                        const indexed = await redisCommand(['HGET', indexKey, indexField]);
+                        if (directExists > 0 || indexed !== null) {
+                          redisPresent += 1;
+                          continue;
+                        }
+                        if (dryRun) {
+                          dryRunSkipped += 1;
+                          continue;
+                        }
+                        await k8sRequest(
+                          'DELETE',
+                          `/api/v1/namespaces/${namespace}/pods/${encodeURIComponent(podName)}?gracePeriodSeconds=0`,
+                          { apiVersion: 'v1', kind: 'DeleteOptions', gracePeriodSeconds: 0 },
+                        );
+                        deleted += 1;
+                      } catch (err) {
+                        errors += 1;
+                        console.error(
+                          JSON.stringify({
+                            msg: 'synapse-pod-reaper.running-orphan.error',
+                            podHash: hash(podName),
+                            err: err instanceof Error ? err.message : String(err),
+                          }),
+                        );
+                      }
+                    }
+
+                    console.log(
+                      JSON.stringify({
+                        msg: 'synapse-pod-reaper.running-orphans.done',
+                        scanned: (pods.items || []).length,
+                        candidates,
+                        redisPresent,
+                        deleted,
+                        dryRunSkipped,
+                        dryRun,
+                        minAgeHours,
+                        errors,
+                      }),
+                    );
+                    if (errors > 0) process.exitCode = 1;
+                  }
+
+                  main().catch((err) => {
+                    console.error(
+                      JSON.stringify({
+                        msg: 'synapse-pod-reaper.running-orphans.fatal',
+                        err: err instanceof Error ? err.message : String(err),
+                      }),
+                    );
+                    process.exit(1);
+                  });
+              env:
+                - name: POD_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
+                - { name: RUNNING_ORPHAN_MIN_AGE_HOURS, value: "24" }
+                - { name: REDIS_HOST, value: labels-valkey-master.skirmshop.svc.cluster.local }
+                - { name: REDIS_PORT, value: "6379" }
+                - { name: SYNAPSE_INDEX_KEY, value: workflow-instances.synapse.io }
+                - { name: DRY_RUN, value: "false" }
+              resources:
+                requests: { cpu: 20m, memory: 64Mi }
+                limits: { memory: 128Mi }
