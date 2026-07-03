@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:c5e2b14d4fb19081a0494c183278a93e29ff96c43074977b3022cb0f2013a68b # pin por digest — main 2a8d542 (tag labels-agent-ownership-20260703-0011): ownership OBLIGATORIO en /api/agent/shipment-status (?customer=, 404 si no es del cliente). rho-security PASS, suite 20/20
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:b5c81d01b9dfdea5109e9a2a4f299cceb15b58812e14e90e3ba8e8bfd4aa5b09 # pin por digest — main b7f7e4b (tag order-edit-search-presentment-20260703-1922): order-edit product-search picker muestra la divisa presentment (Markets) + fix tsc last-order.test.ts. Incluye 2a8d542 (ownership shipment-status). rho-verifier PASS, 38 tests
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
