@@ -1,8 +1,8 @@
 # Deep monitor for the order-page label buttons (order-label-action modal +
-# order-label-link). Active-probe CronJob every 12h: checks deployment health,
+# order-label-link). Active-probe CronJob every 15m: checks deployment health,
 # greps recent error logs, and smoke-tests the 3 endpoints in-cluster (bypassing
-# Cloudflare). Incidents → Telegram "🚨 Alertas" topic (14990); a daily OK
-# heartbeat → "Labels" topic (6921). Same conventions as labels-order-edit-monitor.
+# Cloudflare). Incidents → Telegram "🚨 Alertas" topic (14990); healthy runs stay
+# silent in Telegram. Same conventions as labels-order-edit-monitor.
 # Image alpine/k8s ships kubectl + curl + jq + bash → no custom image to build.
 apiVersion: v1
 kind: ServiceAccount
@@ -49,7 +49,7 @@ data:
   monitor.sh: |
     #!/usr/bin/env bash
     # Deep monitor: pod health + log errors + in-cluster smoke of the order-page
-    # label buttons. Alerts Telegram on incident; daily OK heartbeat otherwise.
+    # label buttons. Alerts Telegram on incident; healthy runs stay silent.
     set -uo pipefail
     NS="${NS:-skirmshop}"
     DEPLOY="${DEPLOY:-labels-shopify-app}"
@@ -58,7 +58,6 @@ data:
     ENC="${ENC:-gid%253A%252F%252Fshopify%252FOrder%252F1}"
     THRESH="${LOG_ERROR_THRESHOLD:-25}"
     CHAT_ID="${OPS_TELEGRAM_CHAT_ID:-}"
-    NOW_H=$(date -u +%H); NOW_H=$((10#${NOW_H}))
     incidents=""; report=""
 
     note(){ report+="$1"$'\n'; echo "$1"; }
@@ -119,9 +118,6 @@ data:
       echo "=== INCIDENTE ==="; printf '%s' "$incidents"
       exit 1
     fi
-    if [ "${FORCE_HEARTBEAT:-0}" = "1" ] || [ "${NOW_H}" = "$((10#${HEARTBEAT_HOUR_UTC:-6}))" ]; then
-      send_tg "${OPS_TELEGRAM_LABELS_THREAD_ID:-6921}" "$(printf '✅ OK — botones etiqueta (labels)\n%s\nSin incidentes.\n\n%s' "$ts" "$report")"
-    fi
     echo "=== OK ==="; printf '%s' "$report"
     exit 0
 ---
@@ -132,7 +128,7 @@ metadata:
   namespace: skirmshop
   # Monitoreo del rollout de los botones de etiqueta en la página de pedido.
 spec:
-  schedule: "0 6,18 * * *" # cada 12h UTC = 08:00 y 20:00 Europe/Madrid (CEST)
+  schedule: "*/15 * * * *" # cada 15 minutos; Telegram solo avisa si hay incidente
   timeZone: Etc/UTC
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
@@ -164,12 +160,10 @@ spec:
                       name: labels-telegram-bot
                       key: bot_token
                 - { name: OPS_TELEGRAM_CHAT_ID, value: "-1003984393379" }
-                # OK / heartbeat diario → topic Labels; incidentes → topic 🚨 Alertas.
-                - { name: OPS_TELEGRAM_LABELS_THREAD_ID, value: "6921" }
+                # Incidentes → topic 🚨 Alertas. Los runs OK no envían Telegram.
                 - { name: OPS_TELEGRAM_ALERTS_THREAD_ID, value: "14990" }
-                - { name: HEARTBEAT_HOUR_UTC, value: "6" } # heartbeat OK 1×/día en el run de 06:00 UTC
                 # Umbral con margen sobre el baseline observado (~7 errores/12h)
-                # para evitar flapping; el conteo real va en el heartbeat diario.
+                # para evitar flapping; el conteo real queda en los logs del job.
                 - { name: LOG_ERROR_THRESHOLD, value: "25" }
               volumeMounts:
                 - { name: script, mountPath: /scripts, readOnly: true }
