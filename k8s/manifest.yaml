@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:b5c81d01b9dfdea5109e9a2a4f299cceb15b58812e14e90e3ba8e8bfd4aa5b09 # pin por digest — main b7f7e4b (tag order-edit-search-presentment-20260703-1922): order-edit product-search picker muestra la divisa presentment (Markets) + fix tsc last-order.test.ts. Incluye 2a8d542 (ownership shipment-status). rho-verifier PASS, 38 tests
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:10e0fa578d0e849d9abd74afbfe33a528161ffe67d56b3e7bf8ae0169343e32b # pin por digest — d8feb36 (tag labels-ord18632-billing-null-20260706-1927): retry/manual label tolera billing_address incompleta (ORD18632) sin romper el lookup Shopify. Incluye b7f7e4b/order-edit presentment + 2a8d542 ownership shipment-status. mutations.test 34/34 PASS
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
