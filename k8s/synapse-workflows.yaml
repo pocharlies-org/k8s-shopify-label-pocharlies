@@ -506,8 +506,8 @@ data:
                     insuredValue: '${ .insuredValue }'
                     insurancePremium: '${ .insurancePremium // .carrierConfirmed.data.insurancePremium // null }'
                     saturdayDelivery: false
-                    trackingNumber: '${ .carrierConfirmed.data.trackingNumber }'
-                    trackingUrl: '${ .carrierConfirmed.data.trackingUrl }'
+                    trackingNumber: '${ if .routing.decision.carrier == "correos_express" then (.carrierConfirmed.data.cexCodigosUnicos[0] // .carrierConfirmed.data.trackingNumber) else .carrierConfirmed.data.trackingNumber end }'
+                    trackingUrl: '${ if .routing.decision.carrier == "correos_express" then "https://s.correosexpress.com/SeguimientoSinCP/search?shippingNumber=" + (.carrierConfirmed.data.cexCodigosUnicos[0] // .carrierConfirmed.data.trackingNumber) else .carrierConfirmed.data.trackingUrl end }'
                     labelBytesRef: '${ .labelStored.labelBytesRef }'
                     labelFormat: '${ .labelStored.labelFormat }'
                 output:
@@ -546,8 +546,8 @@ data:
                     shipmentId: '${ .shipmentId }'
                     correlationId: '${ .correlationId }'
                     carrier: '${ .routing.decision.carrier }'
-                    trackingNumber: '${ .carrierConfirmed.data.trackingNumber }'
-                    trackingUrl: '${ .carrierConfirmed.data.trackingUrl }'
+                    trackingNumber: '${ if .routing.decision.carrier == "correos_express" then (.carrierConfirmed.data.cexCodigosUnicos[0] // .carrierConfirmed.data.trackingNumber) else .carrierConfirmed.data.trackingNumber end }'
+                    trackingUrl: '${ if .routing.decision.carrier == "correos_express" then "https://s.correosexpress.com/SeguimientoSinCP/search?shippingNumber=" + (.carrierConfirmed.data.cexCodigosUnicos[0] // .carrierConfirmed.data.trackingNumber) else .carrierConfirmed.data.trackingUrl end }'
                     notifyCustomer: true
                 output:
                   as: '${ $input + { fulfillmentUpdated: $output } }'
