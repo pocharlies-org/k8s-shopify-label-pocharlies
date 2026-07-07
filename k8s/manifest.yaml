@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:10e0fa578d0e849d9abd74afbfe33a528161ffe67d56b3e7bf8ae0169343e32b # pin por digest — d8feb36 (tag labels-ord18632-billing-null-20260706-1927): retry/manual label tolera billing_address incompleta (ORD18632) sin romper el lookup Shopify. Incluye b7f7e4b/order-edit presentment + 2a8d542 ownership shipment-status. mutations.test 34/34 PASS
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:94e1b8d6a08d0638fcca5b5ef2655913100a4e10142435fceda31e9326ec5194 # pin por digest — 403f236 (tag shipping-insurance-breakdown-20260707-2247): desglose envío/seguro por rate (shipping_cents/insurance_cents, invariante ship+ins==total_price) — checkout via service_name "(envío X + seguro Y)" + /api/shipping-estimate expone shipping_price/insurance_price para el widget. Basado en d8feb36/ord18632 (conserva order-edit presentment + ownership shipment-status). 688/688 tests
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
