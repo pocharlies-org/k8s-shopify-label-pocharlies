@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:5af9250a38ca90bb3b36b74f0339cd1fb5823aa68a08893b321ba0605c318a3a # pin por digest — 4b79da9 (tag estimate-locale-20260708-1937): /api/shipping-estimate acepta locale y lo propaga a rate.locale → nombre/descripción de tarifa localizados en el widget igual que el checkout (antes salían en inglés). Incluye el desglose envío/seguro previo (403f236). 688/688 backend tests
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:6130a92ba87b93bfe20bf82516b308e237d3a95afa3a5bf60fefad1813312226 # pin por digest — cf8d223 (tag hold-badge-consolidated-20260708-2247, main CONSOLIDADO): F1 badge holdInfo (preorder/fábrica/manual-hold) + holdFilter en Pedidos entrantes (#104) + desglose envío/seguro y estimate locale ya vivos (#105, antes rama sin mergear). 697/697 backend + 92/92 UI tests, verificador RHO PASS
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
