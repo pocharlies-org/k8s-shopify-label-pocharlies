@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:94e1b8d6a08d0638fcca5b5ef2655913100a4e10142435fceda31e9326ec5194 # pin por digest — 403f236 (tag shipping-insurance-breakdown-20260707-2247): desglose envío/seguro por rate (shipping_cents/insurance_cents, invariante ship+ins==total_price) — checkout via service_name "(envío X + seguro Y)" + /api/shipping-estimate expone shipping_price/insurance_price para el widget. Basado en d8feb36/ord18632 (conserva order-edit presentment + ownership shipment-status). 688/688 tests
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:5af9250a38ca90bb3b36b74f0339cd1fb5823aa68a08893b321ba0605c318a3a # pin por digest — 4b79da9 (tag estimate-locale-20260708-1937): /api/shipping-estimate acepta locale y lo propaga a rate.locale → nombre/descripción de tarifa localizados en el widget igual que el checkout (antes salían en inglés). Incluye el desglose envío/seguro previo (403f236). 688/688 backend tests
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
