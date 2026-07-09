@@ -68,10 +68,12 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:6130a92ba87b93bfe20bf82516b308e237d3a95afa3a5bf60fefad1813312226 # pin por digest — cf8d223 (tag hold-badge-consolidated-20260708-2247, main CONSOLIDADO): F1 badge holdInfo (preorder/fábrica/manual-hold) + holdFilter en Pedidos entrantes (#104) + desglose envío/seguro y estimate locale ya vivos (#105, antes rama sin mergear). 697/697 backend + 92/92 UI tests, verificador RHO PASS
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:7eb08ea68ff83501e98c57386d1d325edceba843bba506dea74e7764456a72ea # pin por digest — 873b0ec (tag shipment-archived-20260709-0144): F2 acción Archivar (ShipmentArchived, endpoint /archive, vista Cancelado/Archivado) + auto-hide LABELS_STALE_HIDE_DAYS para etiquetas cerradas sin escaneo. Incluye F1 (badge holds). 1022 tests, verifier PASS + auditor GO. Projector d3c9fe6f desplegado ANTES (paso 1/2)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
+            # F2: días para auto-ocultar etiquetas de pedidos CERRADOS sin escaneo (0 = off).
+            - { name: LABELS_STALE_HIDE_DAYS, value: "30" }
             # Shopify signs embedded app sessions with the internal shop handle.
             # This direct env overrides the legacy value still present in labels-secrets.
             - { name: SHOPIFY_SHOP_DOMAIN, value: "ymimst-yh.myshopify.com" }
