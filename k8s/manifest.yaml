@@ -250,10 +250,12 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: event-gateway
-          image: harbor.e-dani.com/homelab/skirmshop-labels-event-gateway@sha256:36afc54a38d6a4af5f2a641bbeebec4bb29ec99bfcd4c1b81f561b58944a01f5 # pin por digest — d603e96 (tag gateway-allowlist-20260709-0757): guard allowlist aggregate_id Order (F4b) en modo OBSERVE (AGGREGATE_ID_ALLOWLIST_ENFORCE sin setear = false: solo WARN + métrica)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-gateway@sha256:36afc54a38d6a4af5f2a641bbeebec4bb29ec99bfcd4c1b81f561b58944a01f5 # pin por digest — d603e96 (tag gateway-allowlist-20260709-0757): guard allowlist aggregate_id Order (F4b) — ENFORCE activo tras ventana observe limpia (3 ciclos, 0 would-rejects)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
+            # F4b: rechaza aggregate_ids Order ilegítimos (400). Ventana observe 09-07: limpia.
+            - { name: AGGREGATE_ID_ALLOWLIST_ENFORCE, value: "true" }
             - {
                 name: RABBITMQ_URL,
                 value: "amqp://$(RABBITMQ_USER):$(RABBITMQ_PASS)@shared-rabbitmq.databases.svc.cluster.local:5672",
