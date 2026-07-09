@@ -250,7 +250,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: event-gateway
-          image: harbor.e-dani.com/homelab/skirmshop-labels-event-gateway@sha256:50884d0db3ba97edbf68e9a9df0f7c8f0bb084396234846c226b33c269e76e59 # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-gateway@sha256:36afc54a38d6a4af5f2a641bbeebec4bb29ec99bfcd4c1b81f561b58944a01f5 # pin por digest — d603e96 (tag gateway-allowlist-20260709-0757): guard allowlist aggregate_id Order (F4b) en modo OBSERVE (AGGREGATE_ID_ALLOWLIST_ENFORCE sin setear = false: solo WARN + métrica)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

@@ -408,7 +408,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: event-projector
-          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:d3c9fe6f72c3c2c3054a9b073dd80caf119a52e3123412a9b384d13b8913122a # pin por digest — 873b0ec (tag shipment-archived-20260709-0144): catálogo domain con ShipmentArchived — DEBE desplegarse ANTES que shopify-app (F2)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:6047da3a8c7b8ad3e35bbb850bc4d8b315e0adaba48e8ac78cb90b96add7b97f # pin por digest — d603e96 (tag gateway-allowlist-20260709-0757): refactor aggregateFromEvent movida a packages/cloudevents (comportamiento idéntico, verificado byte-a-byte)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
