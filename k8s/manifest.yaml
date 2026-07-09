@@ -161,7 +161,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:6d65604fc732e8e4a473ee122f559ea2076c364567899c213ab1b48abf5910c1  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:70558fc082faeabb6026022c893fb086237e80f2890e09bae2ce8a6fc2f29a35  # pin por digest (no :latest, Kyverno) — 3b59b08 tag shipping-info-20260709-0625: GET /api/internal/shipping-info (promesas de envío en vivo para el chatbot synapse); suite 749/749
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
