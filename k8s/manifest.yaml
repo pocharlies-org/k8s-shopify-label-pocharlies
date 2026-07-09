@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:defdd8a78c0b5539d1eda4ea576e7af3f3b65fac992700db724a09cd33d75871 # pin por digest — e78c95b (tag cancelled-exit-20260709-0317): F3 cancelados Shopify salen de las vistas (ocultos sin etiqueta; badge "Cancelado en Shopify" con etiqueta) + guard ALREADY_ARCHIVED en /cancel. Incluye F1+F2. 740+109 tests, verifier PASS
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:70558fc082faeabb6026022c893fb086237e80f2890e09bae2ce8a6fc2f29a35 # pin por digest — 3b59b08 (tag shipping-info-20260709-0625): GET /api/internal/shipping-info (promesas de envío en vivo para el chatbot synapse). SUPERSET de e78c95b (F3 cancelados) + d603e96 (gateway allowlist #108). internal.test 15/15, suite 749/749 PASS
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
