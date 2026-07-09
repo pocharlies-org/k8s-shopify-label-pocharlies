@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:7eb08ea68ff83501e98c57386d1d325edceba843bba506dea74e7764456a72ea # pin por digest — 873b0ec (tag shipment-archived-20260709-0144): F2 acción Archivar (ShipmentArchived, endpoint /archive, vista Cancelado/Archivado) + auto-hide LABELS_STALE_HIDE_DAYS para etiquetas cerradas sin escaneo. Incluye F1 (badge holds). 1022 tests, verifier PASS + auditor GO. Projector d3c9fe6f desplegado ANTES (paso 1/2)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:defdd8a78c0b5539d1eda4ea576e7af3f3b65fac992700db724a09cd33d75871 # pin por digest — e78c95b (tag cancelled-exit-20260709-0317): F3 cancelados Shopify salen de las vistas (ocultos sin etiqueta; badge "Cancelado en Shopify" con etiqueta) + guard ALREADY_ARCHIVED en /cancel. Incluye F1+F2. 740+109 tests, verifier PASS
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
