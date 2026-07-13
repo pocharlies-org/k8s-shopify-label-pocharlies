@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:70558fc082faeabb6026022c893fb086237e80f2890e09bae2ce8a6fc2f29a35 # pin por digest — 3b59b08 (tag shipping-info-20260709-0625): GET /api/internal/shipping-info (promesas de envío en vivo para el chatbot synapse). SUPERSET de e78c95b (F3 cancelados) + d603e96 (gateway allowlist #108). internal.test 15/15, suite 749/749 PASS
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:3623c50b11d44e23d7d2bc1acac47fd1829d62b3555ea0543f13d78838bcc136 # pin por digest — 26bed09 (tag pickup-retry-20260713-1703): el reintento reaplica el ultimo PickupPointSelected, evitando que envios UPS Access Point vuelvan a terminar en pickupPointRequired sin etiqueta (ORD18660). PR #111; mutations.test 46/46 PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
