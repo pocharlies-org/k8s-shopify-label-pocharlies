@@ -250,7 +250,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: event-gateway
-          image: harbor.e-dani.com/homelab/skirmshop-labels-event-gateway@sha256:36afc54a38d6a4af5f2a641bbeebec4bb29ec99bfcd4c1b81f561b58944a01f5 # pin por digest — d603e96 (tag gateway-allowlist-20260709-0757): guard allowlist aggregate_id Order (F4b) — ENFORCE activo tras ventana observe limpia (3 ciclos, 0 would-rejects)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-gateway@sha256:7d44f9058bf65204b4fcd235174d3314934ca0d349ae9d7c8e947146a52ea527 # pin por digest — 6252d58 (tag nats-liveness-20260713-1419): reconexión NATS ilimitada
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -409,7 +409,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: saga-launcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:afbc781408ada102dd916030f770cc3c0589f9f0bf39682e10f32cd6633256bb # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:e521ecc7b6a74a65a436ba5c456db78d7a4a43925bd1ca340c3c932f72be3708 # pin por digest — 6252d58 (tag nats-liveness-20260713-1419): reconexión NATS ilimitada
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -474,7 +474,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: outbox-relay
-          image: harbor.e-dani.com/homelab/skirmshop-labels-outbox-relay@sha256:d75273052d6960f36bea13addb78164443de3813d1f28a0692df70084ef800b0 # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-outbox-relay@sha256:af64b4b0aed811451186a61fb75840f9c2fdb8e24e7c5436c7e28fc16cc5b12b # pin por digest — 6252d58 (tag nats-liveness-20260713-1419): reconexión NATS ilimitada
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

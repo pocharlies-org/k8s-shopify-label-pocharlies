@@ -408,7 +408,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: event-projector
-          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:6047da3a8c7b8ad3e35bbb850bc4d8b315e0adaba48e8ac78cb90b96add7b97f # pin por digest — d603e96 (tag gateway-allowlist-20260709-0757): refactor aggregateFromEvent movida a packages/cloudevents (comportamiento idéntico, verificado byte-a-byte)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:2fa443b147efe6fd34874e45951a28abda61c43adc6ba4402c09617ab765986d # pin por digest — 6252d58 (tag nats-liveness-20260713-1419): recrea el consumidor pull tras expiración inactiva
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -461,7 +461,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: tracking-ingestion
-          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:a8c189f7bb8e217d2a38b8cb2c795f3fe89c82763eed957dfa24acade61b66c9
+          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:7bf496613d437910f4c5fc726a2b1548ca0c0f6cc0e953219bc279e77ca5a372 # pin por digest — 6252d58 (tag nats-liveness-20260713-1419): reconexión NATS ilimitada
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
