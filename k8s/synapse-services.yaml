@@ -461,7 +461,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: tracking-ingestion
-          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:7bf496613d437910f4c5fc726a2b1548ca0c0f6cc0e953219bc279e77ca5a372 # pin por digest — 6252d58 (tag nats-liveness-20260713-1419): reconexión NATS ilimitada
+          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:d11cdbd392b4c46d0fe3759aa054fd56070a74c6957e614f55a37198003fb0c4 # pin por digest — 6c18029 (tag tracking-liveness-20260713-1503): reconexión NATS con backoff+jitter+waitOnFirstConnect + endpoint /live (red de seguridad)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -487,20 +487,28 @@ spec:
           # JetStream iterator died, or the consumer sat idle >READY_MAX_IDLE_S
           # (120s) with backlog pending; the supervisor exits(1) after
           # exhausting resubscribe attempts. readiness 10s×3 = out of Endpoints
-          # in ~30s; liveness on /health recycles a hung process that never
-          # reaches the exit path. replicas stays 1 (shared-durable multi-pull
-          # is unvalidated); the exit+liveness pair bounds the blackout to the
-          # restart window instead of the 9h silent-mute of 2026-06-11.
+          # in ~30s. replicas stays 1 (shared-durable multi-pull is
+          # unvalidated).
+          #
+          # Liveness on /live (2026-07-12 incident: NATS cluster recreated,
+          # pod mute ~11h behind the old shallow /health probe): the app keeps
+          # /live at 200 during boot and while connected, and flips it to 503
+          # once NATS has been disconnected >LIVENESS_MAX_DISCONNECTED_S
+          # (default 300s). LAST-RESORT safety net — the primary fix is the
+          # infinite jittered reconnect in @skirmshop-labels/event-publisher;
+          # this bounds any unforeseen wedge to ~300s + 3×20s instead of
+          # forever. failureThreshold 3 (not 6): the 300s app-side window
+          # already debounces flaps, more kubelet retries only add blackout.
           readinessProbe:
             httpGet: { path: /ready, port: 3000 }
             initialDelaySeconds: 10
             periodSeconds: 10
             failureThreshold: 3
           livenessProbe:
-            httpGet: { path: /health, port: 3000 }
+            httpGet: { path: /live, port: 3000 }
             initialDelaySeconds: 30
             periodSeconds: 20
-            failureThreshold: 6
+            failureThreshold: 3
 ---
 apiVersion: v1
 kind: Service
