@@ -25,7 +25,7 @@ metadata:
   name: labels-fuel-freshness
   namespace: skirmshop
 spec:
-  suspend: true
+  suspend: false
   schedule: "0 9 * * *"
   timeZone: Europe/Madrid
   concurrencyPolicy: Forbid
