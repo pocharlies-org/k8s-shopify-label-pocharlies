@@ -408,7 +408,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: event-projector
-          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:2fa443b147efe6fd34874e45951a28abda61c43adc6ba4402c09617ab765986d # pin por digest — 6252d58 (tag nats-liveness-20260713-1419): recrea el consumidor pull tras expiración inactiva
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:c4879b29da417d4832740541d8cb07d0a4885cccbf2ed786dc0254dc39ec52e3 # pin por digest — 6c18029 (tag tracking-liveness-20260713-1503): reconexión NATS con backoff+jitter+waitOnFirstConnect + recreación de consumidor pull
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

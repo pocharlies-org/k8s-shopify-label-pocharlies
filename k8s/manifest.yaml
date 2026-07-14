@@ -250,7 +250,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: event-gateway
-          image: harbor.e-dani.com/homelab/skirmshop-labels-event-gateway@sha256:7d44f9058bf65204b4fcd235174d3314934ca0d349ae9d7c8e947146a52ea527 # pin por digest — 6252d58 (tag nats-liveness-20260713-1419): reconexión NATS ilimitada
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-gateway@sha256:cccd30e53679e8ed0dea29d07177cbd1e34661db99c87a3af2d7e1a152282f8d # pin por digest — 6c18029 (tag tracking-liveness-20260713-1503): reconexión NATS con backoff+jitter+waitOnFirstConnect
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -409,7 +409,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: saga-launcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:e521ecc7b6a74a65a436ba5c456db78d7a4a43925bd1ca340c3c932f72be3708 # pin por digest — 6252d58 (tag nats-liveness-20260713-1419): reconexión NATS ilimitada
+          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:0fb2ec752aad12b68521b78bbf3afe7b1082e023becbc5d090a359e2c8c81233 # pin por digest — 6c18029 (tag tracking-liveness-20260713-1503): reconexión NATS con backoff+jitter+waitOnFirstConnect
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -474,7 +474,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: outbox-relay
-          image: harbor.e-dani.com/homelab/skirmshop-labels-outbox-relay@sha256:af64b4b0aed811451186a61fb75840f9c2fdb8e24e7c5436c7e28fc16cc5b12b # pin por digest — 6252d58 (tag nats-liveness-20260713-1419): reconexión NATS ilimitada
+          image: harbor.e-dani.com/homelab/skirmshop-labels-outbox-relay@sha256:184576113643eb4c4168a592b8771241867809d3e50ba4b6567bf1343e61829e # pin por digest — 6c18029 (tag tracking-liveness-20260713-1503): reconexión NATS con backoff+jitter+waitOnFirstConnect
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
