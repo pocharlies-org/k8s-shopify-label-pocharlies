@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:43c859a6b96809bcffa33ea75e90e60aa0425fda1b66108a3a6c4bcf27f99b3f # pin por digest — 7b778dd (tag autopilot-order-purpose-20260714-1): conserva holdInfo y clasifica orderPurpose=return_transport_service sin exponer líneas; PR #113, CI completo PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:700324e332961f5f899d9b07517e1154a291965df2d6a843ce4d0ef06576c343 # pin por digest — ada0189 (tag autopilot-phone-identity-20260714-2): teléfono→cliente único→pedido con verificación de propiedad, logs sin query/PII y orderPurpose; PRs #113/#115, RHO+CI PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
