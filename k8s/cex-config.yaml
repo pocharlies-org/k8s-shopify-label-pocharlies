@@ -3429,14 +3429,14 @@ metadata:
   name: labels-cex-surcharges
   namespace: skirmshop
   annotations:
-    skirmshop.labels/loaded-at: "2026-05-28"
-    skirmshop.labels/fuel-source: "CEX email 2026-05-27"
+    skirmshop.labels/loaded-at: "2026-07-14"
+    skirmshop.labels/fuel-source: "CEX email 2026-07-14"
 data:
   surcharges.json: |
     {
-      "fuel_surcharge_pct": 4.06,
-      "fuel_surcharge_effective_from": "2026-05-27",
-      "fuel_surcharge_source": "CEX email 2026-05-27 - Real Decreto-ley 7/2026 + 9/2026",
+      "fuel_surcharge_pct": 2.015,
+      "fuel_surcharge_effective_from": "2026-07-14",
+      "fuel_surcharge_source": "CEX email 2026-07-14 - tasa junio 2026 - Real Decreto-ley 7/2026 + 9/2026",
       "portugal_supplement_eur": 0.3,
       "saturday_delivery_supplement_eur": 3.0,
       "dua_importacion_canarias_eur": 16.0,
