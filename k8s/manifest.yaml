@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:3623c50b11d44e23d7d2bc1acac47fd1829d62b3555ea0543f13d78838bcc136 # pin por digest — 26bed09 (tag pickup-retry-20260713-1703): el reintento reaplica el ultimo PickupPointSelected, evitando que envios UPS Access Point vuelvan a terminar en pickupPointRequired sin etiqueta (ORD18660). PR #111; mutations.test 46/46 PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:0011def433f224f8c240ca0681a7922d0a3b6e779922af71db2247762c240544 # pin por digest — b507565 (tag autoreply-order-hold-20260714-1002): /api/internal/last-order devuelve holdInfo estructurado desde tags/estado Shopify para grounding del autoreply. PR #112; CI completo PASS, last-order + shipments 106/106 PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
