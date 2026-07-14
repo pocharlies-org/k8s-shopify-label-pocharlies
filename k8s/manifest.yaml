@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:0011def433f224f8c240ca0681a7922d0a3b6e779922af71db2247762c240544 # pin por digest — b507565 (tag autoreply-order-hold-20260714-1002): /api/internal/last-order devuelve holdInfo estructurado desde tags/estado Shopify para grounding del autoreply. PR #112; CI completo PASS, last-order + shipments 106/106 PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:43c859a6b96809bcffa33ea75e90e60aa0425fda1b66108a3a6c4bcf27f99b3f # pin por digest — 7b778dd (tag autopilot-order-purpose-20260714-1): conserva holdInfo y clasifica orderPurpose=return_transport_service sin exponer líneas; PR #113, CI completo PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
