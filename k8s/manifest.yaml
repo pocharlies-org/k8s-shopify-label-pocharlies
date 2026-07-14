@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:700324e332961f5f899d9b07517e1154a291965df2d6a843ce4d0ef06576c343 # pin por digest — ada0189 (tag autopilot-phone-identity-20260714-2): teléfono→cliente único→pedido con verificación de propiedad, logs sin query/PII y orderPurpose; PRs #113/#115, RHO+CI PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:271a7fc4dbab375c2dc943cd64e35e297ee700157a36402d07f16e619b70565e # pin por digest — 168bdc0 (tag incident-actions-20260714-2015): incidencias accionables, enlaces directos y eventos de tracking agrupados; PR #116, CI PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -544,7 +544,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:e129de7e6865d0f43766a64a9e99f3a32aaad53613ca58d91a706284da6e97bc # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:957359ce474dcdddb0c67a3b8843910b8678b44a10340fe20424bfd72736c96d # pin por digest — 168bdc0 (tag incident-actions-20260714-2015): UPS X return-to-sender se normaliza como RETURNED; PR #116, CI PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

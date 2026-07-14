@@ -28,7 +28,7 @@ spec:
               # guards that stop the unbounded "new poll instance every 15 min" growth.
               # poll-tracking v1.3.1 publishes TrackingEventReceived through the
               # event gateway so tracking-ingestion persists carrier movement.
-              image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-poll-scheduler@sha256:de6829bbb44cf17abac0703fd824d2fbc94c0335c8230fd419cae3ea1fca30b6
+              image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-poll-scheduler@sha256:12ac91f93d9eee856be57828e69e0893d4ff134a57522622e00c8667e5d72ccb # 168bdc0 / incident-actions-20260714-2015: polling hasta terminal, sin duplicar etiquetas internas como external:*.
               env:
                 - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
                 - { name: SYNAPSE_API_URL, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }
@@ -40,7 +40,9 @@ spec:
                 # --- dedup / back-pressure guards (the fix) ---
                 - { name: POLL_MIN_INTERVAL_MINUTES, value: "90" }
                 - { name: POLL_MAX_ATTEMPTS, value: "32" }
-                - { name: POLL_MAX_AGE_DAYS, value: "21" }
+                # International incidents and returns can remain open for more
+                # than 21 days; keep polling until terminal for up to 60 days.
+                - { name: POLL_MAX_AGE_DAYS, value: "60" }
               envFrom: [{ secretRef: { name: labels-secrets } }]
               resources:
                 requests: { cpu: 20m, memory: 64Mi }
