@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:97213f239c1cb0c541b8823c560cc58fc764e4e6070cc7eb04fff0c1beaaf030 # pin por digest — main af42ec9 (tag correos-fuel-6p5-20260715-1210): tarjeta Correos matriz en Tarifas y API admin autenticada; PR #120, CI completo PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:2344ffbee2f4235568094e131bda6e47ecbeec360de782a0cf783abc3fb7019f # pin por digest — main 3f51a18 (tag labels-product-value-20260715-2018): valor bruto del producto para transportistas, seguro y aduanas; PR #121, CI completo PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -544,7 +544,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:957359ce474dcdddb0c67a3b8843910b8678b44a10340fe20424bfd72736c96d # pin por digest — 168bdc0 (tag incident-actions-20260714-2015): UPS X return-to-sender se normaliza como RETURNED; PR #116, CI PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:9f3a03fdabb9e794856f159168ce4322c07cabc6b29ed5ecf26b14ee3a6a0a7f # pin por digest — main 3f51a18 (tag labels-product-value-20260715-2018): InvoiceLineTotal usa siempre el valor bruto del producto; PR #121, CI completo PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

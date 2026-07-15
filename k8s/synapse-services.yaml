@@ -93,7 +93,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:fa335c8d6cab85d3f0dda52447e648a1f16e77369493ca6d38a2f6a344d0d9cb
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:dbc6523dbb726aee9548adceeb6defbbd5a3b482d78016d59498a0963f627746 # main 3f51a18 (tag labels-product-value-20260715-2018): valorDeclarado bruto; PR #121, CI completo PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
