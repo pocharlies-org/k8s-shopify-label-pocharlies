@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:53d41a46b16ac214fe645abda82483d727198277e453ee7eba5512f9843ce937 # pin por digest — b92e70b (tag returned-reissue-20260715-0102): reexpedición de envíos devueltos preservando etiquetas y tracking anteriores; PR #118, CI PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:4d8c63e8b63c94e1b9c0524a3edbe713097dbce3f10e056ef3d82375839c9e31 # pin por digest — aeb755f (tag isc1-visibility-20260715-0831): muestra ISC.1 por etiqueta actual e intento histórico; PR #119, build y pruebas selectivas PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
