@@ -12,7 +12,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  deep-monitor-contract:
+    runs-on: arc-k8s
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test deep-monitor result/delivery separation
+        run: bash tests/deep-monitor-contract.sh
+
   standard:
+    needs: [deep-monitor-contract]
     uses: pocharlies-org/k8s-gitops-pocharlies/.github/workflows/reusable-ci.yml@main
     with:
       runner: arc-k8s

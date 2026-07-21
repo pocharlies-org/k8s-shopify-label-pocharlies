@@ -1,8 +1,8 @@
 # Deep monitor for the order-page label buttons (order-label-action modal +
 # order-label-link). Active-probe CronJob every 15m: checks deployment health,
 # greps recent error logs, and smoke-tests the 3 endpoints in-cluster (bypassing
-# Cloudflare). Incidents → Telegram "Crons" topic (34494) in the Synapse
-# monitor forum; healthy runs stay silent in Telegram.
+# Cloudflare). Complete runs publish result + heartbeat gauges to VictoriaMetrics;
+# VMRule/Alertmanager owns alert state and Telegram delivery.
 # Image alpine/k8s ships kubectl + curl + jq + bash → no custom image to build.
 apiVersion: v1
 kind: ServiceAccount
@@ -49,7 +49,7 @@ data:
   monitor.sh: |
     #!/usr/bin/env bash
     # Deep monitor: pod health + log errors + in-cluster smoke of the order-page
-    # label buttons. Alerts Telegram on incident; healthy runs stay silent.
+    # label buttons. Results are persisted as metrics; delivery is external.
     set -uo pipefail
     NS="${NS:-skirmshop}"
     DEPLOY="${DEPLOY:-labels-shopify-app}"
@@ -57,39 +57,74 @@ data:
     ORIGIN="${ORIGIN:-https://extensions.shopifycdn.com}"
     ENC="${ENC:-gid%253A%252F%252Fshopify%252FOrder%252F1}"
     THRESH="${LOG_ERROR_THRESHOLD:-25}"
-    CHAT_ID="${OPS_TELEGRAM_CHAT_ID:-}"
-    incidents=""; report=""
+    VM_URL="${VICTORIAMETRICS_URL:-http://vmsingle-vm-victoria-metrics-k8s-stack.monitoring.svc.cluster.local:8428}"
+    incidents=""; execution_errors=""; report=""; incident_count=0
 
     note(){ report+="$1"$'\n'; echo "$1"; }
-    inc(){ incidents+="• $1"$'\n'; echo "INCIDENT: $1" >&2; }
+    inc(){ incident_count=$((incident_count + 1)); incidents+="• $1"$'\n'; echo "INCIDENT: $1" >&2; }
+    execution_error(){ execution_errors+="• $1"$'\n'; echo "EXECUTION_ERROR: $1" >&2; }
+
+    for dependency in kubectl curl jq awk grep date; do
+      command -v "$dependency" >/dev/null 2>&1 || execution_error "dependencia ausente: $dependency"
+    done
+    [[ "$THRESH" =~ ^[0-9]+$ ]] || execution_error "LOG_ERROR_THRESHOLD no es numérico: $THRESH"
+    if [ -n "$execution_errors" ]; then
+      echo "=== EXECUTION ERROR ==="; printf '%s' "$execution_errors"; exit 2
+    fi
+
+    push_metrics(){
+      local body="$1" attempt
+      for attempt in 1 2 3; do
+        if printf '%s' "$body" | curl -fsS -o /dev/null -m 15 \
+          -H 'Content-Type: text/plain' --data-binary @- \
+          "${VM_URL%/}/api/v1/import/prometheus?extra_label=job=labels_deep_monitor"; then
+          echo "metrics: delivered attempt=${attempt}"
+          return 0
+        fi
+        echo "metrics: delivery failed attempt=${attempt}/3" >&2
+        [ "$attempt" -lt 3 ] && sleep $((attempt * 2))
+      done
+      return 1
+    }
 
     # --- A. deployment health ---
-    desired=$(kubectl -n "$NS" get deploy "$DEPLOY" -o jsonpath='{.spec.replicas}' 2>/dev/null || echo "")
-    ready=$(kubectl -n "$NS" get deploy "$DEPLOY" -o jsonpath='{.status.readyReplicas}' 2>/dev/null || echo "")
-    [ -z "$ready" ] && ready=0
-    if [ -z "$desired" ]; then
-      inc "deployment $DEPLOY no encontrado (¿sin acceso o borrado?)"
-    else
+    deploy_json="$(mktemp)"; deploy_err="$(mktemp)"
+    if kubectl -n "$NS" get deploy "$DEPLOY" -o json >"$deploy_json" 2>"$deploy_err"; then
+      desired=$(jq -r '.spec.replicas // 1' "$deploy_json" 2>/dev/null) || execution_error "JSON inválido al leer deployment $DEPLOY"
+      ready=$(jq -r '.status.readyReplicas // 0' "$deploy_json" 2>/dev/null) || execution_error "JSON inválido al leer readyReplicas de $DEPLOY"
+      specimg=$(jq -r '.spec.template.spec.containers[0].image // "?"' "$deploy_json" 2>/dev/null) || execution_error "JSON inválido al leer imagen de $DEPLOY"
       note "deploy ready=${ready}/${desired}"
+      note "image=${specimg##*@}"
       [ "$ready" != "$desired" ] && inc "réplicas no listas: ${ready}/${desired}"
+    else
+      if grep -q 'NotFound' "$deploy_err"; then
+        inc "deployment $DEPLOY no encontrado"
+      else
+        execution_error "kubectl no pudo leer deployment $NS/$DEPLOY"
+      fi
     fi
-    specimg=$(kubectl -n "$NS" get deploy "$DEPLOY" -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null || echo "?")
-    note "image=${specimg##*@}"
-    restarts=$(kubectl -n "$NS" get pods -l app="$DEPLOY" -o jsonpath='{range .items[*]}{.status.containerStatuses[0].restartCount} {end}' 2>/dev/null || echo "")
-    note "restarts=[${restarts}]"
-    for r in $restarts; do [ "${r:-0}" -gt 5 ] 2>/dev/null && inc "pod con restartCount=${r} (>5)"; done
+    pods_json="$(mktemp)"
+    if kubectl -n "$NS" get pods -l app="$DEPLOY" -o json >"$pods_json" 2>/dev/null; then
+      pod_count=$(jq -r '.items | length' "$pods_json" 2>/dev/null) || execution_error "JSON inválido al leer pods de $DEPLOY"
+      restarts=$(jq -r '[.items[].status.containerStatuses[]?.restartCount] | join(" ")' "$pods_json" 2>/dev/null) || execution_error "JSON inválido al leer restarts de $DEPLOY"
+      note "restarts=[${restarts}]"
+      [ "${pod_count:-0}" -eq 0 ] 2>/dev/null && inc "deployment $DEPLOY sin pods"
+      for r in $restarts; do [ "${r:-0}" -gt 5 ] 2>/dev/null && inc "pod con restartCount=${r} (>5)"; done
+    else
+      execution_error "kubectl no pudo listar pods de $NS/$DEPLOY"
+    fi
 
     # --- B. in-cluster smoke (bypass Cloudflare) ---
-    opts_code=$(curl -s -o /dev/null -w '%{http_code}' -m 15 -X OPTIONS "$SVC/api/shipments/$ENC" -H "Origin: $ORIGIN" -H "Access-Control-Request-Method: GET" -H "Access-Control-Request-Headers: authorization,content-type" || echo "000")
+    opts_code=$(curl -s -o /dev/null -w '%{http_code}' -m 15 -X OPTIONS "$SVC/api/shipments/$ENC" -H "Origin: $ORIGIN" -H "Access-Control-Request-Method: GET" -H "Access-Control-Request-Headers: authorization,content-type" || true)
     opts_acao=$(curl -s -o /dev/null -D - -m 15 -X OPTIONS "$SVC/api/shipments/$ENC" -H "Origin: $ORIGIN" -H "Access-Control-Request-Method: GET" 2>/dev/null | tr -d '\r' | awk -F': ' 'tolower($1)=="access-control-allow-origin"{print $2}')
     note "preflight: code=${opts_code} acao=${opts_acao:-<none>}"
     { [ "$opts_code" = "204" ] && [ "$opts_acao" = "$ORIGIN" ]; } || inc "CORS preflight roto (code=${opts_code} acao=${opts_acao:-none}; esperado 204 + ${ORIGIN})"
 
-    ol_code=$(curl -s -o /dev/null -w '%{http_code}' -m 15 "$SVC/admin/order-label?id=12345" || echo "000")
+    ol_code=$(curl -s -o /dev/null -w '%{http_code}' -m 15 "$SVC/admin/order-label?id=12345" || true)
     note "order-label: code=${ol_code}"
     [ "$ol_code" = "200" ] || inc "ruta order-label rota (code=${ol_code}; esperado 200)"
 
-    sh_code=$(curl -s -o /dev/null -w '%{http_code}' -m 15 "$SVC/api/shipments/$ENC" -H "Origin: $ORIGIN" || echo "000")
+    sh_code=$(curl -s -o /dev/null -w '%{http_code}' -m 15 "$SVC/api/shipments/$ENC" -H "Origin: $ORIGIN" || true)
     sh_acao=$(curl -s -o /dev/null -D - -m 15 "$SVC/api/shipments/$ENC" -H "Origin: $ORIGIN" 2>/dev/null | tr -d '\r' | awk -F': ' 'tolower($1)=="access-control-allow-origin"{print $2}')
     note "gated GET: code=${sh_code} acao=${sh_acao:-<none>}"
     [ "$sh_code" = "200" ] && inc "SEGURIDAD: /api/shipments devuelve 200 SIN auth (gate JWT roto)"
@@ -97,26 +132,30 @@ data:
     [ -n "${sh_acao:-}" ] || inc "falta cabecera CORS en respuesta gated de /api/shipments"
 
     # --- C. error logs (last 12h, feature-scoped) ---
-    errlines=$(kubectl -n "$NS" logs -l app="$DEPLOY" --tail=5000 --since=12h 2>/dev/null | grep '"level":"error"' | grep -iE 'shipment|extension-cors|retry|saga|label|cors' || true)
-    errcount=$(printf '%s' "$errlines" | grep -c . || true); errcount=${errcount:-0}
-    note "error-logs(12h, feature)=${errcount}"
-    [ "$errcount" -gt "$THRESH" ] 2>/dev/null && inc "${errcount} errores en logs (12h) sobre shipments/cors/saga (>${THRESH})"
+    raw_logs="$(mktemp)"
+    if kubectl -n "$NS" logs -l app="$DEPLOY" --tail=5000 --since=12h >"$raw_logs" 2>/dev/null; then
+      errlines=$(grep '"level":"error"' "$raw_logs" | grep -iE 'shipment|extension-cors|retry|saga|label|cors' || true)
+      errcount=$(printf '%s' "$errlines" | grep -c . || true); errcount=${errcount:-0}
+      note "error-logs(12h, feature)=${errcount}"
+      [ "$errcount" -gt "$THRESH" ] 2>/dev/null && inc "${errcount} errores en logs (12h) sobre shipments/cors/saga (>${THRESH})"
+    else
+      execution_error "kubectl no pudo leer logs de $NS/$DEPLOY"
+      errlines=""
+    fi
 
-    # --- verdict + telegram ---
-    # Plain text (no parse_mode): the message only contains our own safe values
-    # (codes, counts, digest); avoiding HTML means a stray < or & can never make
-    # Telegram reject the alert with a 400.
-    send_tg(){ # $1=thread_id  $2=text
-      [ -n "${OPS_TELEGRAM_BOT_TOKEN:-}" ] && [ -n "$CHAT_ID" ] || { echo "telegram: sin token/chat, omito"; return 0; }
-      jq -n --arg c "$CHAT_ID" --arg t "$1" --arg x "$2" '{chat_id:($c|tonumber),message_thread_id:($t|tonumber),text:$x,disable_web_page_preview:true}' \
-        | curl -sS -m 30 -X POST "https://api.telegram.org/bot${OPS_TELEGRAM_BOT_TOKEN}/sendMessage" -H 'Content-Type: application/json' -d @- -w '\ntg_http=%{http_code}\n' || true
-    }
-    ts=$(date -u +"%Y-%m-%d %H:%M UTC")
-    if [ -n "$incidents" ]; then
-      send_tg "${OPS_TELEGRAM_CRONS_THREAD_ID:-34494}" "$(printf '🚨 INCIDENTE — botones etiqueta (labels)\n%s\n\n%s\nResumen:\n%s' "$ts" "$incidents" "$report")"
+    # --- verdict + durable telemetry ---
+    if [ -n "$execution_errors" ]; then
+      echo "=== EXECUTION ERROR ==="; printf '%s' "$execution_errors"; exit 2
+    fi
+    check_ok=1; [ -n "$incidents" ] && check_ok=0
+    run_ts=$(date +%s) || { echo "EXECUTION_ERROR: no se pudo obtener timestamp" >&2; exit 2; }
+    metrics=$(printf 'labels_deep_monitor_check_ok{namespace="skirmshop",cronjob="labels-deep-monitor"} %s %s000\nlabels_deep_monitor_incident_count{namespace="skirmshop",cronjob="labels-deep-monitor"} %s %s000\nlabels_deep_monitor_last_run_timestamp_seconds{namespace="skirmshop",cronjob="labels-deep-monitor"} %s %s000\n' \
+      "$check_ok" "$run_ts" "$incident_count" "$run_ts" "$run_ts" "$run_ts")
+    push_metrics "$metrics" || { echo "EXECUTION_ERROR: no se pudo persistir el resultado" >&2; exit 2; }
+    if [ "$check_ok" -eq 0 ]; then
       [ -n "$errlines" ] && echo "--- error log sample ---" && printf '%s\n' "$errlines" | tail -8
-      echo "=== INCIDENTE ==="; printf '%s' "$incidents"
-      exit 1
+      echo "=== INCIDENTE PUBLICADO ==="; printf '%s' "$incidents"
+      exit 0
     fi
     echo "=== OK ==="; printf '%s' "$report"
     exit 0
@@ -128,7 +167,7 @@ metadata:
   namespace: skirmshop
   # Monitoreo del rollout de los botones de etiqueta en la página de pedido.
 spec:
-  schedule: "*/15 * * * *" # cada 15 minutos; Telegram solo avisa si hay incidente
+  schedule: "*/15 * * * *" # cada 15 minutos; alertas derivadas de métricas
   timeZone: Etc/UTC
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
@@ -137,7 +176,7 @@ spec:
   jobTemplate:
     spec:
       ttlSecondsAfterFinished: 86400
-      backoffLimit: 0 # 1 alerta por slot: sin reintento que duplique el mensaje Telegram
+      backoffLimit: 0 # un fallo aquí significa error de ejecución/telemetría, no incidente del target
       activeDeadlineSeconds: 300
       template:
         metadata:
@@ -154,14 +193,7 @@ spec:
               command: ["bash", "/scripts/monitor.sh"]
               env:
                 - { name: HOME, value: "/tmp" }
-                - name: OPS_TELEGRAM_BOT_TOKEN
-                  valueFrom:
-                    secretKeyRef:
-                      name: labels-telegram-bot
-                      key: bot_token
-                - { name: OPS_TELEGRAM_CHAT_ID, value: "-1003785136626" }
-                # Incidentes → topic Crons vigente. Los runs OK no envían Telegram.
-                - { name: OPS_TELEGRAM_CRONS_THREAD_ID, value: "34494" }
+                - { name: VICTORIAMETRICS_URL, value: "http://vmsingle-vm-victoria-metrics-k8s-stack.monitoring.svc.cluster.local:8428" }
                 # Umbral con margen sobre el baseline observado (~7 errores/12h)
                 # para evitar flapping; el conteo real queda en los logs del job.
                 - { name: LOG_ERROR_THRESHOLD, value: "25" }

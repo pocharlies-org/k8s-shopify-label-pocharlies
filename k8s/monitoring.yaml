@@ -286,3 +286,53 @@ spec:
           annotations:
             summary: 'Public tracking page 404 spike ({{ $value | printf "%.2f" }}/s)'
             description: 'The public tracking routes (/track/:trackingNumber) are returning 404 at {{ $value | printf "%.2f" }} req/s sustained over 15m (threshold 0.05/s). The customer tracking page is likely broken — check labels-shopify-app logs/deploy and the public-tracking token resolver. Compare with the 200 rate on the same route.'
+    # Result and heartbeat of the active deep monitor. These are severity=warning
+    # by design and require the explicit alertname route in k8s-observability;
+    # channel/topic labels alone do not select an Alertmanager receiver.
+    - name: skirmshop-labels-deep-monitor
+      rules:
+        - alert: LabelsDeepMonitorIncident
+          expr: |
+            last_over_time(
+              labels_deep_monitor_check_ok{
+                job="labels_deep_monitor",
+                namespace="skirmshop",
+                cronjob="labels-deep-monitor"
+              }[2h]
+            ) == 0
+          for: 1m
+          labels:
+            severity: warning
+            area: labels
+            domain: crons
+          annotations:
+            summary: 'labels-deep-monitor detectó un incidente'
+            description: 'El último probe completo encontró un incidente. Consultar los logs del Job exitoso más reciente de skirmshop/labels-deep-monitor.'
+        - alert: LabelsDeepMonitorMissing
+          expr: |
+            (
+              time() -
+              last_over_time(
+                labels_deep_monitor_last_run_timestamp_seconds{
+                  job="labels_deep_monitor",
+                  namespace="skirmshop",
+                  cronjob="labels-deep-monitor"
+                }[2h]
+              ) > 35 * 60
+            )
+            or
+            absent_over_time(
+              labels_deep_monitor_last_run_timestamp_seconds{
+                job="labels_deep_monitor",
+                namespace="skirmshop",
+                cronjob="labels-deep-monitor"
+              }[2h]
+            )
+          for: 5m
+          labels:
+            severity: warning
+            area: labels
+            domain: crons
+          annotations:
+            summary: 'labels-deep-monitor no publica heartbeat'
+            description: 'No existe un resultado completo reciente del probe. Revisar CronJob, acceso Kubernetes y entrega a VictoriaMetrics.'
