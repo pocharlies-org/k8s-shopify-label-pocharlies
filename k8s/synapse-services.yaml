@@ -93,7 +93,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:dbc6523dbb726aee9548adceeb6defbbd5a3b482d78016d59498a0963f627746 # main 3f51a18 (tag labels-product-value-20260715-2018): valorDeclarado bruto; PR #121, CI completo PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:36959ca35b1d5271594f26188f5e499c0895ae5968f5769cb2455711c73004f1 # pin por digest — main 77c57bc (tag pickup-visibility-20260721-2035): G01L02 'A disposicion' y CEX 38/39 emiten READY_FOR_PICKUP (fase B tras consumers live).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -173,7 +173,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: correos-adapter
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:a2840043ba023bd026add149e833e867d195baddd5b58278278463b095bbed72 # pin por digest — main af42ec9 (tag correos-fuel-6p5-20260715-1210): recargo Correos matriz 6,50 % desde ConfigMap, GET /config/surcharges y cálculo aplicado una sola vez; PR #120.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:f4b1715b2da933ad24ec611fe168e833776ef5cd962cdc1daf5ed432b6e45748 # pin por digest — main 77c57bc (tag pickup-visibility-20260721-2035): G01L02 'A disposicion' y CEX 38/39 emiten READY_FOR_PICKUP (fase B tras consumers live).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

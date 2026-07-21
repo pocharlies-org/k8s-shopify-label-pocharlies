@@ -31,7 +31,7 @@ spec:
             - name: trigger
               # Misma imagen que el Deployment labels-correos-adapter — bumpear
               # los dos digests A LA VEZ.
-              image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:a2840043ba023bd026add149e833e867d195baddd5b58278278463b095bbed72
+              image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:f4b1715b2da933ad24ec611fe168e833776ef5cd962cdc1daf5ed432b6e45748 # pin por digest — main 77c57bc (tag pickup-visibility-20260721-2035): G01L02 'A disposicion' y CEX 38/39 emiten READY_FOR_PICKUP (fase B tras consumers live).
               command: ["node", "-e"]
               args:
                 - >
