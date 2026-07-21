@@ -1,8 +1,8 @@
 # Deep monitor for the order-page label buttons (order-label-action modal +
 # order-label-link). Active-probe CronJob every 15m: checks deployment health,
 # greps recent error logs, and smoke-tests the 3 endpoints in-cluster (bypassing
-# Cloudflare). Incidents → Telegram "🚨 Alertas" topic (14990); healthy runs stay
-# silent in Telegram. Same conventions as labels-order-edit-monitor.
+# Cloudflare). Incidents → Telegram "Crons" topic (34494) in the Synapse
+# monitor forum; healthy runs stay silent in Telegram.
 # Image alpine/k8s ships kubectl + curl + jq + bash → no custom image to build.
 apiVersion: v1
 kind: ServiceAccount
@@ -113,7 +113,7 @@ data:
     }
     ts=$(date -u +"%Y-%m-%d %H:%M UTC")
     if [ -n "$incidents" ]; then
-      send_tg "${OPS_TELEGRAM_ALERTS_THREAD_ID:-14990}" "$(printf '🚨 INCIDENTE — botones etiqueta (labels)\n%s\n\n%s\nResumen:\n%s' "$ts" "$incidents" "$report")"
+      send_tg "${OPS_TELEGRAM_CRONS_THREAD_ID:-34494}" "$(printf '🚨 INCIDENTE — botones etiqueta (labels)\n%s\n\n%s\nResumen:\n%s' "$ts" "$incidents" "$report")"
       [ -n "$errlines" ] && echo "--- error log sample ---" && printf '%s\n' "$errlines" | tail -8
       echo "=== INCIDENTE ==="; printf '%s' "$incidents"
       exit 1
@@ -159,9 +159,9 @@ spec:
                     secretKeyRef:
                       name: labels-telegram-bot
                       key: bot_token
-                - { name: OPS_TELEGRAM_CHAT_ID, value: "-1003984393379" }
-                # Incidentes → topic 🚨 Alertas. Los runs OK no envían Telegram.
-                - { name: OPS_TELEGRAM_ALERTS_THREAD_ID, value: "14990" }
+                - { name: OPS_TELEGRAM_CHAT_ID, value: "-1003785136626" }
+                # Incidentes → topic Crons vigente. Los runs OK no envían Telegram.
+                - { name: OPS_TELEGRAM_CRONS_THREAD_ID, value: "34494" }
                 # Umbral con margen sobre el baseline observado (~7 errores/12h)
                 # para evitar flapping; el conteo real queda en los logs del job.
                 - { name: LOG_ERROR_THRESHOLD, value: "25" }
