@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:ac3df504725594cc1a18ce059c1860f8a6a5381245e498e948a449bcbc0cccfd # pin por digest — main b37cd3c (tag retry-current-shopify-20260720-1315): el retry reconstruye el pedido actual de Shopify; PR #122, CI PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:bc9ae10a643ff22a6a953b1eaf38e48de80ff364889b32f9f315c91b6cd98fcf # pin por digest — main 77c57bc (tag pickup-visibility-20260721-2035): visibilidad punto de recogida F1-F5; PR #123, gates completos PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

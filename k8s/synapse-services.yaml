@@ -312,7 +312,7 @@ spec:
       securityContext: { runAsUser: 1000, runAsGroup: 1000 }
       containers:
         - name: notification-dispatcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:ad0e4b695f2c2af175c215e44ae61ea01ddb863a11a396bafe401848802cccce
+          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:6dcd0ffe5aaacbaaa353b4778cdb1f0c09de51137954cc00dd70b9df302b7adc # pin por digest — main 77c57bc (tag pickup-visibility-20260721-2035): visibilidad punto de recogida F1-F5; PR #123, gates completos PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -461,7 +461,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: tracking-ingestion
-          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:d11cdbd392b4c46d0fe3759aa054fd56070a74c6957e614f55a37198003fb0c4 # pin por digest — 6c18029 (tag tracking-liveness-20260713-1503): reconexión NATS con backoff+jitter+waitOnFirstConnect + endpoint /live (red de seguridad)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:8a6c9cba7e413472308752d6ef3148c2067a3c6446b69d57b9861dcadb5d57f9 # pin por digest — main 77c57bc (tag pickup-visibility-20260721-2035): visibilidad punto de recogida F1-F5; PR #123, gates completos PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

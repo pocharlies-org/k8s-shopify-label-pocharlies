@@ -120,7 +120,7 @@ spec:
           nodeSelector: { kubernetes.io/arch: amd64 }
           containers:
             - name: notification-digest
-              image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:ffb29a3d50a15506432d421c8acb3846ac2165716ed0716a673de08c0fa4aa68
+              image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:6dcd0ffe5aaacbaaa353b4778cdb1f0c09de51137954cc00dd70b9df302b7adc # pin por digest — main 77c57bc (tag pickup-visibility-20260721-2035): visibilidad punto de recogida F1-F5; PR #123, gates completos PASS.
               command: ["node", "/digest/report.cjs"]
               env:
                 - { name: NODE_PATH, value: "/app/node_modules" }
