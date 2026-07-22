@@ -544,7 +544,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:9f3a03fdabb9e794856f159168ce4322c07cabc6b29ed5ecf26b14ee3a6a0a7f # pin por digest — main 3f51a18 (tag labels-product-value-20260715-2018): InvoiceLineTotal usa siempre el valor bruto del producto; PR #121, CI completo PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:3bcf2c53586363fd2f8a52b41596b53637ecebd870027dfb8824402bc10411df # pin por digest — main 25d58ce (tag ups-access-point-ready-20260722-0126): D/2Q y D/ZP READY_FOR_PICKUP; D/2W y entregas a domicilio siguen terminales; PR #124, CI completo PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
