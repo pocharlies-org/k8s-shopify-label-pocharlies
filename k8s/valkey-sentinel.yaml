@@ -92,6 +92,17 @@ spec:
   ports:
     - { name: sentinel, port: 26379, targetPort: 26379 }
 ---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: labels-valkey
+  namespace: skirmshop
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: labels-valkey
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -116,11 +127,14 @@ spec:
       nodeSelector: { workload: core }
       affinity:
         podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                labelSelector: { matchLabels: { app: labels-valkey } }
-                topologyKey: kubernetes.io/hostname
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector: { matchLabels: { app: labels-valkey } }
+              topologyKey: kubernetes.io/hostname
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector: { matchLabels: { app: labels-valkey } }
       containers:
         - name: valkey
           image: valkey/valkey:8-alpine
