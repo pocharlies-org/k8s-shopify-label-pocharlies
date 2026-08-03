@@ -25,6 +25,28 @@ spec:
   dataFrom:
     - extract: { key: secret/skirmshop/labels }
 
+---
+# Dedicated, least-privilege bearer shared only by the deterministic shop
+# agent and this order-status endpoint. The Vault property is intentionally
+# separate from LABELS_AGENT_TOKEN (DGX/autopilot surface).
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: labels-chatbot-order-status
+  namespace: skirmshop
+spec:
+  refreshInterval: 1h
+  secretStoreRef: { name: vault-backend, kind: ClusterSecretStore }
+  target:
+    name: labels-chatbot-order-status
+    creationPolicy: Owner
+    deletionPolicy: Retain
+  data:
+    - secretKey: INTERNAL_API_TOKEN
+      remoteRef:
+        key: secret/skirmshop/labels
+        property: INTERNAL_API_TOKEN
+
 
 # ── labels microservices (stateless) ─────────────────────────────────────────
 # All use harbor.e-dani.com/homelab/skirmshop-labels-<name>:latest
@@ -72,6 +94,14 @@ spec:
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
+            - name: INTERNAL_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: labels-chatbot-order-status
+                  key: INTERNAL_API_TOKEN
+            - { name: GROUNDED_REPLY_TENANT_ID, value: "807a4817-b73a-42ce-8954-8dd5dc80b751" }
+            - { name: GROUNDED_REPLY_STORE_ID, value: "269d0560-9c16-4db8-86e4-52867efc1901" }
+            - { name: GROUNDED_REPLY_BINDING_ID, value: "d9188e91-b282-4878-a24e-933611c94d84" }
             # F2: días para auto-ocultar etiquetas de pedidos CERRADOS sin escaneo (0 = off).
             - { name: LABELS_STALE_HIDE_DAYS, value: "30" }
             # Shopify signs embedded app sessions with the internal shop handle.
