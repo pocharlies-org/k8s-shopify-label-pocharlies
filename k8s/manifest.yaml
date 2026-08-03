@@ -68,7 +68,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:c2747badb88ff2547e74ec4180bb3c0454288d822794077280f6036808e32433 # pin por digest — main 5b6eedb (tag tracking-google-maps-20260722-0333): enlaces Google Maps y mapa desplegable para pickup UPS/CEX/Correos; PR #125, gates completos PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:f040a75e756ea4b589b38a3f9e1d91362d67ab93fc06336a40f25a891301140c # pin por digest — source 607bddd (tag v2026.08.03.1): contrato POST /api/internal/chatbot/order-status; PR #126 y release image PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
