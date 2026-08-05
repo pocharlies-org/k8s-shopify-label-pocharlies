@@ -86,7 +86,7 @@ spec:
           expr: sum(increase(shipping_tracking_events_total{outcome="bad-event"}[1h])) > 0
           for: 1h
           labels:
-            severity: warn
+            severity: warning
           annotations:
             summary: 'tracking-ingestion is rejecting events (bad-event)'
             description: '{{ $value }} schema-rejected tracking events in the last hour. An emitter violates the TrackingEventReceived contract — check tracking-ingestion logs for "tracking.ingestion.bad-event" reasons.'
@@ -94,7 +94,7 @@ spec:
           expr: sum(rate(shipping_tracking_events_total{outcome=~"bad-event|transient"}[10m])) > 1
           for: 10m
           labels:
-            severity: warn
+            severity: warning
           annotations:
             summary: 'tracking-ingestion failing >1/sec'
             description: 'Sustained bad-event or transient outcomes on tracking-ingestion. Runbook §5.'
@@ -108,7 +108,7 @@ spec:
             (max(tracking_ingestion_consumer_pending) > 0 and sum(rate(shipping_tracking_events_total[30m])) == 0)
           for: 10m
           labels:
-            severity: warn
+            severity: warning
           annotations:
             summary: 'tracking-ingestion silent with unhealthy consumer/backlog'
             description: 'tracking-ingestion is not processing events while NATS is disconnected or the JetStream consumer has pending messages. Check NATS consumer state/runbook §5.'
@@ -118,7 +118,7 @@ spec:
           expr: synapse_redis_orphan_index_entries_total > 0
           for: 10m
           labels:
-            severity: page
+            severity: critical
           annotations:
             summary: 'Synapse index has {{ $value }} orphan entries'
             description: 'workflow-instances.synapse.io has index fields pointing at missing keys — can crash labels-synapse-operator. Runbook §3.'
@@ -126,7 +126,7 @@ spec:
           expr: labels_manual_label_stuck_total > 0
           for: 5m
           labels:
-            severity: page
+            severity: critical
           annotations:
             summary: '{{ $value }} shipment-label workflow(s) stuck non-terminal'
             description: 'generate-shipment-label launched but not terminal beyond threshold. Check operator health + poll backlog. Runbook §1.'
@@ -134,7 +134,7 @@ spec:
           expr: sum(synapse_redis_workflow_instances_total{workflow="poll-tracking",phase="faulted"}) > 500
           for: 15m
           labels:
-            severity: warn
+            severity: warning
           annotations:
             summary: 'poll-tracking faulted backlog >500'
             description: 'Faulted poll-tracking instances accumulating ({{ $value }}). Confirm poll-tracking v1.3.1 + scheduler guards. Runbook §2.'
@@ -142,21 +142,21 @@ spec:
           expr: time() - max(synapse_cleanup_last_run_timestamp_seconds) > 3600
           for: 10m
           labels:
-            severity: warn
+            severity: warning
           annotations:
             summary: 'synapse-janitor has not completed a pass in >1h'
             description: 'Backlog will grow unchecked. Check the synapse-janitor deployment. Runbook §6.'
         - alert: SynapseJanitorArchiveFailing
           expr: increase(synapse_cleanup_archive_failed_total[15m]) > 0
           labels:
-            severity: warn
+            severity: warning
           annotations:
             summary: 'synapse-janitor archive failures'
             description: '{{ $value }} archive failures in 15 min — deletes skipped (safe) but backlog will not drain. Check Postgres. Runbook §6.'
         - alert: SynapseOperatorRestarts
           expr: increase(kube_pod_container_status_restarts_total{namespace="skirmshop",pod=~"labels-synapse-operator.*"}[15m]) > 2
           labels:
-            severity: page
+            severity: critical
           annotations:
             summary: 'labels-synapse-operator restarting'
             description: '{{ $value }} restarts in 15 min — likely choking on the workflow-instance backlog. Check orphan entries + poll backlog. Runbook §3.'
@@ -164,7 +164,7 @@ spec:
           expr: absent(redis_up{job="labels-valkey-headless"})
           for: 5m
           labels:
-            severity: page
+            severity: critical
           annotations:
             summary: 'labels-valkey metrics are missing'
             description: 'No redis_up series for labels-valkey for 5m. The redis_exporter scrape is failing or the labels-valkey pods are down.'
@@ -172,7 +172,7 @@ spec:
           expr: count(redis_up{job="labels-valkey-headless"}) < 3
           for: 5m
           labels:
-            severity: warn
+            severity: warning
           annotations:
             summary: 'labels-valkey has fewer than 3 scrape targets'
             description: 'VictoriaMetrics sees {{ $value }} labels-valkey exporter target(s); expected 3 pods.'
@@ -180,7 +180,7 @@ spec:
           expr: redis_up{job="labels-valkey-headless"} == 0
           for: 2m
           labels:
-            severity: page
+            severity: critical
           annotations:
             summary: 'labels-valkey exporter cannot reach Valkey'
             description: 'Exporter target {{ $labels.pod }} reports redis_up=0 for 2m.'
@@ -188,7 +188,7 @@ spec:
           expr: (count(redis_instance_info{job="labels-valkey-headless",role="master"}) or vector(0)) != 1
           for: 2m
           labels:
-            severity: page
+            severity: critical
           annotations:
             summary: 'labels-valkey master count is invalid'
             description: 'Expected exactly one labels-valkey master; current master count is {{ $value }}.'
@@ -199,7 +199,7 @@ spec:
           expr: max(redis_memory_used_bytes{job="labels-valkey-headless"}) > 350 * 1024 * 1024
           for: 15m
           labels:
-            severity: warn
+            severity: warning
           annotations:
             summary: 'labels-valkey memory is above 350Mi'
             description: 'labels-valkey used_memory is {{ $value | humanize1024 }} for 15m. With noeviction and a 512Mi valkey container limit, growth can become OOM/failover pressure.'
@@ -212,21 +212,21 @@ spec:
             ) > 50 * 1024 * 1024
           for: 15m
           labels:
-            severity: warn
+            severity: warning
           annotations:
             summary: 'labels-valkey memory grew by more than 50Mi in 24h'
             description: 'labels-valkey memory grew by {{ $value | humanize1024 }} over 24h. Check document-* and poll-* retention backlog before it reaches the 512Mi container limit.'
         - alert: LabelsValkeyEvictions
           expr: sum(increase(redis_evicted_keys_total{job="labels-valkey-headless"}[10m])) > 0
           labels:
-            severity: page
+            severity: critical
           annotations:
             summary: 'labels-valkey is evicting keys'
             description: 'labels-valkey evicted {{ $value }} key(s) in the last 10m. This datastore is expected to run noeviction; investigate maxmemory policy drift immediately.'
         - alert: LabelsValkeyRejectedConnections
           expr: sum(increase(redis_rejected_connections_total{job="labels-valkey-headless"}[5m])) > 0
           labels:
-            severity: page
+            severity: critical
           annotations:
             summary: 'labels-valkey rejected connections'
             description: 'labels-valkey rejected {{ $value }} connection(s) in the last 5m. Check capacity and client pressure.'
@@ -237,21 +237,21 @@ spec:
           expr: max(tracking_ingestion_nats_connected) == 0
           for: 5m
           labels:
-            severity: page
+            severity: critical
           annotations:
             summary: 'tracking-ingestion lost its NATS connection'
             description: 'tracking_ingestion_nats_connected has been 0 for 5 min — no tracking events are being consumed. The supervisor should resubscribe or exit; if the pod is Running but mute, check labels-nats-cluster health and the consumer logs (tracking-ingestion.nats.*).'
         - alert: TrackingIngestionResubscribeStorm
           expr: increase(tracking_ingestion_consumer_resubscribes_total[15m]) > 3
           labels:
-            severity: warn
+            severity: warning
           annotations:
             summary: 'tracking-ingestion consumer resubscribing repeatedly'
             description: '{{ $value }} JetStream resubscribes in 15 min — the SHIPPING_EVENTS consumer keeps dying (NATS leader flapping or consumer deleted). Check labels-nats-cluster pods and tracking-ingestion.consumer.resubscribed logs.'
         - alert: TrackingIngestionBacklogStuck
           expr: min_over_time(tracking_ingestion_consumer_pending[30m]) > 25
           labels:
-            severity: warn
+            severity: warning
           annotations:
             summary: 'tracking-ingestion backlog not draining'
             description: 'The JetStream consumer has kept >25 pending messages for 30 min straight — consuming slower than the polls publish, or stuck without dying. /ready should already be 503 (idle-with-backlog); check why k8s has not recycled the pod.'
