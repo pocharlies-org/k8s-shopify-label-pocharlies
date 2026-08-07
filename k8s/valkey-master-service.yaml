@@ -99,7 +99,7 @@ spec:
                     *) : ;;  # unreachable/unknown → leave label as-is (avoid flapping)
                   esac
                 done
-                sleep 5
+                sleep 20
               done
           resources:
             requests: { cpu: 20m, memory: 48Mi }
