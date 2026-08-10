@@ -772,6 +772,8 @@ spec:
     spec:
       enableServiceLinks: false
       serviceAccountName: labels-synapse-operator
+      imagePullSecrets:
+        - name: harbor-pull
       nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
       tolerations:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
