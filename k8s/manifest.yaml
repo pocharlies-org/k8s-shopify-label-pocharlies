@@ -800,6 +800,27 @@ spec:
               fi
           volumeMounts:
             - { name: tokens, mountPath: /tokens }
+        # El operador resuelve las referencias de workflow al arrancar y aborta
+        # si falta una. Registrar aquí evita que una pérdida de estado en Synapse
+        # lo deje reiniciando hasta el siguiente PostSync de Argo CD.
+        - name: synapse-workflow-registrar
+          image: harbor.e-dani.com/homelab/skirmshop-labels-synapse-workflow-registrar@sha256:6f07872edcce1dd7536d3775619042fa72320e6e4cc818d4daa556552bff9852
+          env:
+            - {
+                name: SYNAPSE_API_URL,
+                value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080",
+              }
+            - { name: WORKFLOWS_DIR, value: "/workflows" }
+            - {
+                name: WORKFLOW_FILES,
+                value: "generate-shipment-label.yaml,process-return.yaml,poll-tracking.yaml",
+              }
+          envFrom: [{ secretRef: { name: labels-secrets } }]
+          volumeMounts:
+            - { name: workflows, mountPath: /workflows, readOnly: true }
+          resources:
+            requests: { cpu: 20m, memory: 64Mi }
+            limits: { memory: 256Mi }
       containers:
         - name: synapse-operator
           image: ghcr.io/serverlessworkflow/synapse/operator:1.0.0-alpha1
@@ -829,6 +850,8 @@ spec:
       volumes:
         - name: tokens
           configMap: { name: synapse-tokens }
+        - name: workflows
+          configMap: { name: labels-synapse-workflows }
 ---
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
