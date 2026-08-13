@@ -90,7 +90,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:1a4d6e6befd7301afdb1bac5e279c69f051e593ef631055f0894709c152549ec # pin por digest — source cbc92e4 (tag v2026.08.11.1): envío gratis por transportista — Correos matriz 100€ / CEX ePaq24 150€, umbrales separados en freeShipping.{correosPeninsula,cexPeninsula}. /api/internal/shipping-info gana freeShippingOptions (los dos umbrales) para el chatbot. CI monorepo 182/182 PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:682b3864759bb3b72eecaf4c82f5d46d939e6cf6c06ad15487b3305030eb32f5 # pin por digest — source f85570f (tag labels-f85570f89526): grounded order status reconoce IN_TRANSIT/OUT_FOR_DELIVERY como in_transit para el chatbot determinista; CI 31667488971 y release job 94352843633 PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
