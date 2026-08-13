@@ -90,7 +90,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:682b3864759bb3b72eecaf4c82f5d46d939e6cf6c06ad15487b3305030eb32f5 # pin por digest — source f85570f (tag labels-f85570f89526): grounded order status reconoce IN_TRANSIT/OUT_FOR_DELIVERY como in_transit para el chatbot determinista; CI 31667488971 y release job 94352843633 PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:9cf5d84c3f83fe425b1b0982841f393ab7d1193092db3153b9381201190eacc9 # pin por digest — source 83fe1fa (tag labels-83fe1fa37558): los webhooks orders/paid test:true se reconocen y no entran en EventStore, publicación ni saga de envío; 811 tests, typecheck/lint/build y release job 94373046712 PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
