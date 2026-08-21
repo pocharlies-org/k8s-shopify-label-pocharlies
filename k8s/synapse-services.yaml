@@ -93,7 +93,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:36959ca35b1d5271594f26188f5e499c0895ae5968f5769cb2455711c73004f1 # pin por digest — main 77c57bc (tag pickup-visibility-20260721-2035): G01L02 'A disposicion' y CEX 38/39 emiten READY_FOR_PICKUP (fase B tras consumers live).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:f5ff5d6b11dcaeda86b3912eeb9741a5c3d226532c77d5f241edcc23eabc01b9 # pin por digest — source 7ef8e3a (tag v2026.08.22.1): conserva address1+address2 y rechaza la dirección completa si supera 50 caracteres; release 32531834836 PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -173,7 +173,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: correos-adapter
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:f4b1715b2da933ad24ec611fe168e833776ef5cd962cdc1daf5ed432b6e45748 # pin por digest — main 77c57bc (tag pickup-visibility-20260721-2035): G01L02 'A disposicion' y CEX 38/39 emiten READY_FOR_PICKUP (fase B tras consumers live).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:d4563ecb37837181a691ddc803086d6aec61b1bf18258a74cc097a55f2d0dc6d # pin por digest — source 7ef8e3a (tag v2026.08.22.1): valida campos de entrega y conserva address2 como complemento; release 32531834836 PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

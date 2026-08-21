@@ -90,7 +90,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:9cf5d84c3f83fe425b1b0982841f393ab7d1193092db3153b9381201190eacc9 # pin por digest — source 83fe1fa (tag labels-83fe1fa37558): los webhooks orders/paid test:true se reconocen y no entran en EventStore, publicación ni saga de envío; 811 tests, typecheck/lint/build y release job 94373046712 PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:6d9d5844b5042e0b1ba6adb17656b9769b1379d51925134c65c9e29c3ab7ec1c # pin por digest — source 7ef8e3a (tag v2026.08.22.1): bloquea creación/retry con el campo y límite exactos de la dirección; release 32531834836 PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -384,7 +384,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:594914c60fb86e5a54dbf6a112164cadab1bcb531279c4bed32e26761bced581 # pin por digest (no :latest, policy Kyverno disallow-latest-tag) — source cbc92e4 (tag v2026.08.11.1): FUERA `peninsula-recambios-correos`, la regla que pisaba el Correos Express elegido en el checkout y mandaba por Correos 48-72h sin decírselo al cliente (ORD18748). Ahora manda la elección del cliente; el ahorro va por umbral de envío gratis.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:4202e822e894f8e6bb5df17bfb90737cd8fd424fed3fd0eafcbecf900e45242d # pin por digest — source 7ef8e3a (tag v2026.08.22.1): valida los límites del transportista elegido antes de devolver la ruta; release 32531834836 PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -574,7 +574,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:3bcf2c53586363fd2f8a52b41596b53637ecebd870027dfb8824402bc10411df # pin por digest — main 25d58ce (tag ups-access-point-ready-20260722-0126): D/2Q y D/ZP READY_FOR_PICKUP; D/2W y entregas a domicilio siguen terminales; PR #124, CI completo PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:9eef6e78d086c4ec0356141b8540d6e907a4d36b45d9bf73d79ef70d095ff11a # pin por digest — source 7ef8e3a (tag v2026.08.22.1): aplica límites UPS antes de cotizar/comprar y pide validación de ciudad a Shipping; release 32531834836 PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
