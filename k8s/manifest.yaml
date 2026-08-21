@@ -504,7 +504,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: outbox-relay
-          image: harbor.e-dani.com/homelab/skirmshop-labels-outbox-relay@sha256:184576113643eb4c4168a592b8771241867809d3e50ba4b6567bf1343e61829e # pin por digest — 6c18029 (tag tracking-liveness-20260713-1503): reconexión NATS con backoff+jitter+waitOnFirstConnect
+          image: harbor.e-dani.com/homelab/skirmshop-labels-outbox-relay@sha256:d8dc83ed9393883bf8ead630dc217fc8b32ce752c9de2c1bfdd40a60ffb59cc8 # recovery 2026-08-21 — rebuilt from skirmshop-labels 2fa6c66 after Harbor GC removed the previous digest
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
