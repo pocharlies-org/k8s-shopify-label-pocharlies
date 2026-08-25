@@ -90,7 +90,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:6d9d5844b5042e0b1ba6adb17656b9769b1379d51925134c65c9e29c3ab7ec1c # pin por digest — source 7ef8e3a (tag v2026.08.22.1): bloquea creación/retry con el campo y límite exactos de la dirección; release 32531834836 PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:b413e39791c5a7dd408184ccca847e6ee18524eb0a108cded09d5fd37d9810ac # pin por digest — source 60171c5 (tag v2026.08.25.1): el guard ya no cuenta el switch createShipment como la llamada al transportista, así que un fallo posterior al routing deja de bloquear el reintento 6 h; release 32858771004 PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -439,7 +439,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: saga-launcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:0fb2ec752aad12b68521b78bbf3afe7b1082e023becbc5d090a359e2c8c81233 # pin por digest — 6c18029 (tag tracking-liveness-20260713-1503): reconexión NATS con backoff+jitter+waitOnFirstConnect
+          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:40e0eb6dcd3230cd880ffc7156eea39c262cf90e725444ef4d69f8fceaf7de67 # pin por digest — source 60171c5 (tag v2026.08.25.1): mismo fix del switch createShipment que shopify-app; el launcher reevalúa el guard en el claim, así que sin esta imagen el botón dejaría pulsar y el claim rechazaría igual. Mantiene la reconexión NATS con backoff+jitter+waitOnFirstConnect de 6c18029.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
