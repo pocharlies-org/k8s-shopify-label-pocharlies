@@ -574,7 +574,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:9eef6e78d086c4ec0356141b8540d6e907a4d36b45d9bf73d79ef70d095ff11a # pin por digest — source 7ef8e3a (tag v2026.08.22.1): aplica límites UPS antes de cotizar/comprar y pide validación de ciudad a Shipping; release 32531834836 PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:89504c7b377831b3e0bdae1c1f8bc33d42faa99a3f40a9a83f43d0f81bec6c86 # pin por digest — source cf6b191 (tag v2026.08.27.1): quita el espacio interno del CP en toUpsAddress, que era lo que disparaba el 120207 en los CP britanicos (ORD18854, ORD18721); release 33107644669.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
