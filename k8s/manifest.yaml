@@ -775,12 +775,17 @@ spec:
       imagePullSecrets:
         - name: harbor-pull
       nodeSelector: { kubernetes.io/arch: amd64 }
-      # Lista vacía EXPLÍCITA: borrar la clave de git no la quita del objeto
-      # vivo (SSA solo elimina campos del manager que los posee; kubectl/
-      # kubectl-patch poseían f:tolerations desde agosto). Nombrarla aquí hace
-      # que ArgoCD (ServerSideApply + force-conflicts) tome la propiedad y la
-      # borre. Ver SC-241.
-      tolerations: []
+      # Lista NO vacía a propósito: una lista vacía (`tolerations: []`) se
+      # serializa como `omitempty` y el diff de ArgoCD la descarta antes de
+      # aplicar nada, así que nunca reclama f:tolerations (kubectl/kubectl-patch
+      # la poseían desde agosto) — probado en SC-241, revision del sync sigue
+      # apuntando al commit anterior. Estas dos son las que el admission
+      # plugin DefaultTolerationSeconds añade a todos los pods igualmente, así
+      # que el diff tiene algo real que registrar sin cambiar la semántica de
+      # scheduling. Ver SC-241.
+      tolerations:
+        - { key: node.kubernetes.io/not-ready,   operator: Exists, effect: NoExecute, tolerationSeconds: 300 }
+        - { key: node.kubernetes.io/unreachable, operator: Exists, effect: NoExecute, tolerationSeconds: 300 }
       initContainers:
         - name: synapse-namespace-init
           image: curlimages/curl:8.13.0
