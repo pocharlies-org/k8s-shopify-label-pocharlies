@@ -775,6 +775,12 @@ spec:
       imagePullSecrets:
         - name: harbor-pull
       nodeSelector: { kubernetes.io/arch: amd64 }
+      # Lista vacía EXPLÍCITA: borrar la clave de git no la quita del objeto
+      # vivo (SSA solo elimina campos del manager que los posee; kubectl/
+      # kubectl-patch poseían f:tolerations desde agosto). Nombrarla aquí hace
+      # que ArgoCD (ServerSideApply + force-conflicts) tome la propiedad y la
+      # borre. Ver SC-241.
+      tolerations: []
       initContainers:
         - name: synapse-namespace-init
           image: curlimages/curl:8.13.0
