@@ -774,9 +774,7 @@ spec:
       serviceAccountName: labels-synapse-operator
       imagePullSecrets:
         - name: harbor-pull
-      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
-      tolerations:
-        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
+      nodeSelector: { kubernetes.io/arch: amd64 }
       initContainers:
         - name: synapse-namespace-init
           image: curlimages/curl:8.13.0
@@ -829,7 +827,7 @@ spec:
           env:
             - {
                 name: CONNECTIONSTRINGS__REDIS,
-                value: "labels-valkey-master.skirmshop.svc.cluster.local:6379",
+                value: "labels-valkey-master.skirmshop.svc.cluster.local:6379,syncTimeout=40000,connectTimeout=10000,connectRetry=5",
               }
             - { name: SYNAPSE_OPERATOR_NAME, value: skirmshop-operator }
             - { name: SYNAPSE_OPERATOR_NAMESPACE, value: skirmshop }
