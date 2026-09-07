@@ -80,6 +80,12 @@ spec:
               value: "120"
             - name: MANUAL_LABEL_STUCK_MINUTES
               value: "15"
+            # A `running` generate-shipment-label instance with no task
+            # transition for this long is faulted with a recorded error
+            # (dead Synapse engine — ORD18918). Must exceed the PT2M
+            # carrier-confirmation listen; 0 disables.
+            - name: STALLED_LABEL_MINUTES
+              value: "10"
           ports:
             - containerPort: 3000
               name: http

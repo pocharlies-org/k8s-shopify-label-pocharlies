@@ -671,8 +671,12 @@ spec:
                 subPath: tokens.yaml,
               }
           resources:
-            requests: { cpu: 50m, memory: 128Mi }
-            limits: { memory: 512Mi }
+            # 512Mi OOMKilled the engine mid-workflow (ORD18918, 2026-09-07:
+            # the instance froze in `running` forever and the order could not
+            # be retried). 1Gi headroom + the janitor faulting stalled
+            # instances so a crash never locks an order again.
+            requests: { cpu: 50m, memory: 256Mi }
+            limits: { memory: 1Gi }
           readinessProbe:
             httpGet: { path: /healthz, port: 8080 }
             initialDelaySeconds: 15
