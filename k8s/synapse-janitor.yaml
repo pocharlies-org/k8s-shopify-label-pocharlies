@@ -45,7 +45,7 @@ spec:
           value: edge
       containers:
         - name: synapse-janitor
-          image: harbor.e-dani.com/homelab/skirmshop-labels-synapse-janitor@sha256:c1b66d348ba820266c612e91e650838ad35b25a1bc0a47ab0a7faa2f6c7ef7c3
+          image: harbor.e-dani.com/homelab/skirmshop-labels-synapse-janitor@sha256:e0bbda70f6f6ca69079aef22013b2da37f1d4beedfb325444c53fe468d28b23c
           imagePullPolicy: IfNotPresent
           envFrom:
             - secretRef:
