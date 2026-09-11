@@ -90,7 +90,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:0f50176d96ceb8f718f02a23259481fcf47511b67f9bbac57a30e7b660b66ad9 # pin por digest — tag v2026.09.07.1 (PR #133): el gate de reintento distingue workflow COLGADO (motor Synapse muerto, ORD18918) de workflow vivo y lo marca fuerza-able nombrando el paso atascado; la UI muestra el error a nivel de workflow en vez de "processing" eterno.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:511439a69c9ab22ee5f83aaba360fde5ec45736d30d1bc994150b8992ec57c15 # pin por digest — tag v2026.09.11.1 (labels #136): pedidos de recogida en tienda → persisten su custom.tracking_url en orders/paid y la página /track muestra «Recogida en tienda» pidiendo cita en info@skirmshop.es en vez de 404; correo de contacto de la página corregido a info@skirmshop.es.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
