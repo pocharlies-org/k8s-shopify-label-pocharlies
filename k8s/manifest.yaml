@@ -16,14 +16,14 @@ metadata:
   name: labels-secrets
   namespace: skirmshop
 spec:
-  refreshInterval: 1h
-  secretStoreRef: { name: vault-backend, kind: ClusterSecretStore }
+  refreshInterval: 6h
+  secretStoreRef: { name: onepassword, kind: ClusterSecretStore }
   target:
     name: labels-secrets
     creationPolicy: Owner
     deletionPolicy: Retain
   dataFrom:
-    - extract: { key: secret/skirmshop/labels }
+    - extract: { key: skirmshop-labels }
 
 ---
 # Dedicated, least-privilege bearer shared only by the deterministic shop
@@ -35,8 +35,8 @@ metadata:
   name: labels-chatbot-order-status
   namespace: skirmshop
 spec:
-  refreshInterval: 1h
-  secretStoreRef: { name: vault-backend, kind: ClusterSecretStore }
+  refreshInterval: 6h
+  secretStoreRef: { name: onepassword, kind: ClusterSecretStore }
   target:
     name: labels-chatbot-order-status
     creationPolicy: Owner
@@ -44,8 +44,7 @@ spec:
   data:
     - secretKey: INTERNAL_API_TOKEN
       remoteRef:
-        key: secret/skirmshop/labels
-        property: INTERNAL_API_TOKEN
+        key: skirmshop-labels/INTERNAL_API_TOKEN
 
 
 # ── labels microservices (stateless) ─────────────────────────────────────────
