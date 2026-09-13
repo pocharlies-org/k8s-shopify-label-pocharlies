@@ -859,7 +859,9 @@ spec:
               }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
-            requests: { cpu: 30m, memory: 64Mi }
+            # 13-09-2026 (INFRA-42): p95 medido 162m. Request 30m→100m (infra-dotado);
+            # límite de memoria sin cambios.
+            requests: { cpu: 100m, memory: 64Mi }
             limits: { memory: 256Mi }
       volumes:
         - name: tokens

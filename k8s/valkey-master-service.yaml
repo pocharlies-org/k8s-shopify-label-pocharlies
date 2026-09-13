@@ -102,5 +102,6 @@ spec:
                 sleep 20
               done
           resources:
-            requests: { cpu: 20m, memory: 48Mi }
+            # 13-09-2026 (INFRA-42): p95 medido 65m. Request 20m→50m (infra-dotado).
+            requests: { cpu: 50m, memory: 48Mi }
             limits: { memory: 128Mi }
