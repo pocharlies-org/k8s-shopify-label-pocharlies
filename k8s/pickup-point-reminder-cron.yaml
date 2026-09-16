@@ -25,7 +25,7 @@ spec:
           nodeSelector: { kubernetes.io/arch: amd64 }
           containers:
             - name: pickup-point-reminder
-              image: harbor.e-dani.com/homelab/skirmshop-labels-pickup-point-reminder@sha256:b83e10ce5e10289c8f61261293931a91a005b66aadc6b8db0569653894e5f85e
+              image: harbor.e-dani.com/homelab/skirmshop-labels-pickup-point-reminder@sha256:8933de71c11334852cc70578d00bbd12f4782a2824372047137735d4b20c0815 # pin por digest — tag v2026.09.17.1 (labels main 36f4b5a, SKIRM-18): solo cambian sus tests (criterio épico 5: un OrderPaid refrescado sin pickupPointRequired limpia la alerta activa); el código runtime de la app y sus deps no cambian respecto al pin anterior (19cb5b8, junio) — se alinea al sha desplegado.
               env:
                 - {
                     name: PG_URL,
