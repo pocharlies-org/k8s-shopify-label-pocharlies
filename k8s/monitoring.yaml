@@ -194,15 +194,16 @@ spec:
             description: 'Expected exactly one labels-valkey master; current master count is {{ $value }}.'
         - alert: LabelsValkeyMemoryHigh
           # labels-valkey has maxmemory=0/noeviction; the practical ceiling is the
-          # valkey container limit (512Mi). Alert below that cliff so document/poll
-          # backlog growth is visible before OOM/failover pressure.
-          expr: max(redis_memory_used_bytes{job="labels-valkey-headless"}) > 350 * 1024 * 1024
+          # valkey container limit (1Gi since 17-09, was 512Mi). Alert below that
+          # cliff so document/poll backlog growth is visible before OOM/failover
+          # pressure.
+          expr: max(redis_memory_used_bytes{job="labels-valkey-headless"}) > 700 * 1024 * 1024
           for: 15m
           labels:
             severity: warning
           annotations:
-            summary: 'labels-valkey memory is above 350Mi'
-            description: 'labels-valkey used_memory is {{ $value | humanize1024 }} for 15m. With noeviction and a 512Mi valkey container limit, growth can become OOM/failover pressure.'
+            summary: 'labels-valkey memory is above 700Mi'
+            description: 'labels-valkey used_memory is {{ $value | humanize1024 }} for 15m. With noeviction and a 1Gi valkey container limit, growth can become OOM/failover pressure.'
         - alert: LabelsValkeyMemoryGrowth
           expr: |
             (
@@ -215,7 +216,7 @@ spec:
             severity: warning
           annotations:
             summary: 'labels-valkey memory grew by more than 50Mi in 24h'
-            description: 'labels-valkey memory grew by {{ $value | humanize1024 }} over 24h. Check document-* and poll-* retention backlog before it reaches the 512Mi container limit.'
+            description: 'labels-valkey memory grew by {{ $value | humanize1024 }} over 24h. Check document-* and poll-* retention backlog before it reaches the 1Gi container limit.'
         - alert: LabelsValkeyEvictions
           expr: sum(increase(redis_evicted_keys_total{job="labels-valkey-headless"}[10m])) > 0
           labels:

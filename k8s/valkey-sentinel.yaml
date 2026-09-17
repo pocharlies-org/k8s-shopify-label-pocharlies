@@ -152,7 +152,11 @@ spec:
             periodSeconds: 15
           resources:
             requests: { cpu: 50m, memory: 128Mi }
-            limits: { memory: 512Mi }
+            # 512Mi se quedó sin margen: 475Mi usados el 17-09 con maxmemory=0/
+            # noeviction (los document-* de workflow no tienen TTL). El techo
+            # práctico del engine es este límite; el janitor de retención de
+            # documentos es aparte (pendiente de decisión).
+            limits: { memory: 1Gi }
         - name: sentinel
           image: valkey/valkey:8-alpine
           command: ["/bin/sh", "/scripts/start-sentinel.sh"]
