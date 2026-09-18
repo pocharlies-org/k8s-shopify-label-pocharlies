@@ -1008,9 +1008,13 @@ spec:
   entryPoints: [websecure]
   ingressClassName: traefik-edge
   routes:
+    # NB: Traefik PathPrefix es un prefijo de string puro: PathPrefix(`/labels`)
+    # (labels-shopify-app, priority 300) también casa con /labels-ups/* y se
+    # llevaba el /labels-ups/health del blackbox (404 JSON de la app, con CSP
+    # de Shopify). 18-09: estos routers van por encima de ese 300.
     - match: Host(`skirmshop.e-dani.com`) && Path(`/labels-ups`)
       kind: Rule
-      priority: 300
+      priority: 600
       middlewares:
         - name: redirect-labels-ups-root
       services:
@@ -1018,7 +1022,7 @@ spec:
           port: 3002
     - match: Host(`skirmshop.e-dani.com`) && PathPrefix(`/labels-ups`)
       kind: Rule
-      priority: 100
+      priority: 500
       middlewares:
         - name: strip-labels-ups
       services:
