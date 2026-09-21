@@ -1,0 +1,96 @@
+# inbound-ups-watch — seguimiento diario de un envío ENTRANTE de proveedor por UPS.
+#
+# Lee el adapter UPS que ya tenemos en el clúster (labels-ups-adapter) y publica
+# el estado en el topic de Telegram del grupo Skirmshop ES OP creado para ese envío.
+# No toca pedidos ni etiquetas: es solo visibilidad de la mercancía en camino.
+#
+# Envío actual: Silverback Airsoft (HK) — factura SBA26081702-2, 11 bultos,
+# master tracking 1Z41345F0456015575, salida 18-09-2026.
+# Cuando llegue, borra este fichero (o el CronJob deja de tener sentido y seguirá
+# publicando DELIVERED cada día).
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: labels-inbound-ups-watch-silverback
+  namespace: skirmshop
+  labels:
+    app: labels-inbound-ups-watch
+spec:
+  schedule: "7 9 * * *"
+  timeZone: Europe/Madrid
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 3600
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      ttlSecondsAfterFinished: 604800   # 7 days
+      activeDeadlineSeconds: 300
+      template:
+        metadata:
+          labels:
+            app: labels-inbound-ups-watch
+        spec:
+          restartPolicy: Never
+          enableServiceLinks: false
+          nodeSelector: { kubernetes.io/arch: amd64 }
+          containers:
+            - name: watch
+              image: curlimages/curl:8.13.0
+              env:
+                - { name: SHIPMENT_TITLE, value: "Silverback SBA26081702-2" }
+                - { name: SHIPMENT_NOTE, value: "11 bultos · salida 18/09/2026" }
+                - { name: TRACKING_NUMBER, value: "1Z41345F0456015575" }
+                - { name: UPS_ADAPTER_URL, value: "http://labels-ups-adapter.skirmshop.svc.cluster.local:3002" }
+                - { name: OPS_TELEGRAM_CHAT_ID, value: "-1003984393379" }
+                - { name: OPS_TELEGRAM_THREAD_ID, value: "35359" }
+                - name: OPS_TELEGRAM_BOT_TOKEN
+                  valueFrom:
+                    secretKeyRef: { name: labels-telegram-bot, key: bot_token }
+              command:
+                - sh
+                - -c
+                - |
+                  set -eu
+
+                  body="$(curl -sS --max-time 30 \
+                    "${UPS_ADAPTER_URL}/tracking/${TRACKING_NUMBER}" || true)"
+                  echo "[inbound-ups-watch] adapter said: ${body}"
+
+                  field() {
+                    printf '%s' "$body" | sed -n 's/.*"'"$1"'"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n1
+                  }
+                  status="$(field normalizedStatus)"
+                  descr="$(field description)"
+                  when="$(field occurredAt)"
+
+                  if [ -z "$status" ]; then
+                    text="$(printf '⚠️ %s — UPS %s\n\nNo he podido leer el estado en UPS hoy. Respuesta del adapter:\n%s' \
+                      "${SHIPMENT_TITLE}" "${TRACKING_NUMBER}" "$(printf '%s' "$body" | cut -c1-500)")"
+                  else
+                    icon='🚚'
+                    case "$status" in
+                      DELIVERED) icon='✅' ;;
+                      EXCEPTION|RETURNED|FAILED) icon='⚠️' ;;
+                    esac
+                    text="$(printf '%s %s — UPS %s\n\nEstado: %s%s\nÚltimo evento: %s\n%s\n\nhttps://www.ups.com/track?loc=es_ES&tracknum=%s' \
+                      "$icon" "${SHIPMENT_TITLE}" "${TRACKING_NUMBER}" \
+                      "$status" "${descr:+ — $descr}" "${when:-sin fecha}" \
+                      "${SHIPMENT_NOTE}" "${TRACKING_NUMBER}")"
+                  fi
+
+                  HTTP_CODE=$(curl -sS -o /tmp/telegram.json -w "%{http_code}" \
+                    -X POST \
+                    -d "chat_id=${OPS_TELEGRAM_CHAT_ID}" \
+                    -d "message_thread_id=${OPS_TELEGRAM_THREAD_ID}" \
+                    -d "disable_web_page_preview=true" \
+                    --data-urlencode "text=${text}" \
+                    "https://api.telegram.org/bot${OPS_TELEGRAM_BOT_TOKEN}/sendMessage" || true)
+                  echo "[inbound-ups-watch] Telegram HTTP ${HTTP_CODE}"
+                  cat /tmp/telegram.json || true
+                  echo
+                  [ "$HTTP_CODE" = "200" ] || exit 1
+              resources:
+                requests: { cpu: 10m, memory: 16Mi }
+                limits:   { memory: 64Mi }
