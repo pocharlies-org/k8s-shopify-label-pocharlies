@@ -256,7 +256,7 @@ metadata:
   name: labels-telegram-bot
   namespace: skirmshop
 spec:
-  refreshInterval: 6h
+  refreshInterval: 24h
   secretStoreRef: { name: onepassword, kind: ClusterSecretStore }
   target:
     name: labels-telegram-bot
@@ -277,7 +277,7 @@ metadata:
   name: labels-socialmedia-secrets
   namespace: skirmshop
 spec:
-  refreshInterval: 6h
+  refreshInterval: 24h
   secretStoreRef: { name: onepassword, kind: ClusterSecretStore }
   target:
     name: labels-socialmedia-secrets
