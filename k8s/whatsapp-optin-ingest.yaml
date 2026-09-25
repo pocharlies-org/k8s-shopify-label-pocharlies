@@ -30,7 +30,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: whatsapp-optin-ingest
-          image: harbor.e-dani.com/homelab/skirmshop-labels-whatsapp-optin-ingest@sha256:0beddd61c9dfa0a3439b6669b5b806d80408b72b06a627eea1fc07f5ea1cf670 # pin por digest — main 77c57bc (tag pickup-visibility-20260721-2035): visibilidad punto de recogida F1-F5; PR #123, gates completos PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-whatsapp-optin-ingest@sha256:35a5af80ad1ef52c4cd9d05ec653886ba9c843d78ab20f2d5bad90691d2a2dda # pin por digest — main cc6d92ad (tag optin-account-id-20260925): account_id/external_id en vez de account/prefijo (ADR 0001 socialmedia, skirmshop-labels#141).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
