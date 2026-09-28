@@ -89,7 +89,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:185cea02066cb16a1cc8b5e40541c1620c5a924913fc5dda197a7affa8222a51 # pin por digest — tag v2026.09.17.1 (labels main 36f4b5a, SKIRM-18): ruta de operador de cambio de método de envío (PR #140), motor de order-edit extraído (PR #139), lectura del metafield skirmshop-labels.shipping_service_code con prioridad sobre line.code (PR #137) y botón «Cambiar método de envío» en el Admin UI embebido, cuyo dist va dentro de esta imagen (PR #138).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:cfff2018f1f12d4695a54e88b827bb5943bf60527ef65602224255131f067f27 # pin por digest — tag v2026.09.28.1 (labels main e921579, PR #142): fix SKIRM-22 — el routing key decide la modality; un título de línea obsoleto del re-leeo REST ya no re-arma pickupPointRequired en relanzamientos/reintentos (ORD19036).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
