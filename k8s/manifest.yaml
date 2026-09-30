@@ -89,7 +89,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:cfff2018f1f12d4695a54e88b827bb5943bf60527ef65602224255131f067f27 # pin por digest — tag v2026.09.28.1 (labels main e921579, PR #142): fix SKIRM-22 — el routing key decide la modality; un título de línea obsoleto del re-leeo REST ya no re-arma pickupPointRequired en relanzamientos/reintentos (ORD19036).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:31867287edcf920348f7a7b587f1ee3c31e375e394027c229393d0b948a20d2b # pin por digest — tag v2026.09.30.1 (labels main 6ed3451, PR #146): el Admin UI vuelve a activar «Reintentar creación» tras cancelar una etiqueta — miraba cualquier CarrierAccepted del historial en vez del intento actual (ORD18791).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
