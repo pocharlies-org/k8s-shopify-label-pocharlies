@@ -55,7 +55,10 @@ data:
       const line = (ch) => {
         const s = m[ch] || {};
         return `  ${ch}: ✅ ${s.sent || 0} sent · ❌ ${s.failed || 0} failed · ⏭️ ${s.skipped_no_optin || 0} no-optin`
-          + (s.skipped_invalid_phone ? ` · ⚠️ ${s.skipped_invalid_phone} invalid` : '');
+          + (s.skipped_invalid_phone ? ` · ⚠️ ${s.skipped_invalid_phone} invalid` : '')
+          // account_restricted: the customer never wrote to the business number;
+          // the connector queued a wa.me manual-open request instead of sending.
+          + (s.skipped_account_restricted ? ` · 🔒 ${s.skipped_account_restricted} manual-open` : '');
       };
       const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
       const L = [];
