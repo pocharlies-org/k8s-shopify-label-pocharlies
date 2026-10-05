@@ -93,7 +93,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:f5ff5d6b11dcaeda86b3912eeb9741a5c3d226532c77d5f241edcc23eabc01b9 # pin por digest — source 7ef8e3a (tag v2026.08.22.1): conserva address1+address2 y rechaza la dirección completa si supera 50 caracteres; release 32531834836 PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:dfb88b34378ff6233a9d2e730c74636ec435b686619d3898213141bd8baf6d20 # pin por digest — source 9c35bab (tag v2026.10.05.1): CP extranjero en codPosIntDest, etiquetas CEX a Portugal (SKIRM-76); release 37331790546 PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
