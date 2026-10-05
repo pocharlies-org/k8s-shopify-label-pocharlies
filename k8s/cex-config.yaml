@@ -1321,7 +1321,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "PAQ24",
+        "service": "PORTUGAL",
         "zone": "portugal",
         "maxWeightKg": 2,
         "totalCharges": "10.23",
@@ -1330,7 +1330,7 @@ data:
       },
       {
         "contractScope": "direct",
-        "service": "PAQ24",
+        "service": "PORTUGAL",
         "zone": "portugal",
         "maxWeightKg": 9999,
         "totalCharges": "10.23",

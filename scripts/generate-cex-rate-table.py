@@ -94,6 +94,12 @@ EPAQ24 = {
 }
 
 # Paq24, p.8. 24h service with more zones (Portugal, Ceuta, Andorra, Gibraltar).
+# The Portugal column is published as service 'PORTUGAL' (same CEX product 63,
+# see CEX_SERVICE_TO_PRODUCT): routing decides 'PORTUGAL' for PT, the policy
+# enables 'PORTUGAL' and leaves PAQ24 off on purpose (it duplicates ePaq24 in
+# the peninsula), and the checkout title maps 'PORTUGAL'→"Correos Express
+# Portugal". Published as PAQ24 it was filtered out and PT only got PaqPunto,
+# with no home delivery at all (SKIRM-76, ORD19124).
 PAQ24_ZONES = [
     ("provincial", "Provincial"),
     ("regional", "Regional"),
@@ -109,6 +115,7 @@ PAQ24_ZONES = [
 ]
 PAQ24 = {
     "service": "PAQ24",
+    "service_by_zone": {"portugal": "PORTUGAL"},
     "transit_days": 1,
     "zones": PAQ24_ZONES,
     "rows": {
@@ -178,10 +185,11 @@ ISLAS_EXPRESS = {
 
 def emit_entries(product: dict) -> Iterable[dict]:
     for zone_idx, (zone_id, _label) in enumerate(product["zones"]):
+        service = product.get("service_by_zone", {}).get(zone_id, product["service"])
         for weight, prices in sorted(product["rows"].items()):
             yield {
                 "contractScope": "direct",
-                "service": product["service"],
+                "service": service,
                 "zone": zone_id,
                 "maxWeightKg": weight,
                 "totalCharges": f"{prices[zone_idx]:.2f}",
@@ -192,7 +200,7 @@ def emit_entries(product: dict) -> Iterable[dict]:
         max_weight = max(product["rows"].keys())
         yield {
             "contractScope": "direct",
-            "service": product["service"],
+            "service": service,
             "zone": zone_id,
             "maxWeightKg": 9999,
             "totalCharges": f"{product['rows'][max_weight][zone_idx]:.2f}",
