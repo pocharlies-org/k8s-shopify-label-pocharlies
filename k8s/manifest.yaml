@@ -46,6 +46,28 @@ spec:
       remoteRef:
         key: skirmshop-labels/INTERNAL_API_TOKEN
 
+---
+# DGX-846 (épica DGX-843): bearer de la ruta de operador /api/internal/order-edit/*
+# (secretaria-skirmshop añade artículos a un pedido pagado). Item propio del vault
+# k8s-pocharlies, forma Connect, y Secret propio: NUNCA dentro de labels-secrets, que
+# entra por envFrom en otros once Deployments. Solo lo lee labels-shopify-app, con
+# optional:true. Rotar = force-sync de este ExternalSecret; el pod lo toma al reiniciar.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: labels-order-edit-operator
+  namespace: skirmshop
+spec:
+  refreshPolicy: OnChange
+  secretStoreRef: { name: onepassword-connect, kind: ClusterSecretStore }
+  target:
+    name: labels-order-edit-operator
+    creationPolicy: Owner
+    deletionPolicy: Retain
+  data:
+    - secretKey: token
+      remoteRef: { key: skirmshop-labels-order-edit-operator, property: token }
+
 
 # ── labels microservices (stateless) ─────────────────────────────────────────
 # All use harbor.e-dani.com/homelab/skirmshop-labels-<name>:latest
@@ -98,6 +120,15 @@ spec:
                 secretKeyRef:
                   name: labels-chatbot-order-status
                   key: INTERNAL_API_TOKEN
+            # Bearer de /api/internal/order-edit/* (DGX-843). Distinto de INTERNAL_API_TOKEN y de
+            # LABELS_AGENT_TOKEN: con el mismo valor el pod nuevo no arranca (el viejo sigue sirviendo).
+            # optional:true: sin Secret la ruta da 404 (feature apagada), no un pod caído.
+            - name: LABELS_ORDER_EDIT_OPERATOR_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: labels-order-edit-operator
+                  key: token
+                  optional: true
             - { name: GROUNDED_REPLY_TENANT_ID, value: "807a4817-b73a-42ce-8954-8dd5dc80b751" }
             - { name: GROUNDED_REPLY_STORE_ID, value: "269d0560-9c16-4db8-86e4-52867efc1901" }
             - { name: GROUNDED_REPLY_BINDING_ID, value: "d9188e91-b282-4878-a24e-933611c94d84" }
