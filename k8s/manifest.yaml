@@ -111,7 +111,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:f09d2741172edb4044d379d9b85374845df8bb0d22f9108657be1db9f8083fe6 # pin por digest — tag v2026.10.12.1 (labels main 5ca8fd8, PRs #155 y #156): rutas de operador /api/internal/order-edit/items para añadir artículos a un pedido (DGX-844), con el bearer LABELS_ORDER_EDIT_OPERATOR_TOKEN (#46); solo las llama el sidecar 8797 de Hermes.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:45d6820428d9395d8c6e9c38ded222c3bcf2e5ee127d8d69189c6f13435b4625 # pin por digest — tag v2026.10.13.1 (labels main 92ffb7a, PR #157): rutas de operador /api/internal/order-edit/items (DGX-844) con auditoría en la nota del pedido y /notes para anotar el correo enviado (DGX-849), con el bearer LABELS_ORDER_EDIT_OPERATOR_TOKEN (#46); solo las llama el sidecar 8797 de Hermes.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
