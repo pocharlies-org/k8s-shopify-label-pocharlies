@@ -534,7 +534,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: outbox-relay
-          image: harbor.e-dani.com/homelab/skirmshop-labels-outbox-relay@sha256:d8dc83ed9393883bf8ead630dc217fc8b32ce752c9de2c1bfdd40a60ffb59cc8 # recovery 2026-08-21 — rebuilt from skirmshop-labels 2fa6c66 after Harbor GC removed the previous digest
+          image: harbor.e-dani.com/homelab/skirmshop-labels-outbox-relay@sha256:d48db02f9527f954c477b4ed56189de432627a248f6d00294cae53082dea030f # recovery 2026-10-12 (SKIRM-136) — tag v2026.10.12.1 (labels main 5ca8fd8): el GC de Harbor volvió a borrar el digest anterior (2fa6c66); apps/outbox-relay sin cambios desde entonces.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
