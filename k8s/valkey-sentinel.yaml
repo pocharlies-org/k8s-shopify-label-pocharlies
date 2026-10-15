@@ -152,11 +152,13 @@ spec:
             periodSeconds: 15
           resources:
             requests: { cpu: 50m, memory: 128Mi }
-            # 512Mi se quedó sin margen: 475Mi usados el 17-09 con maxmemory=0/
-            # noeviction (los document-* de workflow no tienen TTL). El techo
-            # práctico del engine es este límite; el janitor de retención de
-            # documentos es aparte (pendiente de decisión).
-            limits: { memory: 1Gi }
+            # Segunda subida de techo por la misma causa: 512Mi→1Gi el 17-09 con
+            # 475Mi usados; 1Gi otra vez sin margen el 15-10 con 886Mi (463k
+            # document-* sin TTL, ~560Mi/mes). El techo práctico del engine es
+            # este límite; la causa de fondo (retención de document-*, Card A de
+            # docs/labels-valkey-remediation-plan-2026-07-01.md) exige code-fix
+            # previo y va en el ticket de problema, no aquí.
+            limits: { memory: 2Gi }
         - name: sentinel
           image: valkey/valkey:8-alpine
           command: ["/bin/sh", "/scripts/start-sentinel.sh"]
