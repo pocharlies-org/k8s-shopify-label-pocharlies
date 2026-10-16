@@ -218,12 +218,22 @@ spec:
           # UN nodo menos el min de OTRO, asi que un resync de una replica (hoy 16-10 un
           # nodo cayo a 306MiB y subio a 890 -> delta 584MiB) la dispara; eso es un evento
           # real de repli, no crecimiento de cache, y por eso se deja margen hasta 300.
+          # SC-2506: el margen de 300 no cubre el artefacto (584MiB > 300), y el incidente
+          # LBL-14496 volvio a disparar con el mismo patrón tras los reinicios del 16-10
+          # (04:12-06:31). Puerta de uptime: la regla solo evalua si las 3 instancias
+          # llevan >=24h vivas, es decir, la ventana esta limpia de reinicios/resyncs.
+          # Medido en vivo: con la puerta el delta 585MiB queda suprimido; simulando la
+          # puerta superada la alerta sigue disparando con ese valor. El crecimiento real
+          # de cache (~8MiB/dia) nunca alcanza 300MiB en 24h, asi que nada se pierde;
+          # caidas de repli las cubren LabelsValkeyExporterDown y ScrapeTargetsLow.
           expr: |
             (
               max(max_over_time(redis_memory_used_bytes{job="labels-valkey-headless"}[24h]))
               -
               min(min_over_time(redis_memory_used_bytes{job="labels-valkey-headless"}[24h]))
             ) > 300 * 1024 * 1024
+            and on()
+            count(redis_uptime_in_seconds{job="labels-valkey-headless"} >= 86400) >= 3
           for: 15m
           labels:
             severity: warning
