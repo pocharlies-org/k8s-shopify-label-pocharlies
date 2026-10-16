@@ -199,25 +199,36 @@ spec:
           # visible before OOM/failover pressure. The underlying growth of
           # document-* (no TTL, no age source) is NOT fixed by this threshold:
           # see docs/labels-valkey-remediation-plan-2026-07-01.md Card A.
-          expr: max(redis_memory_used_bytes{job="labels-valkey-headless"}) > 1400 * 1024 * 1024
+          # INFRA-882: medido 16-10, max de used_memory en 7d = 891MiB (~934MB dec),
+          # estable 858->890. SC-2231 (15-10) ya subio el umbral 700->1400 (el flapeo
+          # que vio el triaje era el 700 viejo). Se sube a 1600MiB: margen extra para el
+          # crecimiento lento del cache (noeviction, ~8MiB/dia) y sigue por debajo del
+          # cliff de 2Gi (2048MiB), con ~448MiB de colchon antes de presion OOM.
+          expr: max(redis_memory_used_bytes{job="labels-valkey-headless"}) > 1600 * 1024 * 1024
           for: 15m
           labels:
             severity: warning
           annotations:
-            summary: 'labels-valkey memory is above 1400Mi'
+            summary: 'labels-valkey memory is above 1600Mi'
             description: 'labels-valkey used_memory is {{ $value | humanize1024 }} for 15m. With noeviction and a 2Gi valkey container limit, growth can become OOM/failover pressure.'
         - alert: LabelsValkeyMemoryGrowth
+          # INFRA-882: el 50MiB disparaba con el crecimiento normal de cache. Medido
+          # 16-10, el delta max-min de 24h en regime normal es de ~24-96MiB. El umbral
+          # sube a 300MiB/24h para dejar fuera ese ruido. Ojo: la expr resta el max de
+          # UN nodo menos el min de OTRO, asi que un resync de una replica (hoy 16-10 un
+          # nodo cayo a 306MiB y subio a 890 -> delta 584MiB) la dispara; eso es un evento
+          # real de repli, no crecimiento de cache, y por eso se deja margen hasta 300.
           expr: |
             (
               max(max_over_time(redis_memory_used_bytes{job="labels-valkey-headless"}[24h]))
               -
               min(min_over_time(redis_memory_used_bytes{job="labels-valkey-headless"}[24h]))
-            ) > 50 * 1024 * 1024
+            ) > 300 * 1024 * 1024
           for: 15m
           labels:
             severity: warning
           annotations:
-            summary: 'labels-valkey memory grew by more than 50Mi in 24h'
+            summary: 'labels-valkey memory grew by more than 300Mi in 24h'
             description: 'labels-valkey memory grew by {{ $value | humanize1024 }} over 24h. Check document-* and poll-* retention backlog before it reaches the 2Gi container limit.'
         - alert: LabelsValkeyEvictions
           expr: sum(increase(redis_evicted_keys_total{job="labels-valkey-headless"}[10m])) > 0
