@@ -46,7 +46,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: shopify-fulfillment-service
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-fulfillment-service@sha256:434681bd07013dd8bf5895ae530e5f294aa99896867d25c7a18570714cdebd41
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-fulfillment-service@sha256:b24a7e03e2c1a40f99cbceb6b74f1d7dbc0fd0529fc65b3f40a178e9c82094f8 # pin por digest — SKIRM-157: repin a v2026.10.14.1 (skirmshop-labels e4e9be4, HEAD 200 en Harbor); el digest anterior lo borró el GC. apps/<servicio> idéntico al pineado; en packages solo cambios aditivos (contador en metrics, campos zod opcionales) y el fix de reconexión NATS de event-publisher.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -406,7 +406,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: event-projector
-          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:c4879b29da417d4832740541d8cb07d0a4885cccbf2ed786dc0254dc39ec52e3 # pin por digest — 6c18029 (tag tracking-liveness-20260713-1503): reconexión NATS con backoff+jitter+waitOnFirstConnect + recreación de consumidor pull
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:228af03cfc33a2adb5aebcfa66b3c440bc62352e6e6cfa9b6127cb84642fc343 # pin por digest — SKIRM-157: repin a v2026.10.14.1 (skirmshop-labels e4e9be4, HEAD 200 en Harbor); el digest anterior lo borró el GC. apps/<servicio> idéntico al pineado; en packages solo cambios aditivos (contador en metrics, campos zod opcionales) y el fix de reconexión NATS de event-publisher.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -459,7 +459,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: tracking-ingestion
-          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:8a6c9cba7e413472308752d6ef3148c2067a3c6446b69d57b9861dcadb5d57f9 # pin por digest — main 77c57bc (tag pickup-visibility-20260721-2035): visibilidad punto de recogida F1-F5; PR #123, gates completos PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:c2d904eb34513dc52e5cedd0aeeb18a4aa378e32ed5bf27f75eae368f73199de # pin por digest — SKIRM-157: repin a v2026.10.14.1 (skirmshop-labels e4e9be4, HEAD 200 en Harbor); el digest anterior lo borró el GC. apps/<servicio> idéntico al pineado; en packages solo cambios aditivos (contador en metrics, campos zod opcionales) y el fix de reconexión NATS de event-publisher.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
