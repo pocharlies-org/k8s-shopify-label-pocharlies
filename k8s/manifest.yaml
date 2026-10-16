@@ -310,7 +310,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: event-gateway
-          image: harbor.e-dani.com/homelab/skirmshop-labels-event-gateway@sha256:cccd30e53679e8ed0dea29d07177cbd1e34661db99c87a3af2d7e1a152282f8d # pin por digest — 6c18029 (tag tracking-liveness-20260713-1503): reconexión NATS con backoff+jitter+waitOnFirstConnect
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-gateway@sha256:77b1360c351d09e0e9f94281eef37302e9e5c3deabbaf26bb1992dfc9f4994b2 # pin por digest — SKIRM-157: repin a v2026.10.14.1 (skirmshop-labels e4e9be4, HEAD 200 en Harbor); el digest anterior lo borró el GC. apps/<servicio> idéntico al pineado; en packages solo cambios aditivos (contador en metrics, campos zod opcionales) y el fix de reconexión NATS de event-publisher.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -414,7 +414,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:4202e822e894f8e6bb5df17bfb90737cd8fd424fed3fd0eafcbecf900e45242d # pin por digest — source 7ef8e3a (tag v2026.08.22.1): valida los límites del transportista elegido antes de devolver la ruta; release 32531834836 PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:174dd38d646623fbc5b7313df3200f4723812f0d59a51841950fed09cb4be5a0 # pin por digest — SKIRM-157: repin a v2026.10.14.1 (skirmshop-labels e4e9be4, HEAD 200 en Harbor); el digest anterior lo borró el GC. apps/<servicio> idéntico al pineado; en packages solo cambios aditivos (contador en metrics, campos zod opcionales) y el fix de reconexión NATS de event-publisher.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
