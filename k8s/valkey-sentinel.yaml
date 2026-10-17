@@ -146,10 +146,22 @@ spec:
           volumeMounts:
             - { name: data, mountPath: /data }
             - { name: scripts, mountPath: /scripts }
+          # SC-2595: la carga del AOF (~90 s con 880 Mi) superaba la gracia de arranque
+          # (20 s + 3 fallos × 15 s) y liveness mataba el contenedor a mitad de carga:
+          # bucle de reinicios que bajaba los targets de redis_up de 3 y disparaba
+          # LabelsValkeyScrapeTargetsLow (3 incidentes el 17-10, misma causa). La
+          # startupProbe cubre la carga (hasta 5 min); a liveness el PING le dan 3 s
+          # (el event loop se bloquea durante fork/BGSAVE con 880 Mi en memoria).
+          startupProbe:
+            exec: { command: ["sh", "-c", "valkey-cli -p 6379 ping | grep -q PONG"] }
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 60
           livenessProbe:
             exec: { command: ["sh", "-c", "valkey-cli -p 6379 ping | grep -q PONG"] }
-            initialDelaySeconds: 20
             periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 4
           resources:
             requests: { cpu: 50m, memory: 128Mi }
             # Segunda subida de techo por la misma causa: 512Mi→1Gi el 17-09 con
