@@ -298,7 +298,10 @@ spec:
   strategy: { type: Recreate }
   selector: { matchLabels: { app: labels-notification-dispatcher } }
   template:
-    metadata: { labels: { app: labels-notification-dispatcher } }
+    metadata:
+      labels: { app: labels-notification-dispatcher }
+      # Sube el valor para reiniciar el pod: envFrom/secretKeyRef no se recargan (SC-2092, rotación de CONNECTOR_SHARED_SECRET).
+      annotations: { pocharlies/connector-secret-generation: "2" }
     spec:
       enableServiceLinks: false
       nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
