@@ -111,7 +111,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:81f6c222142a858198885e4665eafa3671a4a76dfd56b845d551fb52e968cbe4 # pin por digest — tag v2026.10.14.1 (labels main e4e9be4, PR #158): /api/agent/shipment-status distingue 400 CUSTOMER_REQUIRED (falta ?customer=) de 404 ORDER_NOT_FOUND; antes ambos eran 404 y el MCP los leía como «sin envío» (SC-2430). Incluye v2026.10.13.1 (DGX-844/849, rutas de operador con LABELS_ORDER_EDIT_OPERATOR_TOKEN).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:56067078a4ae677bf2f003e664c33b2fffb91d8c1c32e5a95ef88aff8ef2b735 # pin por digest — tag v2026.10.20.1 (labels main 23e4969, PR #160): fechas de entrega del checkout desde el próximo día de salida (lunes/miércoles) (SKIRM-218). Incluye v2026.10.14.1 (SC-2430) y #159 (solo workflow de release).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
