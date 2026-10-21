@@ -31,7 +31,7 @@ spec:
             - name: trigger
               # Misma imagen que el Deployment labels-correos-adapter — bumpear
               # los dos digests A LA VEZ.
-              image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:d4563ecb37837181a691ddc803086d6aec61b1bf18258a74cc097a55f2d0dc6d # pin por digest — source 7ef8e3a (tag v2026.08.22.1): lockstep con labels-correos-adapter; release 32531834836 PASS.
+              image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:4d209009482efadff276955f44b9fc76257db60cfd54893dd99ad9bfe07ae31e # pin por digest — source d957da9 (tag v2026.10.21.4): nombre del pedido (ORDxxxx) como referencia de la etiqueta (SKIRM-227); release 39590567726 PASS.
               command: ["node", "-e"]
               args:
                 - >
