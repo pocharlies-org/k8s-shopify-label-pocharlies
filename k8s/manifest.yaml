@@ -111,7 +111,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:56067078a4ae677bf2f003e664c33b2fffb91d8c1c32e5a95ef88aff8ef2b735 # pin por digest — tag v2026.10.20.1 (labels main 23e4969, PR #160): fechas de entrega del checkout desde el próximo día de salida (lunes/miércoles) (SKIRM-218). Incluye v2026.10.14.1 (SC-2430) y #159 (solo workflow de release).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:2b2fa8988131fdf633c9cff7f2f6dec748eb84fe84aa346f8d167bb8d6b0e4a4 # pin por digest — tag v2026.10.21.1 (labels main 8397a88, PR #161): textos de tránsito del checkout contados desde la salida, no desde el pedido (SKIRM-218). Incluye v2026.10.20.1 (#160: fechas desde el próximo lunes/miércoles).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
