@@ -111,7 +111,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:f6b6968bffba1fdb657ca9255a7e7ae303a0523a2a496dd8e4b4cef57ccb863e # pin por digest — tag v2026.10.21.12 (labels main 47dfa52): el cambio de envío del operador a un método más barato reembolsa la diferencia y relanza la etiqueta (SKIRM-234, PR #175); al arrancar, la migración 002 del tracking-store lleva las horas de Correos a su instante real (SKIRM-235, PR #176). Sobre v2026.10.21.11 (SKIRM-233 #174).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:ca6a44f9634447a034baba948f6e3a7c24b2bb5c1a25623228a4dbd14a2543ec # pin por digest — tag v2026.10.22.1 (labels main 814220a): el reembolso del cambio de envío a un método más barato lleva @idempotent, que la Admin API 2026-04 exige a refundCreate (SKIRM-234, PR #177). Sobre v2026.10.21.12 (SKIRM-234 #175, SKIRM-235 #176).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
