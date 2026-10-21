@@ -111,7 +111,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:25c8ca3e9167554a82b2886238a5653bc1843fedd562938498d51166612101b8 # pin por digest — source d957da9 (tag v2026.10.21.4): nombre del pedido (ORDxxxx) como referencia de la etiqueta (SKIRM-227); release 39590567726 PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:1ca3e5e6c73a7545dbdd86a62734284c556fb7d37fda2030ed7f8227a0272aaf # pin por digest — tag v2026.10.21.7 (labels main 380b5db): buscador de pedidos en todas las categorías (SKIRM-231, PR #171). Sobre v2026.10.21.6 (SKIRM-229 #169, SKIRM-228 #168).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -341,6 +341,23 @@ spec:
   ports: [{ name: http, port: 3006, targetPort: 3000 }]
 ---
 ---
+# PDFs de las etiquetas (SKIRM-224): sin disco, el backend `memory` los perdía en cada
+# reinicio. Es el almacén definitivo de los PDF, no un paso hacia R2. sauvage (único
+# nodo role=edge) no corre Longhorn; Retain conserva los PDF aunque se borre el PVC,
+# ArgoCD no lo poda ni lo borra, y x86-localpath-pull lo copia cada noche al hub de
+# backup (dgx-infra scripts/ovh-pvc-hub, todos los pvc-* de sauvage).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: labels-label-storage-data
+  namespace: skirmshop
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  accessModes: [ReadWriteOnce]
+  resources: { requests: { storage: 2Gi } }
+  storageClassName: local-path-retain
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -362,6 +379,8 @@ spec:
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
+            - { name: LABEL_STORAGE_BACKEND, value: "file" }
+            - { name: LABEL_STORAGE_DATA_DIR, value: "/data" }
             - {
                 name: DATABASE_URL,
                 value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
@@ -375,12 +394,15 @@ spec:
                 value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
               }
           envFrom: [{ secretRef: { name: labels-secrets } }]
+          volumeMounts: [{ name: data, mountPath: /data }]
           resources:
             requests: { cpu: 30m, memory: 64Mi }
             limits: { memory: 256Mi }
           readinessProbe:
             httpGet: { path: /health, port: 3000 }
             initialDelaySeconds: 10
+      volumes:
+        - { name: data, persistentVolumeClaim: { claimName: labels-label-storage-data } }
 ---
 ---
 apiVersion: v1
