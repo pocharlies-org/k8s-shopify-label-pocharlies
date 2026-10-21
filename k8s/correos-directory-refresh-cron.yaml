@@ -31,7 +31,7 @@ spec:
             - name: trigger
               # Misma imagen que el Deployment labels-correos-adapter — bumpear
               # los dos digests A LA VEZ.
-              image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:4d209009482efadff276955f44b9fc76257db60cfd54893dd99ad9bfe07ae31e # pin por digest — source d957da9 (tag v2026.10.21.4): nombre del pedido (ORDxxxx) como referencia de la etiqueta (SKIRM-227); release 39590567726 PASS.
+              image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:1dc005af2d2b956a9170bba8de2b95289c09fedad0f3abee8c8cb89a697cec0c # pin por digest — tag v2026.10.21.12 (labels main 47dfa52): «Admisión anulada» de Correos es CANCELLED (no avisa de «Recogido») y la hora de Correos lleva el desfase de Madrid (SKIRM-235, PR #176). Sobre v2026.10.21.4 (SKIRM-227).
               command: ["node", "-e"]
               args:
                 - >
