@@ -111,7 +111,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:c92ea463a53f03a080e8d8fec9d6cefac933359bfee8c31c7bab7ccfc5daeece # pin por digest — tag v2026.10.21.3 (labels main 33b3fbb): columna Fecha junto a Pedido en el admin (SKIRM-223, PR #164) y suelo de 90 días en el escaneo de las vistas (SKIRM-222, PR #163). Incluye v2026.10.21.2 (#162, SKIRM-221).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:25c8ca3e9167554a82b2886238a5653bc1843fedd562938498d51166612101b8 # pin por digest — source d957da9 (tag v2026.10.21.4): nombre del pedido (ORDxxxx) como referencia de la etiqueta (SKIRM-227); release 39590567726 PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -469,7 +469,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: saga-launcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:8b083eabaf3fe152472eefd391fa0b5efa35014abc4b50f0c7d3a0cdd3128fa0 # pin por digest — tag v2026.09.07.1 (PR #133): deja pasar un evento forzado ante un in_flight NO confirmado (workflow colgado por motor muerto, ORD18918); un running CONFIRMADO (motor vivo) sigue sin pasar nunca. Conserva el fix del switch createShipment (60171c5) y la reconexión NATS con backoff+jitter de 6c18029.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:a4830e5471ab7a2b992e92c1af85986c4267773982871cc353dfd2871747d15c # pin por digest — source d957da9 (tag v2026.10.21.4): nombre del pedido (ORDxxxx) como referencia de la etiqueta (SKIRM-227); release 39590567726 PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -493,7 +493,7 @@ spec:
                 name: SYNAPSE_API_URL,
                 value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080",
               }
-            - { name: SYNAPSE_WORKFLOW_VERSION, value: "1.2.25" }
+            - { name: SYNAPSE_WORKFLOW_VERSION, value: "1.2.26" }
             - {
                 name: SHOPIFY_APP_INTERNAL_URL,
                 value: "http://labels-shopify-app.skirmshop.svc.cluster.local:3004",
@@ -604,7 +604,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:89504c7b377831b3e0bdae1c1f8bc33d42faa99a3f40a9a83f43d0f81bec6c86 # pin por digest — source cf6b191 (tag v2026.08.27.1): quita el espacio interno del CP en toUpsAddress, que era lo que disparaba el 120207 en los CP britanicos (ORD18854, ORD18721); release 33107644669.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:f563422ef9b02a506c9e340b6d252d31a7377c71b02bcf3ff093d96f52b5fcf4 # pin por digest — source d957da9 (tag v2026.10.21.4): nombre del pedido (ORDxxxx) como referencia de la etiqueta (SKIRM-227); release 39590567726 PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
