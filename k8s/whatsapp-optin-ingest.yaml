@@ -30,7 +30,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: whatsapp-optin-ingest
-          image: harbor.e-dani.com/homelab/skirmshop-labels-whatsapp-optin-ingest@sha256:35a5af80ad1ef52c4cd9d05ec653886ba9c843d78ab20f2d5bad90691d2a2dda # pin por digest — main cc6d92ad (tag optin-account-id-20260925): account_id/external_id en vez de account/prefijo (ADR 0001 socialmedia, skirmshop-labels#141).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-whatsapp-optin-ingest@sha256:aa35edee1e89e3256b62fa342c48619ed2f7d389ae85be7571fd397c883e5562 # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); mismo código que el pin anterior (cc6d92a, tag optin-account-id-20260925): solo se alinea a la release.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

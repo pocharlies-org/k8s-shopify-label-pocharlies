@@ -25,7 +25,7 @@ spec:
           nodeSelector: { kubernetes.io/arch: amd64 }
           containers:
             - name: ops-edit-hold-reconciler
-              image: harbor.e-dani.com/homelab/skirmshop-labels-ops-edit-hold-reconciler@sha256:2f5803c5fcc00476f05aa5c59d5f0219dbf72be8ce8378fe203ca636e6477c5a
+              image: harbor.e-dani.com/homelab/skirmshop-labels-ops-edit-hold-reconciler@sha256:472cb0a5e430254faef2bb275f2140aeb71d6bb1f9f2c3c3d83d2b951cce5849 # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); desde bb118ad (fix del spam de comentarios en Picqer, #70) su código no cambia: paquetes compartidos y lockfile al día, sin variables de entorno nuevas.
               env:
                 - {
                     name: PG_URL,
