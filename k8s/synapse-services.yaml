@@ -173,7 +173,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: correos-adapter
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:e54ca58374c7ae1f2ed4d971d9383667e6bbdfa663e5422451493806081c2acf # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); mismo código que el pin anterior (d957da9, tag v2026.10.21.4): solo se alinea a la release.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:1dc005af2d2b956a9170bba8de2b95289c09fedad0f3abee8c8cb89a697cec0c # pin por digest — tag v2026.10.21.12 (labels main 47dfa52): «Admisión anulada» de Correos es CANCELLED (no avisa de «Recogido») y la hora de Correos lleva el desfase de Madrid (SKIRM-235, PR #176). Sobre v2026.10.21.4 (SKIRM-227).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
