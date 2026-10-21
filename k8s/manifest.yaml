@@ -111,7 +111,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:a0caac3a4bb94fcffff0ea4389717ecf72064b450c69d1bddd82ec92c8148845 # pin por digest — tag v2026.10.21.6 (labels main d5ad3c9): progreso en vivo del aviso «Crear etiquetas» (SKIRM-229, PR #169) y el punto elegido tras pagar gana al del checkout (SKIRM-228, PR #168). Incluye v2026.10.21.5 y v2026.10.21.4.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:1ca3e5e6c73a7545dbdd86a62734284c556fb7d37fda2030ed7f8227a0272aaf # pin por digest — tag v2026.10.21.7 (labels main 380b5db): buscador de pedidos en todas las categorías (SKIRM-231, PR #171). Sobre v2026.10.21.6 (SKIRM-229 #169, SKIRM-228 #168).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
