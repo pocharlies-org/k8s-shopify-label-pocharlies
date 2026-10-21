@@ -46,7 +46,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: shopify-fulfillment-service
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-fulfillment-service@sha256:b24a7e03e2c1a40f99cbceb6b74f1d7dbc0fd0529fc65b3f40a178e9c82094f8 # pin por digest — SKIRM-157: repin a v2026.10.14.1 (skirmshop-labels e4e9be4, HEAD 200 en Harbor); el digest anterior lo borró el GC. apps/<servicio> idéntico al pineado; en packages solo cambios aditivos (contador en metrics, campos zod opcionales) y el fix de reconexión NATS de event-publisher.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-fulfillment-service@sha256:043a8130bb0c4b334279c644f57a1e75c97520ced9b24f72c77865248f3497d4 # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); mismo código que el pin anterior (e4e9be4, tag v2026.10.14.1): solo se alinea a la release.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -173,7 +173,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: correos-adapter
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:4d209009482efadff276955f44b9fc76257db60cfd54893dd99ad9bfe07ae31e # pin por digest — source d957da9 (tag v2026.10.21.4): nombre del pedido (ORDxxxx) como referencia de la etiqueta (SKIRM-227); release 39590567726 PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:e54ca58374c7ae1f2ed4d971d9383667e6bbdfa663e5422451493806081c2acf # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); mismo código que el pin anterior (d957da9, tag v2026.10.21.4): solo se alinea a la release.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -310,7 +310,7 @@ spec:
       securityContext: { runAsUser: 1000, runAsGroup: 1000 }
       containers:
         - name: notification-dispatcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:6dcd0ffe5aaacbaaa353b4778cdb1f0c09de51137954cc00dd70b9df302b7adc # pin por digest — main 77c57bc (tag pickup-visibility-20260721-2035): visibilidad punto de recogida F1-F5; PR #123, gates completos PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:c3572bb97cc7b365a38cb034995d0ed6c97759e2a30c0a614050fbf6edbb69aa # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); desde 77c57bc entra skirmshop-labels#150: account_restricted de WhatsApp es terminal y no se reintenta cada 15 min; paquetes y lockfile al día, sin variables de entorno nuevas.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -406,7 +406,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: event-projector
-          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:228af03cfc33a2adb5aebcfa66b3c440bc62352e6e6cfa9b6127cb84642fc343 # pin por digest — SKIRM-157: repin a v2026.10.14.1 (skirmshop-labels e4e9be4, HEAD 200 en Harbor); el digest anterior lo borró el GC. apps/<servicio> idéntico al pineado; en packages solo cambios aditivos (contador en metrics, campos zod opcionales) y el fix de reconexión NATS de event-publisher.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:cf7ad7aa82ce30f56a1a22fd3d6b8ae6b207f7065c1a3ed62eef639c80995403 # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); mismo código que el pin anterior (e4e9be4, tag v2026.10.14.1): solo se alinea a la release.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -459,7 +459,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: tracking-ingestion
-          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:c2d904eb34513dc52e5cedd0aeeb18a4aa378e32ed5bf27f75eae368f73199de # pin por digest — SKIRM-157: repin a v2026.10.14.1 (skirmshop-labels e4e9be4, HEAD 200 en Harbor); el digest anterior lo borró el GC. apps/<servicio> idéntico al pineado; en packages solo cambios aditivos (contador en metrics, campos zod opcionales) y el fix de reconexión NATS de event-publisher.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:fd68a8ea8e90fcc90fe2e75a512e6df415173c4d2f4375f6bda1d12666d8bddd # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); mismo código que el pin anterior (e4e9be4, tag v2026.10.14.1): solo se alinea a la release.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

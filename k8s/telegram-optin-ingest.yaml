@@ -31,7 +31,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: telegram-optin-ingest
-          image: harbor.e-dani.com/homelab/skirmshop-labels-telegram-optin-ingest@sha256:710c56072e460cc935c22426d36b12d5fc4639586228963a4b6249dee40df4f6 # pin por digest — SKIRM-157: repin a v2026.10.14.1 (skirmshop-labels e4e9be4, HEAD 200 en Harbor); el digest anterior lo borró el GC. apps/<servicio> idéntico al pineado; en packages solo cambios aditivos (contador en metrics, campos zod opcionales) y el fix de reconexión NATS de event-publisher.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-telegram-optin-ingest@sha256:29d6f78a7225e9b8a44ddf9062875dbee1b9b54bb992eebcc87a5ea270a5d918 # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); mismo código que el pin anterior (e4e9be4, tag v2026.10.14.1): solo se alinea a la release.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

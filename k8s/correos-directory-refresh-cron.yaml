@@ -31,7 +31,7 @@ spec:
             - name: trigger
               # Misma imagen que el Deployment labels-correos-adapter — bumpear
               # los dos digests A LA VEZ.
-              image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:4d209009482efadff276955f44b9fc76257db60cfd54893dd99ad9bfe07ae31e # pin por digest — source d957da9 (tag v2026.10.21.4): nombre del pedido (ORDxxxx) como referencia de la etiqueta (SKIRM-227); release 39590567726 PASS.
+              image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:e54ca58374c7ae1f2ed4d971d9383667e6bbdfa663e5422451493806081c2acf # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); mismo código que el pin anterior (d957da9, tag v2026.10.21.4): solo se alinea a la release.
               command: ["node", "-e"]
               args:
                 - >
