@@ -341,6 +341,19 @@ spec:
   ports: [{ name: http, port: 3006, targetPort: 3000 }]
 ---
 ---
+# PDFs de las etiquetas (SKIRM-224): sin disco, el backend `memory` los perdía en cada
+# reinicio. sauvage (único nodo role=edge) no corre Longhorn; Retain conserva los PDF
+# aunque se borre el PVC.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: labels-label-storage-data
+  namespace: skirmshop
+spec:
+  accessModes: [ReadWriteOnce]
+  resources: { requests: { storage: 2Gi } }
+  storageClassName: local-path-retain
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -362,6 +375,8 @@ spec:
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
+            - { name: LABEL_STORAGE_BACKEND, value: "file" }
+            - { name: LABEL_STORAGE_DATA_DIR, value: "/data" }
             - {
                 name: DATABASE_URL,
                 value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
@@ -375,12 +390,15 @@ spec:
                 value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
               }
           envFrom: [{ secretRef: { name: labels-secrets } }]
+          volumeMounts: [{ name: data, mountPath: /data }]
           resources:
             requests: { cpu: 30m, memory: 64Mi }
             limits: { memory: 256Mi }
           readinessProbe:
             httpGet: { path: /health, port: 3000 }
             initialDelaySeconds: 10
+      volumes:
+        - { name: data, persistentVolumeClaim: { claimName: labels-label-storage-data } }
 ---
 ---
 apiVersion: v1
