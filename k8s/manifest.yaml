@@ -342,13 +342,17 @@ spec:
 ---
 ---
 # PDFs de las etiquetas (SKIRM-224): sin disco, el backend `memory` los perdía en cada
-# reinicio. sauvage (único nodo role=edge) no corre Longhorn; Retain conserva los PDF
-# aunque se borre el PVC.
+# reinicio. Es el almacén definitivo de los PDF, no un paso hacia R2. sauvage (único
+# nodo role=edge) no corre Longhorn; Retain conserva los PDF aunque se borre el PVC,
+# ArgoCD no lo poda ni lo borra, y x86-localpath-pull lo copia cada noche al hub de
+# backup (dgx-infra scripts/ovh-pvc-hub, todos los pvc-* de sauvage).
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: labels-label-storage-data
   namespace: skirmshop
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
 spec:
   accessModes: [ReadWriteOnce]
   resources: { requests: { storage: 2Gi } }
