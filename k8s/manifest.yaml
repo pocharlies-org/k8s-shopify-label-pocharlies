@@ -111,7 +111,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:ba3fba40891ba2d930e384d2aeed065b24fd276b0aad5422192bf5ef46ad74f1 # pin por digest — tag v2026.10.21.10 (labels main aa892ea): el cambio de envío guarda la clave de routing también desde la cuenta del cliente (SKIRM-232, PR #172) y el buscador responde en menos de 2 s (SKIRM-233, PR #173). Sobre v2026.10.21.7 (SKIRM-231 #171).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:fc424a8291d943636a20cfd345c19b54511642e347951f06012049d7272c8c9b # pin por digest — tag v2026.10.21.11 (labels main da154eb): búsqueda en pestañas y prefijos en menos de 2 s (SKIRM-233, PR #174). Sobre v2026.10.21.10.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
