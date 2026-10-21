@@ -93,7 +93,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:fefd916e48534e2defb499991e723be19bca2a0c563d0d83aa860ac8bc9de414 # pin por digest — source d957da9 (tag v2026.10.21.4): nombre del pedido (ORDxxxx) como referencia de la etiqueta (SKIRM-227); release 39590567726 PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:2ab3fd9f7d9f577f43737038766148776ea1fc23d782701da9b92bb62d5313cf # pin por digest — source b892190 (tag v2026.10.21.8): nombre del pedido (ORDxxxx) como referencia de la etiqueta, también en `ref`, que es lo que CEX imprime como REF (SKIRM-227, PR #167 + #170); release 39643747498, job CEX PASS.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
