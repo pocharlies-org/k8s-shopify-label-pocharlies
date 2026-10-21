@@ -35,7 +35,7 @@ data:
       dsl: '1.0.0'
       namespace: skirmshop
       name: generate-shipment-label
-      version: '1.2.25'
+      version: '1.2.26'
       summary: |
         Full shipping saga for a paid Shopify order. Routes to UPS, Correos
         Express or Correos matriz, persists the label, updates
@@ -62,6 +62,9 @@ data:
             orderId:
               type: string
               pattern: '^gid://shopify/Order/\d+$'
+            # SKIRM-227: Shopify order name (ORDxxxx), printed as the label reference.
+            orderName:
+              type: string
             correlationId:
               type: string
               format: uuid
@@ -255,6 +258,7 @@ data:
                     x-correlation-id: '${ .correlationId }'
                   body:
                     orderId: '${ .orderId }'
+                    orderName: '${ .orderName }'
                     shipmentId: '${ .shipmentId }'
                     correlationId: '${ .correlationId }'
                     routing: '${ .routing.decision }'
@@ -302,6 +306,7 @@ data:
                     x-correlation-id: '${ .correlationId }'
                   body:
                     orderId: '${ .orderId }'
+                    orderName: '${ .orderName }'
                     shipmentId: '${ .shipmentId }'
                     correlationId: '${ .correlationId }'
                     routing: '${ .routing.decision }'
@@ -350,6 +355,7 @@ data:
                     x-correlation-id: '${ .correlationId }'
                   body:
                     orderId: '${ .orderId }'
+                    orderName: '${ .orderName }'
                     shipmentId: '${ .shipmentId }'
                     correlationId: '${ .correlationId }'
                     routing: '${ .routing.decision }'
