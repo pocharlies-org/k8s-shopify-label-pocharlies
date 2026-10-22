@@ -111,7 +111,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:ca6a44f9634447a034baba948f6e3a7c24b2bb5c1a25623228a4dbd14a2543ec # pin por digest — tag v2026.10.22.1 (labels main 814220a): el reembolso del cambio de envío a un método más barato lleva @idempotent, que la Admin API 2026-04 exige a refundCreate (SKIRM-234, PR #177). Sobre v2026.10.21.12 (SKIRM-234 #175, SKIRM-235 #176).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:2b669050cd6a7be0b269c35c09abbb58aafc6ae3906292d643357efeb3a3443a # pin por digest — tag v2026.10.22.2 (labels main bf83a25): el delta del cambio de envío a un método más barato se reembolsa como REFUND plano del sobrepago, no como envío (SKIRM-234, PR #178). Sobre v2026.10.22.1 (SKIRM-234 #177, @idempotent).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
