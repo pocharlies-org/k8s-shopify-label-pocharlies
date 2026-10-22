@@ -111,7 +111,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:2b669050cd6a7be0b269c35c09abbb58aafc6ae3906292d643357efeb3a3443a # pin por digest — tag v2026.10.22.2 (labels main bf83a25): el delta del cambio de envío a un método más barato se reembolsa como REFUND plano del sobrepago, no como envío (SKIRM-234, PR #178). Sobre v2026.10.22.1 (SKIRM-234 #177, @idempotent).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:81f1c9fa404d46d0c4f347ede53836d62a5fb3cc19b52b0b1fa548fb908aec2b # pin por digest — tag v2026.10.22.3 (labels main 9118bdd, release 39766152274): la app y el admin de Labels imprimen la etiqueta en vez de descargarla (SKIRM-240, PR #180). Sobre v2026.10.22.2 (SKIRM-234).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
