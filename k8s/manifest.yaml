@@ -626,7 +626,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:706b2ab29b61d3dd48b21ca30355cae19d2134a845249e937ab3ccd09f4068a4 # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); mismo código que el pin anterior (d957da9, tag v2026.10.21.4): solo se alinea a la release.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:787639b5f7fb9ed9d6edc6579abac5cfcec5d3d3b7f0f5f0dd52d02e49ef9205 # pin por digest — SKIRM-243: v2026.10.22.3 (skirmshop-labels 9118bdd, release 39766152274): SKIRM-241: UPS I/OF e I/OT → OUT_FOR_DELIVERY.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
