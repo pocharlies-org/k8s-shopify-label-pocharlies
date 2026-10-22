@@ -52,7 +52,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-fulfillment-service@sha256:043a8130bb0c4b334279c644f57a1e75c97520ced9b24f72c77865248f3497d4 # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); mismo código que el pin anterior (e4e9be4, tag v2026.10.14.1): solo se alinea a la release.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-fulfillment-service@sha256:29fe494ba117f9b26350d7bad4a98aaa40e1e2f22adc90a0f94eb0b70374c2d2 # pin por digest — SKIRM-243: v2026.10.22.3 (skirmshop-labels 9118bdd, release 39766152274): POST /fulfillment-events (fulfillmentEventCreate); THROTTLED reintentable.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -471,7 +471,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: tracking-ingestion
-          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:fd68a8ea8e90fcc90fe2e75a512e6df415173c4d2f4375f6bda1d12666d8bddd # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); mismo código que el pin anterior (e4e9be4, tag v2026.10.14.1): solo se alinea a la release.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:184d9109b604ecb5639caed271edc8352d446cf2dad9ddd8e7072dae3ab49802 # pin por digest — SKIRM-243: v2026.10.22.3 (skirmshop-labels 9118bdd, release 39766152274): publica cada movimiento de Correos/CEX como fulfillment event en Shopify.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -488,6 +488,11 @@ spec:
             # handle-tracking-event workflow). TRACK_TOKEN_SECRET +
             # PUBLIC_TRACKING_URL_BASE arrive via labels-secrets.
             - { name: TRACKING_NOTIFY_ENABLED, value: "true" }
+            # SKIRM-243: each Correos/CEX movement becomes a fulfillment event
+            # on its Shopify Fulfillment (the order's «Fulfilled» card), via
+            # labels-shopify-fulfillment-service:3005. Shopify's «Out for
+            # delivery»/«Delivered» emails are off: Labels already sends them.
+            - { name: SHOPIFY_FULFILLMENT_EVENTS_ENABLED, value: "true" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 20m, memory: 64Mi }
