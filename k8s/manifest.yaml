@@ -111,7 +111,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:81f1c9fa404d46d0c4f347ede53836d62a5fb3cc19b52b0b1fa548fb908aec2b # pin por digest — tag v2026.10.22.3 (labels main 9118bdd, release 39766152274): la app y el admin de Labels imprimen la etiqueta en vez de descargarla (SKIRM-240, PR #180). Sobre v2026.10.22.2 (SKIRM-234).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:f50a99453caecc2dda5c890e6d447b3f3b2b4a7b9140ea96c59f566667101193 # pin por digest — tag v2026.10.22.4 (labels main a61ce63, release 39787749891): la etiqueta se imprime de verdad (pdf.js + página con auto-print); la v2026.10.22.3 no abría el diálogo (SKIRM-240, PR #184). Sobre v2026.10.22.3.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
