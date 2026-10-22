@@ -111,7 +111,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:6aebc340f0861f19883fc0a0c9b30cb929dae1fea9ba2042c5a6c5506da814d9 # pin por digest — tag v2026.10.22.11 (labels main 747c8ab, release 39831386542): SKIRM-252 interfaz de reclamaciones (panel, totales, reabrir, búsqueda q). Incluye v2026.10.22.10 (SKIRM-254) y v2026.10.22.9 (SKIRM-251: metacampo custom.incidencia_* y carga inicial).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:d32aee97caaa2822c5642089fd46d6a3e707f81ea418e464b04450034c29cd88 # pin por digest — tag v2026.10.23.1 (labels main 748067a, release 39865811520): SKIRM-251 la carga de los 40 toma el transportista del detalle (pedidos de Lightspeed). Incluye SKIRM-240 #191 (imprimir desde un iframe oculto) y v2026.10.22.11 (SKIRM-252).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
