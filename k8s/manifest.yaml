@@ -111,7 +111,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:81f1c9fa404d46d0c4f347ede53836d62a5fb3cc19b52b0b1fa548fb908aec2b # pin por digest — tag v2026.10.22.3 (labels main 9118bdd, release 39766152274): la app y el admin de Labels imprimen la etiqueta en vez de descargarla (SKIRM-240, PR #180). Sobre v2026.10.22.2 (SKIRM-234).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:e4441ca01ddba6c490a23b19bc86fa28cdc9c069f833f9e1be1404649d4383a1 # pin por digest — tag v2026.10.22.5 (labels main 29df57e, release 39790518182): el detalle del envío sigue sondeando hasta que el event store proyecta la etiqueta, sin recargar (SKIRM-247, PR #183). Sobre v2026.10.22.4 (SKIRM-240).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
