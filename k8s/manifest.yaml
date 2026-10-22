@@ -111,7 +111,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:7eae802955abac85e0aeadb60b295f33ed23f45b73b40af9e68998074be662df # pin por digest — tag v2026.10.22.6 (labels main 1d8faf0, release 39810465423): SKIRM-240 abre la pestaña de impresión al hacer click, antes de que expire la activación del gesto, así el navegador ya no la bloquea (PR #185). Sobre v2026.10.22.5 (SKIRM-247) y v2026.10.22.4 (impresión real con pdf.js).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:175c9e0ef324949581f33478815ed120aae50dc47a58a16ae36ba97efa51967e # pin por digest — tag v2026.10.22.8 (labels main a6ec8a8, release 39818142249): SKIRM-250 reclamaciones al transportista (claim-store, migración carrier_claim, /api/claims). Incluye v2026.10.22.6 y v2026.10.22.7 (SKIRM-240, worker de pdf.js).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

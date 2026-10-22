@@ -415,7 +415,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: event-projector
-          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:cf7ad7aa82ce30f56a1a22fd3d6b8ae6b207f7065c1a3ed62eef639c80995403 # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); mismo código que el pin anterior (e4e9be4, tag v2026.10.14.1): solo se alinea a la release.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:4d41515c45b98e8c1ea21ebf9dadcba6b71f3f73e8fe30158cc42cc553ed81ed # pin por digest — tag v2026.10.22.8 (labels main a6ec8a8, release 39818142249): SKIRM-250 añade los eventos Claim* (aggregate Claim); va antes que shopify-app para que ningún Claim* caiga en un proyector viejo.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
