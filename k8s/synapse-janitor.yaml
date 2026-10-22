@@ -23,8 +23,11 @@ spec:
   selector:
     matchLabels:
       app: labels-synapse-janitor
+  # RollingUpdate (SKIRM-237): el pod viejo sigue limpiando mientras sauvage baja la imagen nueva. Al cambiar de pod
+  # coinciden dos janitors unos segundos: el archivo es un upsert y un borrado repetido solo falla en ese ciclo.
   strategy:
-    type: Recreate # single-writer; never two janitors at once
+    type: RollingUpdate
+    rollingUpdate: { maxUnavailable: 0, maxSurge: 1 }
   template:
     metadata:
       labels:

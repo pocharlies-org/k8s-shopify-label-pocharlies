@@ -19,7 +19,10 @@ metadata:
   namespace: skirmshop
 spec:
   replicas: 1
-  strategy: { type: Recreate }
+  # RollingUpdate (SKIRM-237): el pod viejo sigue sirviendo mientras sauvage baja la imagen nueva, ~7 min por el uplink de casa.
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxUnavailable: 0, maxSurge: 1 }
   selector: { matchLabels: { app: labels-whatsapp-optin-ingest } }
   template:
     metadata: { labels: { app: labels-whatsapp-optin-ingest } }

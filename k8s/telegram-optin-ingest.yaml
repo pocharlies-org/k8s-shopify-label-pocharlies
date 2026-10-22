@@ -8,7 +8,8 @@
 #   dispatcher fans out via the TelegramDeliveryGateChannel.
 #
 # replicas MUST stay 1: Telegram allows a single concurrent getUpdates per bot
-# (a second replica earns 409 Conflict). Strategy Recreate for the same reason.
+# (a second replica earns 409 Conflict). The RollingUpdate overlap (seconds, SKIRM-237) earns at most a
+# logged 409: the poller backs off 5 s without advancing the offset, so nothing is lost or doubled.
 #
 # Secret `labels-telegram-track-bot` (TELEGRAM_BOT_TOKEN, bot id 8963591918) is
 # hand-managed (kubectl, NOT in git) — same situation as labels-wa-reader; move
@@ -20,7 +21,10 @@ metadata:
   namespace: skirmshop
 spec:
   replicas: 1
-  strategy: { type: Recreate }
+  # RollingUpdate (SKIRM-237): el pod viejo sigue sirviendo mientras sauvage baja la imagen nueva, ~7 min por el uplink de casa.
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxUnavailable: 0, maxSurge: 1 }
   selector: { matchLabels: { app: labels-telegram-optin-ingest } }
   template:
     metadata: { labels: { app: labels-telegram-optin-ingest } }

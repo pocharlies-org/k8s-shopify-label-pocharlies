@@ -35,7 +35,10 @@ metadata:
   namespace: skirmshop
 spec:
   replicas: 1
-  strategy: { type: Recreate }
+  # RollingUpdate (SKIRM-237): el pod viejo sigue sirviendo mientras sauvage baja la imagen nueva, ~7 min por el uplink de casa.
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxUnavailable: 0, maxSurge: 1 }
   selector: { matchLabels: { app: labels-shopify-fulfillment-service } }
   template:
     metadata: { labels: { app: labels-shopify-fulfillment-service } }
@@ -46,6 +49,9 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: shopify-fulfillment-service
+          lifecycle:
+            preStop:
+              exec: { command: ["/bin/sh", "-c", "sleep 10"] }
           image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-fulfillment-service@sha256:043a8130bb0c4b334279c644f57a1e75c97520ced9b24f72c77865248f3497d4 # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); mismo código que el pin anterior (e4e9be4, tag v2026.10.14.1): solo se alinea a la release.
           ports: [{ name: http, containerPort: 3000 }]
           env:
@@ -395,7 +401,10 @@ metadata:
   namespace: skirmshop
 spec:
   replicas: 1
-  strategy: { type: Recreate }
+  # RollingUpdate (SKIRM-237): el pod viejo sigue sirviendo mientras sauvage baja la imagen nueva, ~7 min por el uplink de casa.
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxUnavailable: 0, maxSurge: 1 }
   selector: { matchLabels: { app: labels-event-projector } }
   template:
     metadata: { labels: { app: labels-event-projector } }
@@ -448,7 +457,10 @@ metadata:
   namespace: skirmshop
 spec:
   replicas: 1
-  strategy: { type: Recreate }
+  # RollingUpdate (SKIRM-237): el pod viejo sigue sirviendo mientras sauvage baja la imagen nueva, ~7 min por el uplink de casa.
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxUnavailable: 0, maxSurge: 1 }
   selector: { matchLabels: { app: labels-tracking-ingestion } }
   template:
     metadata: { labels: { app: labels-tracking-ingestion } }
