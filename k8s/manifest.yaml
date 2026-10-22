@@ -111,7 +111,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:175c9e0ef324949581f33478815ed120aae50dc47a58a16ae36ba97efa51967e # pin por digest — tag v2026.10.22.8 (labels main a6ec8a8, release 39818142249): SKIRM-250 reclamaciones al transportista (claim-store, migración carrier_claim, /api/claims). Incluye v2026.10.22.6 y v2026.10.22.7 (SKIRM-240, worker de pdf.js).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:2e6b361f7b0cf4051bc69d8c27c4837d441b9ecae52312f5d43257d913fefa60 # pin por digest — tag v2026.10.22.10 (labels main 586eab4, release 39826768560): SKIRM-254 una réplica sin número de serie o sin DNI del cliente no genera etiqueta (409 REPLICA_SERIAL_DNI_MISSING). Incluye v2026.10.22.9 (SKIRM-251, metacampo custom.incidencia_*) y v2026.10.22.8 (SKIRM-250).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
