@@ -111,7 +111,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:d32aee97caaa2822c5642089fd46d6a3e707f81ea418e464b04450034c29cd88 # pin por digest — tag v2026.10.23.1 (labels main 748067a, release 39865811520): SKIRM-251 la carga de los 40 toma el transportista del detalle (pedidos de Lightspeed). Incluye SKIRM-240 #191 (imprimir desde un iframe oculto) y v2026.10.22.11 (SKIRM-252).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:5d19fe41b6884609c4ec4aeecb1d33d6b49aad799597f2abcdb413e9a2467df4 # pin por digest — tag v2026.10.23.2 (labels main 7a6a683, release 39942416726): SKIRM-258 botón «Imprimir etiqueta» en Buscar pedido (crea la etiqueta, espera y abre el diálogo). Incluye v2026.10.23.1 (SKIRM-251).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
