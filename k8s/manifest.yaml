@@ -111,7 +111,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:5d19fe41b6884609c4ec4aeecb1d33d6b49aad799597f2abcdb413e9a2467df4 # pin por digest — tag v2026.10.23.2 (labels main 7a6a683, release 39942416726): SKIRM-258 botón «Imprimir etiqueta» en Buscar pedido (crea la etiqueta, espera y abre el diálogo). Incluye v2026.10.23.1 (SKIRM-251).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:80fb15cde62b224e177451efc5ab4550d041a7df9081b0dcf7ecc055d5fd8fd8 # pin por digest — tag v2026.10.23.3 (labels main bbc3795, release 39949004956): SKIRM-259 selector manual de etiquetas cotiza Correos (producto PAFXB:DOUAOF desde routing). Incluye SKIRM-260 #196 y v2026.10.23.2 (SKIRM-258).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
