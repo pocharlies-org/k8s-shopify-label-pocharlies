@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:80fb15cde62b224e177451efc5ab4550d041a7df9081b0dcf7ecc055d5fd8fd8 # pin por digest — tag v2026.10.23.3 (labels main bbc3795, release 39949004956): SKIRM-259 selector manual de etiquetas cotiza Correos (producto PAFXB:DOUAOF desde routing). Incluye SKIRM-260 #196 y v2026.10.23.2 (SKIRM-258).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:50b069f55fecac704c602be4aecfa5318656009a5730b0a5d524ec6201549ebc # pin por digest — tag v2026.10.24.1 (labels main d1f5f4d, release 40050702622): SKIRM-264 rutas de operador /api/internal/operator/* (devolución que lanza process-return 1.2.0 con notifyCustomer:false, y reclamación). Incluye SKIRM-260 #197.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -178,6 +178,17 @@ spec:
                   name: labels-order-edit-operator
                   key: token
                   optional: true
+            # Bearer de /api/internal/operator/* (SKIRM-264: devolución y reclamación del ejecutor
+            # de correo). Distinto de los otros tokens de servicio (si coincide, el pod nuevo no
+            # arranca). optional:true: sin Secret las rutas dan 404, no un pod caído.
+            - name: LABELS_RETURN_OPERATOR_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: labels-return-operator
+                  key: token
+                  optional: true
+            # Versión de process-return que lanza esa ruta (registrada por el PostSync, #86).
+            - { name: PROCESS_RETURN_WORKFLOW_VERSION, value: "1.2.0" }
             - { name: GROUNDED_REPLY_TENANT_ID, value: "807a4817-b73a-42ce-8954-8dd5dc80b751" }
             - { name: GROUNDED_REPLY_STORE_ID, value: "269d0560-9c16-4db8-86e4-52867efc1901" }
             - { name: GROUNDED_REPLY_BINDING_ID, value: "d9188e91-b282-4878-a24e-933611c94d84" }
