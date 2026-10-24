@@ -723,9 +723,10 @@ data:
     # ============================================================================
     # Serverless Workflow DSL v1.0. Executed by the Synapse Runner.
     #
-    # Triggered by:  a ReturnRequested CloudEvent on the NATS bus
-    #                (emitted by /webhooks/shopify/returns-request OR by the
-    #                 admin /api/returns POST flow)
+    # Triggered by:  the operator return route (POST /api/internal/operator/returns,
+    #                SKIRM-264), which launches it through the Synapse API with
+    #                notifyCustomer:false. Nothing else launches it: portal and
+    #                admin returns get their label from ops by hand.
     # Produces:      ReturnLabelGenerated on success
     #
     # Saga stages:
@@ -740,7 +741,10 @@ data:
     #                             gates on its presence and falls back to
     #                             email-the-customer otherwise)
     #   3. notifyCustomer       → POST http://labels-notification-dispatcher.skirmshop.svc.cluster.local:3007/notify
-    #                             with the new label URL embedded
+    #                             with the new label URL embedded; skipped when
+    #                             the input says `notifyCustomer: false` (the
+    #                             operator route, SKIRM-264: the human on the
+    #                             case answers the customer). Absent = true.
     #
     # Failure handling: every step that calls a downstream service catches
     # all errors and emits a ReturnFailed-style log without compensating
@@ -756,7 +760,7 @@ data:
       dsl: '1.0.0'
       namespace: skirmshop
       name: process-return
-      version: '1.1.0'
+      version: '1.2.0'
       summary: |
         Auto-generate a return label when ReturnRequested fires. UPS branch
         runs end-to-end; CEX branch hands off to ops because the customer's
@@ -781,6 +785,8 @@ data:
             correlationId:
               type: string
               format: uuid
+            notifyCustomer:
+              type: boolean
 
     do:
       # -- 1. Resolve carrier + customer from event_store -------------------
@@ -981,7 +987,17 @@ data:
               x-correlation-id: '${ .correlationId }'
           output:
             as: '.returnLabelContent'
-          then: notifyCustomer
+          then: decideNotifyCustomer
+
+      # Only an explicit false skips it: the portal and the admin send nothing and notify.
+      - decideNotifyCustomer:
+          switch:
+            - operatorSilent:
+                when: '${ .notifyCustomer == false }'
+                then: exit
+            - notifyBranch:
+                when: '${ true }'
+                then: notifyCustomer
 
       - notifyCustomer:
           try:
