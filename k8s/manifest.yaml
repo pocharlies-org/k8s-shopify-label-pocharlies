@@ -102,12 +102,18 @@ spec:
     name: labels-return-operator
     creationPolicy: Owner
     deletionPolicy: Retain
-  data:
-    - secretKey: token
-      generatorRef:
-        apiVersion: generators.external-secrets.io/v1alpha1
-        kind: Password
-        name: labels-return-operator
+  dataFrom:
+    - sourceRef:
+        generatorRef:
+          apiVersion: generators.external-secrets.io/v1alpha1
+          kind: Password
+          name: labels-return-operator
+  # El generador Password entrega la clave `password`; se expone también como `token`,
+  # que es la clave que esperan los consumidores (labels-shopify-app y el shim del
+  # gateway, k8s-agentgateway-pocharlies#227).
+  template:
+    merge:
+      token: "{{ .password }}"
 
 
 # ── labels microservices (stateless) ─────────────────────────────────────────
