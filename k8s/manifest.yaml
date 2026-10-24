@@ -68,6 +68,55 @@ spec:
     - secretKey: token
       remoteRef: { key: skirmshop-labels-order-edit-operator, property: token }
 
+---
+# SKIRM-264 (E5): bearer de las rutas de operador /api/internal/operator/* (devolución y
+# reclamación; las lanza el ejecutor de correo). GENERADO en el clúster (patrón de
+# secretos-generados.yaml de k8s-correo-pocharlies): Password (ESO) + refreshPolicy
+# CreatedOnce — se genera UNA vez y no rota nunca; sin 1Password. Distinto de los otros
+# tres tokens de labels lo exige el config del propio labels-shopify-app (rechaza el
+# arranque si coincide). Consumidores: labels-shopify-app (E5-H1) y, en E5-H2, el
+# AgentGateway (herramientas tipadas del ejecutor) por secretKeyRef. Nunca por chat:
+# el valor no se imprime en ningún sitio; rotar = borrar el Secret generado y forzar
+# la sync de este ExternalSecret (los consumidores lo toman al reiniciar).
+apiVersion: generators.external-secrets.io/v1alpha1
+kind: Password
+metadata:
+  name: labels-return-operator
+  namespace: skirmshop
+spec:
+  length: 48
+  digits: 12
+  symbols: 0
+  noUpper: false
+  allowRepeat: true
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: labels-return-operator
+  namespace: skirmshop
+spec:
+  refreshPolicy: CreatedOnce
+  refreshInterval: "0"
+  target:
+    name: labels-return-operator
+    creationPolicy: Owner
+    deletionPolicy: Retain
+    # El generador Password entrega la clave `password`; el template del target la
+    # expone también como `token`, que es la que leen los consumidores
+    # (labels-shopify-app y el shim del gateway, k8s-agentgateway-pocharlies#227).
+    template:
+      engineVersion: v2
+      mergePolicy: Merge
+      data:
+        token: "{{ .password }}"
+  dataFrom:
+    - sourceRef:
+        generatorRef:
+          apiVersion: generators.external-secrets.io/v1alpha1
+          kind: Password
+          name: labels-return-operator
+
 
 # ── labels microservices (stateless) ─────────────────────────────────────────
 # All use harbor.e-dani.com/homelab/skirmshop-labels-<name>:latest
