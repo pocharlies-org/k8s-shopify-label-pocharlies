@@ -7,9 +7,15 @@
 # (no labels/owner), named "<instanceName>.skirmshop-<hash>"; normal Job pods
 # (sii-invoicing-…, *-sync-…) do NOT contain the ".skirmshop-" infix, so we match
 # on that. Reaps Succeeded/Failed runner pods every 10 min. It also reaps
-# old Running poll runners only when they are proven orphaned: old enough,
-# alpha1 runner shape, no labels/owner refs, and no matching Synapse Redis
-# direct key or index field. Idempotent + safe.
+# Running poll runners proven orphaned: >=2 h old, alpha1 runner shape, no
+# labels/owner refs, and their Synapse Redis record missing, terminal
+# (completed/faulted/…), or `running` with a heartbeat older than the cap —
+# the alpha1 runner reports the fault to the API and then hangs without
+# exiting, so a Running poll pod is dead compute once its instance is done
+# (polls finish in seconds). A live running instance with a fresh heartbeat
+# is never touched. Idempotent + safe. (INFRA-996: the old 24 h +
+# no-record gate let 170 stuck poll runners fill atlantic's 200-pod cap and
+# evict `analisis`.)
 # =============================================================================
 apiVersion: v1
 kind: ServiceAccount
@@ -99,7 +105,7 @@ spec:
                   const net = require('net');
 
                   const namespace = process.env.POD_NAMESPACE || 'skirmshop';
-                  const minAgeHours = Number(process.env.RUNNING_ORPHAN_MIN_AGE_HOURS || '24');
+                  const minAgeHours = Number(process.env.RUNNING_ORPHAN_MIN_AGE_HOURS || '2');
                   const dryRun = /^true$/i.test(process.env.DRY_RUN || 'false');
                   const redisHost = process.env.REDIS_HOST || 'labels-valkey-master.skirmshop.svc.cluster.local';
                   const redisPort = Number(process.env.REDIS_PORT || '6379');
@@ -228,10 +234,43 @@ spec:
                     return name.slice(0, markerIndex);
                   }
 
+                  async function instanceRecord(instanceName) {
+                    const directKey = `synapse.io/v1/workflow-instances/namespaced/{${namespace}}/${instanceName}`;
+                    let raw = await redisCommand(['GET', directKey]);
+                    if (raw === null) {
+                      const key = await redisCommand(['HGET', indexKey, `${namespace}.${instanceName}`]);
+                      if (key !== null) raw = await redisCommand(['GET', key]);
+                    }
+                    return raw;
+                  }
+
+                  // A poll runner is dead compute once its instance is terminal, or
+                  // still "running" with no heartbeat for minAgeHours (alpha1 hangs
+                  // after reporting a fault; polls finish in seconds). Unparseable
+                  // record → not dead (conservative).
+                  function instanceIsDead(raw, pod) {
+                    if (raw === null) return true;
+                    let phase = null;
+                    let heartbeat = null;
+                    try {
+                      const status = JSON.parse(raw).status || {};
+                      phase = status.phase ?? null;
+                      heartbeat = status.endedAt || status.startedAt || pod.metadata?.creationTimestamp;
+                    } catch {
+                      return false;
+                    }
+                    if (phase === 'running' || phase === 'suspended') {
+                      const ms = Date.parse(heartbeat);
+                      if (!Number.isFinite(ms)) return false;
+                      return (Date.now() - ms) / 3600000 >= minAgeHours;
+                    }
+                    return phase !== null;
+                  }
+
                   async function main() {
                     const pods = await k8sRequest('GET', `/api/v1/namespaces/${namespace}/pods`);
                     let candidates = 0;
-                    let redisPresent = 0;
+                    let skippedLive = 0;
                     let deleted = 0;
                     let dryRunSkipped = 0;
                     let errors = 0;
@@ -241,13 +280,9 @@ spec:
                       if (!instanceName) continue;
                       candidates += 1;
                       const podName = pod.metadata.name;
-                      const directKey = `synapse.io/v1/workflow-instances/namespaced/{${namespace}}/${instanceName}`;
-                      const indexField = `${namespace}.${instanceName}`;
                       try {
-                        const directExists = await redisCommand(['EXISTS', directKey]);
-                        const indexed = await redisCommand(['HGET', indexKey, indexField]);
-                        if (directExists > 0 || indexed !== null) {
-                          redisPresent += 1;
+                        if (!instanceIsDead(await instanceRecord(instanceName), pod)) {
+                          skippedLive += 1;
                           continue;
                         }
                         if (dryRun) {
@@ -277,7 +312,7 @@ spec:
                         msg: 'synapse-pod-reaper.running-orphans.done',
                         scanned: (pods.items || []).length,
                         candidates,
-                        redisPresent,
+                        skippedLive,
                         deleted,
                         dryRunSkipped,
                         dryRun,
@@ -302,7 +337,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.namespace
-                - { name: RUNNING_ORPHAN_MIN_AGE_HOURS, value: "24" }
+                - { name: RUNNING_ORPHAN_MIN_AGE_HOURS, value: "2" }
                 - { name: REDIS_HOST, value: labels-valkey-master.skirmshop.svc.cluster.local }
                 - { name: REDIS_PORT, value: "6379" }
                 - { name: SYNAPSE_INDEX_KEY, value: workflow-instances.synapse.io }
