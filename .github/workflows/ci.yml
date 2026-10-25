@@ -20,6 +20,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Test deep-monitor result/delivery separation
         run: bash tests/deep-monitor-contract.sh
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
       - name: Test synapse pod-reaper running-orphan logic
         run: node tests/synapse-reaper-selfcheck.mjs
 
