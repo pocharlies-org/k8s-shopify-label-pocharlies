@@ -40,7 +40,6 @@ spec:
       enableServiceLinks: false
       nodeSelector:
         kubernetes.io/arch: amd64
-        role: edge
       tolerations:
         - effect: NoSchedule
           key: role
