@@ -30,7 +30,7 @@ spec:
             app: labels-vat-sync
         spec:
           restartPolicy: Never
-          nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+          nodeSelector: { kubernetes.io/arch: amd64 }
           tolerations:
             - { key: role, operator: Equal, value: edge, effect: NoSchedule }
           containers:

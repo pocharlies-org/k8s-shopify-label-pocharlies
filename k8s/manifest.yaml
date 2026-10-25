@@ -365,7 +365,7 @@ spec:
     metadata: { labels: { app: labels-event-gateway } }
     spec:
       enableServiceLinks: false
-      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      nodeSelector: { kubernetes.io/arch: amd64 }
       tolerations:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
@@ -430,7 +430,7 @@ spec:
     metadata: { labels: { app: labels-label-storage } }
     spec:
       enableServiceLinks: false
-      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      nodeSelector: { kubernetes.io/arch: amd64 }
       tolerations:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
@@ -488,7 +488,7 @@ spec:
     metadata: { labels: { app: labels-routing-service } }
     spec:
       enableServiceLinks: false
-      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      nodeSelector: { kubernetes.io/arch: amd64 }
       tolerations:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
@@ -546,7 +546,7 @@ spec:
     metadata: { labels: { app: labels-saga-launcher } }
     spec:
       enableServiceLinks: false
-      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      nodeSelector: { kubernetes.io/arch: amd64 }
       tolerations:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
@@ -611,7 +611,7 @@ spec:
     metadata: { labels: { app: labels-outbox-relay } }
     spec:
       enableServiceLinks: false
-      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      nodeSelector: { kubernetes.io/arch: amd64 }
       tolerations:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
@@ -678,7 +678,7 @@ spec:
     metadata: { labels: { app: labels-ups-adapter } }
     spec:
       enableServiceLinks: false
-      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      nodeSelector: { kubernetes.io/arch: amd64 }
       tolerations:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
@@ -757,7 +757,7 @@ spec:
     metadata: { labels: { app: labels-synapse-api } }
     spec:
       enableServiceLinks: false
-      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      nodeSelector: { kubernetes.io/arch: amd64 }
       tolerations:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
@@ -818,7 +818,7 @@ spec:
     metadata: { labels: { app: labels-synapse-correlator } }
     spec:
       enableServiceLinks: false
-      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      nodeSelector: { kubernetes.io/arch: amd64 }
       tolerations:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       initContainers:
