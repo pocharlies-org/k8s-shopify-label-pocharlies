@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:50b069f55fecac704c602be4aecfa5318656009a5730b0a5d524ec6201549ebc # pin por digest — tag v2026.10.24.1 (labels main d1f5f4d, release 40050702622): SKIRM-264 rutas de operador /api/internal/operator/* (devolución que lanza process-return 1.2.0 con notifyCustomer:false, y reclamación). Incluye SKIRM-260 #197.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:12203a31ccdb303c4f9f89918998e30a0880947914cc5e9adacf9dd87547b992 # pin por digest — tag v2026.10.26.1 (labels main 55dedc8, release 40304971903): SC-3011 el OrderPaid re-publicado (reintento, cambio de envío) conserva el seguro pagado — UPS DeclaredValue y CEX valorDeclarado; el carrier del seguro sale del código de envío pagado aunque routing rechace. Incluye v2026.10.24.1 (SKIRM-264).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
