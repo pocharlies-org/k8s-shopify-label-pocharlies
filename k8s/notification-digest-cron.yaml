@@ -120,7 +120,7 @@ spec:
           nodeSelector: { kubernetes.io/arch: amd64 }
           containers:
             - name: notification-digest
-              image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:c3572bb97cc7b365a38cb034995d0ed6c97759e2a30c0a614050fbf6edbb69aa # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); desde 77c57bc entra skirmshop-labels#150: account_restricted de WhatsApp es terminal y no se reintenta cada 15 min; paquetes y lockfile al día, sin variables de entorno nuevas.
+              image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:c5f9d65299459072ce8afd6f3c7977d428401fc5e2eff2f626a58aed958641a0 # pin por digest — SC-3035: v2026.10.26.11 (skirmshop-labels 8a04608, release 40416774873): la reprogramación que pide el destinatario (UPS X:ZA) deja de avisarse como incidencia; nuevo kind shipping_rescheduled (email + HTTP/Telegram; WhatsApp Cloud espera plantilla de Meta).
               command: ["node", "/digest/report.cjs"]
               env:
                 - { name: NODE_PATH, value: "/app/node_modules" }
