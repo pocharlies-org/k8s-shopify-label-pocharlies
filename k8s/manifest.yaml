@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:1f30e362864a5f75546251ebbfce544589f192f594b718bd6690c8e74bce8d92 # pin por digest — tag v2026.10.26.8 (labels main a59a39b, release 40330978839): SKIRM-281 quita whenVisible: pdf.js ya espera a que la pestaña esté a la vista. Incluye v2026.10.26.6.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:c592e415d17ea08f869db694c8315a49db5b90f040712c11510352001b429b4b # pin por digest — tag v2026.10.26.9 (labels main f594032, release 40346043542): SKIRM-260 GET /api/shipments/:orderId devuelve printUrl (el bloque «Imprimir etiqueta» enlaza a la página de impresión; fuera blob:null).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
