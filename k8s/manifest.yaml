@@ -890,7 +890,14 @@ spec:
       serviceAccountName: labels-synapse-operator
       imagePullSecrets:
         - name: harbor-pull
-      nodeSelector: { kubernetes.io/arch: amd64 }
+      # SKIRM-283 (26-10-2026): fijado a `workload: core`, el mismo nodeSelector
+      # con el que se programan labels-valkey-0/1/2 (los tres ks5-cp-*). Desde el
+      # PR #88 el operador caía en atlantic, y cada ida y vuelta a Valkey le
+      # costaba 0,2-1,5 s (vs ~1 ms dentro del pool ks5): al arrancar reconcilia
+      # ~870 instancias de serie y tardaba de 7 a 26+ minutos en reclamar
+      # etiquetas nuevas. Los ks5 no tienen taints, así que no hacen falta
+      # toleraciones. Cualquier nodo del pool está a ~1 ms del maestro Valkey.
+      nodeSelector: { kubernetes.io/arch: amd64, workload: core }
       # Lista NO vacía a propósito: una lista vacía (`tolerations: []`) se
       # serializa como `omitempty` y el diff de ArgoCD la descarta antes de
       # aplicar nada, así que nunca reclama f:tolerations (kubectl/kubectl-patch
