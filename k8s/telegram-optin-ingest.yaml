@@ -35,7 +35,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: telegram-optin-ingest
-          image: harbor.e-dani.com/homelab/skirmshop-labels-telegram-optin-ingest@sha256:29d6f78a7225e9b8a44ddf9062875dbee1b9b54bb992eebcc87a5ea270a5d918 # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); mismo código que el pin anterior (e4e9be4, tag v2026.10.14.1): solo se alinea a la release.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-telegram-optin-ingest@sha256:5879438d803504143b5e776f1f104d067d29d66d96fad1d63f1be67a423a89ac # pin por digest — SC-3035: v2026.10.26.11 (skirmshop-labels 8a04608, release 40416774873): la reprogramación que pide el destinatario (UPS X:ZA) deja de avisarse como incidencia; nuevo kind shipping_rescheduled (email + HTTP/Telegram; WhatsApp Cloud espera plantilla de Meta).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
