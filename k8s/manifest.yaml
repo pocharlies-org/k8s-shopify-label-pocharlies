@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:c592e415d17ea08f869db694c8315a49db5b90f040712c11510352001b429b4b # pin por digest — tag v2026.10.26.9 (labels main f594032, release 40346043542): SKIRM-260 GET /api/shipments/:orderId devuelve printUrl (el bloque «Imprimir etiqueta» enlaza a la página de impresión; fuera blob:null).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:c688ebaa8834e2f1c4a360d7bcad687ac0cdad7cd5594eca5d6c7b9b64129fd6 # pin por digest — tag v2026.10.26.10 (labels main 7ff3a87, release 40365748531): DGX-1297 pedido extra (rutas de operador /api/internal/order-edit/extra/preview y /extra: draft aparte con enlace de pago y la tarifa de la web) y googlemail.com = gmail.com en la regla del remitente. Incluye v2026.10.26.9.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
