@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:50fe0ecb1c01da851c9455593fcf0aa97064baa9711b20bad0c52244276e41cd # pin por digest — tag v2026.10.26.2 (labels main 88d9057, release 40310358331): SKIRM-275 columna «Imprimir» a la izquierda del todo en Buscar pedido. Incluye v2026.10.26.1 (SC-3011).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:e69ce14073e4ff246e0c91604d565f98feb097c6016987e42146c32c5a244ce1 # pin por digest — tag v2026.10.26.4 (labels main 4c43ecb, release 40316956075): SKIRM-280 la app avisa sola cuando hay una versión nueva (aviso «Recargar»). Incluye v2026.10.26.2.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
