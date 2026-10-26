@@ -47,7 +47,7 @@ spec:
           value: edge
       containers:
         - name: synapse-janitor
-          image: harbor.e-dani.com/homelab/skirmshop-labels-synapse-janitor@sha256:77a2c3290bae226d94495f185ad3cfd0116093c72db1038fa20a6592aa1bda57 # pin por digest — tag v2026.10.26.3 (labels main f040597, release 40313611021): SKIRM-269 el janitor marca como fallidas las poll-tracking cuyo runner murió en running.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-synapse-janitor@sha256:4a99b846432b9b1d8211aa84a020ab67cfc7c07899859da0373c210ed9e26e42 # pin por digest — tag v2026.10.26.7 (labels main 847ff66, release 40329895209): SKIRM-284 borrado en dos fases (primero se quita el campo del índice; la clave se borra ≥900 s después) para que el operator no lea una clave muerta y reviente (237 caídas en 7 días).
           imagePullPolicy: IfNotPresent
           envFrom:
             - secretRef:
@@ -80,6 +80,12 @@ spec:
               value: "900"
             - name: ORPHAN_GRACE_SECONDS
               value: "120"
+            # SKIRM-284: seconds a detached key (index field already removed,
+            # phase 1) waits before phase 2 deletes it. Must be ≥
+            # CLEANUP_INTERVAL_SECONDS and longer than the operator's HSCAN→GET
+            # gap on its node (sub-second on ks5, minutes on atlantic).
+            - name: PENDING_DELETE_GRACE_SECONDS
+              value: "900"
             - name: MANUAL_LABEL_STUCK_MINUTES
               value: "15"
             # A `running` generate-shipment-label instance with no task
