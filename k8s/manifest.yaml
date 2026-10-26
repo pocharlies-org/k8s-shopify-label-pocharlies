@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:b74230edf94bf446b68e53e60fb886f4265d6a6b61086cdb499dd91eac07b62c # pin por digest — tag v2026.10.26.6 (labels main 615285b, release 40324311476): SKIRM-281 el diálogo de impresión espera a que su pestaña esté a la vista. Incluye v2026.10.26.5.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:1f30e362864a5f75546251ebbfce544589f192f594b718bd6690c8e74bce8d92 # pin por digest — tag v2026.10.26.8 (labels main a59a39b, release 40330978839): SKIRM-281 quita whenVisible: pdf.js ya espera a que la pestaña esté a la vista. Incluye v2026.10.26.6.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
