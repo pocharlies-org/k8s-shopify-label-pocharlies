@@ -47,7 +47,7 @@ spec:
           value: edge
       containers:
         - name: synapse-janitor
-          image: harbor.e-dani.com/homelab/skirmshop-labels-synapse-janitor@sha256:588a74b57ea786b67978c12ab33cbd71ddfff21e248968cd6801a087a85b91cd # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); mismo código que el pin anterior (ab4c640, tag v2026.09.07.2): solo se alinea a la release.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-synapse-janitor@sha256:77a2c3290bae226d94495f185ad3cfd0116093c72db1038fa20a6592aa1bda57 # pin por digest — tag v2026.10.26.3 (labels main f040597, release 40313611021): SKIRM-269 el janitor marca como fallidas las poll-tracking cuyo runner murió en running.
           imagePullPolicy: IfNotPresent
           envFrom:
             - secretRef:
@@ -88,6 +88,11 @@ spec:
             # carrier-confirmation listen; 0 disables.
             - name: STALLED_LABEL_MINUTES
               value: "10"
+            # Same for a `running` poll-tracking instance whose runner died
+            # (SKIRM-269: the operator relaunched them at every boot); the
+            # next pass deletes it. A poll has no waits; 0 disables.
+            - name: STALLED_POLL_MINUTES
+              value: "30"
           ports:
             - containerPort: 3000
               name: http
