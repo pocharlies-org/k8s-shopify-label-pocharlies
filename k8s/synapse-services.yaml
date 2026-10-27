@@ -471,7 +471,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: tracking-ingestion
-          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:0f62ea9874a229a55216cfda46ed6d5c04204707d58579c88c06c162fd98a91f # pin por digest — SC-3070: v2026.10.27.2 (skirmshop-labels 481c2c0, release 40508897519): la ingesta consulta la tabla de códigos por transportista (UPS `X:`, descripción de Correos, `codigoEstado` de CEX) y guarda la señal del cliente; un código sin regla se registra como `carrier-code-unclassified` y NUNCA se traduce en aviso de incidencia.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:464b574e276c0c96600458abba5bf8e344d57e79c53867e668ddd4806f6f6fc2 # pin por digest — SC-3048: v2026.10.27.6 (skirmshop-labels 8fa0abd, release 40538957537): la tabla de códigos cubre el censo real de 90 días de `tracking_event` (31 `X:` de UPS, `10`/`22`/`33`/`37` de Correos Express); ningún código observado queda ya sin señal del cliente.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
