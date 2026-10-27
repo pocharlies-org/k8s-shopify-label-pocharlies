@@ -1,11 +1,12 @@
 # Daily fuel-surcharge freshness watchdog (CEX + Correos matriz).
 #
-# Both carriers communicate their fuel % monthly by email; someone applies it
-# in the admin "Tarifas de envío" panel. This job reads each adapter's
+# CEX communicates its fuel % by email (~day 5) and Correos matriz on its
+# monthly invoice (~day 2); .github/workflows/fuel-sync.yml applies both from
+# Gmail to GitOps (SKIRM-312). This job is its safety net: it reads each adapter's
 # surcharge ConfigMap directly, evaluates month-of-effective_from vs current
 # month (Europe/Madrid) and posts ONE aggregated Telegram alert to the labels
 # thread while anything is stale.
-# It re-alerts daily until the month is confirmed in the panel.
+# Silent before day 8 (sources arrive days 2-5); then re-alerts daily until applied.
 #
 # Idempotency/failure semantics (audited):
 #   - concurrencyPolicy Forbid + backoffLimit 0: a failed run does NOT retry
@@ -60,6 +61,10 @@ spec:
                 - |
                   set -eu
                   current_ym="$(TZ=Europe/Madrid date +%Y-%m)"
+                  if [ "$(TZ=Europe/Madrid date +%-d)" -lt 8 ]; then
+                    echo "[fuel-freshness] before day 8: email/invoice may not have arrived yet"
+                    exit 0
+                  fi
                   stale=''
 
                   check_carrier() {
@@ -83,7 +88,7 @@ spec:
                     exit 0
                   fi
 
-                  text="$(printf '⚠️ Recargo fuel pendiente de revisar (%s)\n\n%b\nActualiza Tarifas de envío → Recargos cuando esté confirmado.' "$current_ym" "$stale")"
+                  text="$(printf '⚠️ Recargo fuel pendiente de revisar (%s)\n\n%b\nEl workflow fuel-sync no ha encontrado el email de CEX o la factura de Correos de este mes: revisa info@skirmshop.es y su último run en GitHub Actions (k8s-shopify-label-pocharlies).' "$current_ym" "$stale")"
 
                   echo "[fuel-freshness] sending Telegram stale-fuel alert"
                   HTTP_CODE=$(curl -sS -o /tmp/telegram.json -w "%{http_code}" \

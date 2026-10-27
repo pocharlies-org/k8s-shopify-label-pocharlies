@@ -1,0 +1,42 @@
+name: Recargo fuel
+
+# SKIRM-312. Aplica el recargo de combustible de CEX (email mensual) y Correos matriz (factura mensual)
+# desde Gmail a k8s/cex-config.yaml y k8s/correos-surcharges.yaml, y lo commitea a main: ArgoCD lo
+# despliega y el adapter lo relee en cada /rate. Corre cada día porque el email y la factura llegan en
+# días variables; en la práctica commitea una vez al mes por transportista (idempotente por Gmail id).
+# Si un mes no llega nada, el watchdog labels-fuel-freshness avisa en el thread de etiquetas.
+on:
+  schedule:
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fuel-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: arc-k8s
+    steps:
+      - uses: actions/checkout@v4
+      - name: pdftotext
+        run: command -v pdftotext || (sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils)
+      - name: Leer Gmail y aplicar
+        id: sync
+        env:
+          # Solo gmail.readonly sobre info@e-dani.com (alias info@skirmshop.es); lo escribe security.
+          GMAIL_TOKEN_JSON: ${{ secrets.GMAIL_FUEL_TOKEN_JSON }}
+        run: python3 scripts/fuel_sync.py
+      - name: Commit a main
+        if: always() && steps.sync.outputs.summary != ''
+        env:
+          SUMMARY: ${{ steps.sync.outputs.summary }}
+        run: |
+          git config user.name "labels-fuel-sync"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -am "chore(labels): recargo fuel — ${SUMMARY}" -m "SKIRM-312: aplicado por .github/workflows/fuel-sync.yml desde Gmail."
+          git pull -q --rebase origin main
+          git push -q origin HEAD:main
