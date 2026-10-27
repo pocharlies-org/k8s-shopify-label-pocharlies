@@ -855,7 +855,10 @@ spec:
             - { name: SYNAPSE_CORRELATOR_NAME, value: skirmshop-correlator }
             - {
                 name: CONNECTIONSTRINGS__REDIS,
-                value: "labels-valkey-master.skirmshop.svc.cluster.local:6379",
+                # SC-2637 (27-10-2026): el correlator moría con RedisTimeoutException
+                # sin capturar (asyncTimeout por defecto 5 s) ante picos de latencia
+                # hacia labels-valkey. Se endurece igual que el operator.
+                value: "labels-valkey-master.skirmshop.svc.cluster.local:6379,syncTimeout=40000,asyncTimeout=30000,connectTimeout=10000,connectRetry=5",
               }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
@@ -961,7 +964,9 @@ spec:
           env:
             - {
                 name: CONNECTIONSTRINGS__REDIS,
-                value: "labels-valkey-master.skirmshop.svc.cluster.local:6379,syncTimeout=40000,connectTimeout=10000,connectRetry=5",
+                # SC-2637 (27-10-2026): asyncTimeout por defecto (5 s) dejaba pasar
+                # RedisTimeoutExceptions que el alpha1 no captura; se sube a 30 s.
+                value: "labels-valkey-master.skirmshop.svc.cluster.local:6379,syncTimeout=40000,asyncTimeout=30000,connectTimeout=10000,connectRetry=5",
               }
             - { name: SYNAPSE_OPERATOR_NAME, value: skirmshop-operator }
             - { name: SYNAPSE_OPERATOR_NAMESPACE, value: skirmshop }
@@ -979,10 +984,12 @@ spec:
               }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
-            # 13-09-2026 (INFRA-42): p95 medido 162m. Request 30m→100m (infra-dotado);
-            # límite de memoria sin cambios.
+            # 13-09-2026 (INFRA-42): p95 medido 162m. Request 30m→100m (infra-dotado).
+            # SC-2637 (27-10-2026): working set medido 197-210 MiB sobre límite de
+            # 256 MiB (77-82 %); los picos de lote de instancias llevaban al runtime
+            # .NET a morir (exit 139). Límite 256→384 MiB.
             requests: { cpu: 100m, memory: 64Mi }
-            limits: { memory: 256Mi }
+            limits: { memory: 384Mi }
       volumes:
         - name: tokens
           configMap: { name: synapse-tokens }
