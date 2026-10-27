@@ -760,7 +760,7 @@ data:
       dsl: '1.0.0'
       namespace: skirmshop
       name: process-return
-      version: '1.2.1'
+      version: '1.2.2'
       summary: |
         Auto-generate a return label when ReturnRequested fires. UPS branch
         runs end-to-end; CEX branch hands off to ops because the customer's
@@ -771,7 +771,9 @@ data:
         encoding) — never `${ }`; services need cluster FQDNs (short compose
         names don't resolve from the runner); context chaining goes through
         `output: as: '${ $input + { k: $output } }'` and a `set` hoist for
-        anything referenced from an endpoint.
+        anything referenced from an endpoint. Switch cases must be mutually
+        exclusive (the engine rejects multi-match): the default case carries
+        no `when` at all.
 
     input:
       schema:
@@ -851,10 +853,14 @@ data:
                 when: '${ .context.carrier == "correos_express" and (.context.customer.taxId != null) and (.context.customer.taxId != "") }'
                 then: callCexReturns
             - cexBranch:
-                when: '${ .context.carrier == "correos_express" }'
+                # Mutually exclusive with cexWithDniBranch: the engine admits
+                # AT MOST one matching case (SKIRM-310, instance faulted with
+                # "cases cexBranch, unknownBranch have been matched").
+                when: '${ .context.carrier == "correos_express" and (.context.customer.taxId == null or .context.customer.taxId == "") }'
                 then: cexEmailFallback
             - unknownBranch:
-                when: '${ true }'
+                # Default case: no `when` (a `${ true }` here matches alongside
+                # every specific case — poll-tracking.yaml is the reference).
                 then: failUnknownCarrier
 
       # -- UPS Print-Return-Label (no DNI required) -------------------------
@@ -1028,7 +1034,8 @@ data:
                 when: '${ .notifyCustomer == false }'
                 then: exit
             - notifyBranch:
-                when: '${ true }'
+                # Default case (no `when`): `${ true }` would match alongside
+                # operatorSilent and the engine rejects multi-match switches.
                 then: notifyCustomer
 
       - notifyCustomer:
