@@ -3,20 +3,19 @@
 # CEX communicates its fuel % by email (~day 5) and Correos matriz on its
 # monthly invoice (~day 2); .github/workflows/fuel-sync.yml applies both from
 # Gmail to GitOps (SKIRM-312). This job is its safety net: it reads each adapter's
-# surcharge ConfigMap directly, evaluates month-of-effective_from vs current
-# month (Europe/Madrid) and posts ONE aggregated Telegram alert to the labels
-# thread while anything is stale.
-# Silent before day 8 (sources arrive days 2-5); then re-alerts daily until applied.
+# surcharge ConfigMap directly and publishes, per carrier, whether its
+# effective_from belongs to the current month (Europe/Madrid; before day 8 the
+# previous month still counts, the sources arrive days 2-5) to VictoriaMetrics.
+# The VMRule `skirmshop-labels-fuel` (k8s/monitoring.yaml) owns the alert state:
+# Alertmanager → Keep, incident via the `labels-pipeline` correlation rule
+# (SKIRM-316). Same pattern as labels-deep-monitor.
 #
-# Idempotency/failure semantics (audited):
-#   - concurrencyPolicy Forbid + backoffLimit 0: a failed run does NOT retry
-#     the same day (avoids duplicate alerts); the daily schedule is the retry.
-#   - Stale fuel values are a business warning, not a Kubernetes failure.
-#   - Telegram send failure returns non-zero → Job marked failed
-#     (visible in kubectl + metrics), never a silent skip.
-# Security invariant: only the Telegram bot token is mounted, from the same
-# namespace Secret already used by labels-shopify-app. Surcharge ConfigMaps are
-# read-only volumes.
+# Failure semantics:
+#   - concurrencyPolicy Forbid + backoffLimit 0; the daily schedule is the retry.
+#   - Stale fuel values are a business signal (gauge = 0), not a Job failure.
+#   - Unreadable ConfigMap or metrics delivery failure → exit 1 (Job failed) and
+#     no heartbeat, which LabelsFuelFreshnessMissing turns into an alert.
+# Surcharge ConfigMaps are read-only volumes; no secret is mounted.
 #
 # Manual run:
 #   kubectl create job -n skirmshop --from=cronjob/labels-fuel-freshness fuel-fresh-$(date +%s)
@@ -50,61 +49,57 @@ spec:
             - name: trigger
               image: curlimages/curl:8.13.0
               env:
-                - { name: OPS_TELEGRAM_CHAT_ID, value: "-1003984393379" }
-                - { name: OPS_TELEGRAM_LABELS_THREAD_ID, value: "6921" }
-                - name: OPS_TELEGRAM_BOT_TOKEN
-                  valueFrom:
-                    secretKeyRef: { name: labels-telegram-bot, key: bot_token }
+                - { name: VICTORIAMETRICS_URL, value: "http://vmsingle-vm-victoria-metrics-k8s-stack.monitoring.svc.cluster.local:8428" }
               command:
                 - sh
                 - -c
                 - |
                   set -eu
-                  current_ym="$(TZ=Europe/Madrid date +%Y-%m)"
-                  if [ "$(TZ=Europe/Madrid date +%-d)" -lt 8 ]; then
-                    echo "[fuel-freshness] before day 8: email/invoice may not have arrived yet"
-                    exit 0
-                  fi
-                  stale=''
+                  year="$(TZ=Europe/Madrid date +%Y)"; month="$(TZ=Europe/Madrid date +%m)"; day="$(TZ=Europe/Madrid date +%d)"
+                  current_ym="${year}-${month}"
+                  m=$((1${month} - 100)); y=$year
+                  if [ "$m" -eq 1 ]; then prev_ym="$((y - 1))-12"; else prev_ym="$(printf '%s-%02d' "$y" $((m - 1)))"; fi
+                  run_ts="$(date +%s)"
+                  metrics=''
 
                   check_carrier() {
-                    name="$1"
+                    carrier="$1"
                     file="$2"
                     effective_from="$(sed -n 's/.*"fuel_surcharge_effective_from"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$file" | head -n1)"
                     pct="$(sed -n 's/.*"fuel_surcharge_pct"[[:space:]]*:[[:space:]]*\([0-9.][0-9.]*\).*/\1/p' "$file" | head -n1)"
-                    source="$(sed -n 's/.*"fuel_surcharge_source"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$file" | head -n1)"
-                    effective_ym="$(printf '%s' "$effective_from" | cut -c1-7)"
-                    echo "[fuel-freshness] $name pct=${pct:-unknown} effective_from=${effective_from:-missing} source=${source:-missing}"
-                    if [ -z "$effective_ym" ] || [ "$effective_ym" != "$current_ym" ]; then
-                      stale="${stale}- ${name}: fuel ${pct:-?}% efectivo ${effective_from:-missing} (${source:-sin fuente})\n"
+                    if [ -z "$effective_from" ] || [ -z "$pct" ]; then
+                      echo "[fuel-freshness] $carrier: surcharges.json sin pct o effective_from" >&2
+                      exit 1
                     fi
+                    effective_ym="$(printf '%s' "$effective_from" | cut -c1-7)"
+                    fresh=0
+                    if [ "$effective_ym" = "$current_ym" ] || { [ "$((1${day} - 100))" -lt 8 ] && [ "$effective_ym" = "$prev_ym" ]; }; then fresh=1; fi
+                    echo "[fuel-freshness] $carrier pct=$pct effective_from=$effective_from fresh=$fresh"
+                    # Sin la fecha como etiqueta: una serie por transportista, y al aplicar el
+                    # recargo la alerta se resuelve en el siguiente run (no 26 h después).
+                    effective_ts="$(TZ=Europe/Madrid date -d "$effective_from" +%s)"
+                    lbl="namespace=\"skirmshop\",cronjob=\"labels-fuel-freshness\",carrier=\"$carrier\""
+                    metrics="${metrics}labels_fuel_surcharge_fresh{$lbl} $fresh ${run_ts}000
+                  labels_fuel_surcharge_pct{$lbl} $pct ${run_ts}000
+                  labels_fuel_surcharge_effective_from_timestamp_seconds{$lbl} $effective_ts ${run_ts}000
+                  "
                   }
 
-                  check_carrier 'CEX' /etc/fuel/cex/surcharges.json
-                  check_carrier 'Correos matriz' /etc/fuel/correos/surcharges.json
+                  check_carrier cex /etc/fuel/cex/surcharges.json
+                  check_carrier correos /etc/fuel/correos/surcharges.json
+                  metrics="${metrics}labels_fuel_freshness_last_run_timestamp_seconds{namespace=\"skirmshop\",cronjob=\"labels-fuel-freshness\"} $run_ts ${run_ts}000
+                  "
 
-                  if [ -z "$stale" ]; then
-                    echo "[fuel-freshness] all carrier fuel surcharges are fresh for $current_ym"
-                    exit 0
-                  fi
-
-                  text="$(printf '⚠️ Recargo fuel pendiente de revisar (%s)\n\n%b\nEl workflow fuel-sync no ha encontrado el email de CEX o la factura de Correos de este mes: revisa info@skirmshop.es y su último run en GitHub Actions (k8s-shopify-label-pocharlies).' "$current_ym" "$stale")"
-
-                  echo "[fuel-freshness] sending Telegram stale-fuel alert"
-                  HTTP_CODE=$(curl -sS -o /tmp/telegram.json -w "%{http_code}" \
-                    -X POST \
-                    -d "chat_id=${OPS_TELEGRAM_CHAT_ID}" \
-                    -d "message_thread_id=${OPS_TELEGRAM_LABELS_THREAD_ID}" \
-                    -d "disable_web_page_preview=true" \
-                    --data-urlencode "text=${text}" \
-                    "https://api.telegram.org/bot${OPS_TELEGRAM_BOT_TOKEN}/sendMessage" || true)
-                  echo "[fuel-freshness] Telegram HTTP $HTTP_CODE"
-                  cat /tmp/telegram.json || true
-                  echo
-                  if [ "$HTTP_CODE" != "200" ]; then
-                    echo "[fuel-freshness] Telegram send failed, exiting 1 so the Job marks failed"
-                    exit 1
-                  fi
+                  for attempt in 1 2 3; do
+                    if printf '%s' "$metrics" | sed 's/^ *//' | curl -fsS -o /dev/null -m 15 -H 'Content-Type: text/plain' --data-binary @- \
+                      "${VICTORIAMETRICS_URL%/}/api/v1/import/prometheus?extra_label=job=labels_fuel_freshness"; then
+                      echo "[fuel-freshness] metrics delivered (attempt $attempt)"
+                      exit 0
+                    fi
+                    echo "[fuel-freshness] metrics delivery failed (attempt $attempt/3)" >&2
+                    sleep $((attempt * 2))
+                  done
+                  exit 1
               resources:
                 requests: { cpu: 10m, memory: 16Mi }
                 limits:   { memory: 64Mi }

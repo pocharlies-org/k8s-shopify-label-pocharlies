@@ -4,7 +4,8 @@ name: Recargo fuel
 # desde Gmail a k8s/cex-config.yaml y k8s/correos-surcharges.yaml, y lo commitea a main: ArgoCD lo
 # despliega y el adapter lo relee en cada /rate. Corre cada día porque el email y la factura llegan en
 # días variables; en la práctica commitea una vez al mes por transportista (idempotente por Gmail id).
-# Si un mes no llega nada, el watchdog labels-fuel-freshness avisa en el thread de etiquetas.
+# Cada run publica su resultado en VictoriaMetrics (LabelsFuelSyncFailed/Missing → Keep, SKIRM-316);
+# si un mes no llega nada, el watchdog labels-fuel-freshness lo publica y avisa LabelsFuelSurchargeStale.
 on:
   schedule:
     - cron: "0 7 * * *"
@@ -31,6 +32,7 @@ jobs:
           GMAIL_TOKEN_JSON: ${{ secrets.GMAIL_FUEL_TOKEN_JSON }}
         run: python3 scripts/fuel_sync.py
       - name: Commit a main
+        id: commit
         if: always() && steps.sync.outputs.summary != ''
         env:
           SUMMARY: ${{ steps.sync.outputs.summary }}
@@ -40,3 +42,13 @@ jobs:
           git commit -q -am "chore(labels): recargo fuel — ${SUMMARY}" -m "SKIRM-312: aplicado por .github/workflows/fuel-sync.yml desde Gmail."
           git pull -q --rebase origin main
           git push -q origin HEAD:main
+      - name: Publicar el resultado
+        if: always()
+        env:
+          OK: ${{ steps.sync.outcome == 'success' && steps.commit.outcome != 'failure' && '1' || '0' }}
+          VM_URL: http://vmsingle-vm-victoria-metrics-k8s-stack.monitoring.svc.cluster.local:8428
+        run: |
+          ts=$(date +%s)
+          printf 'labels_fuel_sync_ok{namespace="skirmshop",workflow="fuel-sync"} %s %s000\nlabels_fuel_sync_last_run_timestamp_seconds{namespace="skirmshop",workflow="fuel-sync"} %s %s000\n' "$OK" "$ts" "$ts" "$ts" \
+            | curl -fsS -m 15 --retry 3 -H 'Content-Type: text/plain' --data-binary @- "$VM_URL/api/v1/import/prometheus?extra_label=job=labels_fuel_sync"
+          echo "labels_fuel_sync_ok=$OK"
