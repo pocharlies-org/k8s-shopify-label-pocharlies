@@ -33,7 +33,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: whatsapp-optin-ingest
-          image: harbor.e-dani.com/homelab/skirmshop-labels-whatsapp-optin-ingest@sha256:5f211a7265a1d354895fefd20464577ca24fd95da3a4ca2312304c6e1d985421 # pin por digest — SC-3035: v2026.10.26.11 (skirmshop-labels 8a04608, release 40416774873): la reprogramación que pide el destinatario (UPS X:ZA) deja de avisarse como incidencia; nuevo kind shipping_rescheduled (email + HTTP/Telegram; WhatsApp Cloud espera plantilla de Meta).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-whatsapp-optin-ingest@sha256:5b4ea49d46d0db5d64541c0a37ff25a3285fe774942d03d0b37d43acbdf5d44c # pin por digest — SC-3069: v2026.10.27.1 (skirmshop-labels f8402cd, release 40502140725): el evento de tracking lleva la señal del adaptador (customerSignal + carrierIncidentCode; migración 003 nullable, aplicada por applyMigrations() al arrancar) y nuevo kind shipping_action_required. Ningún adaptador envía señal todavía — eso es SC-3070 —, así que hasta entonces el aviso se sigue deduciendo del estado.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
