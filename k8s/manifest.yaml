@@ -686,7 +686,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:787639b5f7fb9ed9d6edc6579abac5cfcec5d3d3b7f0f5f0dd52d02e49ef9205 # pin por digest — SKIRM-243: v2026.10.22.3 (skirmshop-labels 9118bdd, release 39766152274): SKIRM-241: UPS I/OF e I/OT → OUT_FOR_DELIVERY.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:e50ca59b754c6bf5ad869e5eb9f62f66be9f64ea48f6097d4a7e021cb8d1ae7b # pin por digest — SC-3070: v2026.10.27.2 (skirmshop-labels 481c2c0, release 40508897519): `track-alert` deja de tener su propio vocabulario y delega en el de `tracking` (dos tablas para el mismo código); `U` pasa a IN_TRANSIT y el `default` deja de ser EXCEPTION.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
