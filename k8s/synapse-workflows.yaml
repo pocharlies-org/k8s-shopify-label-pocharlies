@@ -734,13 +734,13 @@ data:
     #                             gives us {carrier, originalCarrierShipmentId,
     #                             customer, totalKilos, currency}
     #   2. dispatchToCarrier    → switch on carrier
-    #       - ups               → POST http://labels-ups-adapter.skirmshop.svc.cluster.local:3002/returns
-    #       - correos_express   → POST http://labels-correos-express-adapter.skirmshop.svc.cluster.local:3003/returns
+    #       - ups               → POST labels-ups-adapter:3002/returns
+    #       - correos_express   → POST labels-correos-express-adapter:3003/returns
     #                             (CEX requires a customer DNI/NIE that the
     #                             webhook payload doesn't carry; the saga
     #                             gates on its presence and falls back to
     #                             email-the-customer otherwise)
-    #   3. notifyCustomer       → POST http://labels-notification-dispatcher.skirmshop.svc.cluster.local:3007/notify
+    #   3. notifyCustomer       → POST labels-notification-dispatcher:3007/notify
     #                             with the new label URL embedded; skipped when
     #                             the input says `notifyCustomer: false` (the
     #                             operator route, SKIRM-264: the human on the
@@ -760,11 +760,18 @@ data:
       dsl: '1.0.0'
       namespace: skirmshop
       name: process-return
-      version: '1.2.0'
+      version: '1.2.1'
       summary: |
         Auto-generate a return label when ReturnRequested fires. UPS branch
         runs end-to-end; CEX branch hands off to ops because the customer's
         DNI is required and we don't capture it in the Shopify webhook yet.
+
+        Engine dialect (SKIRM-310, proven against labels-synapse-api):
+        `endpoint` expands only {topLevelVar} URI-templates (raw, no URL-
+        encoding) — never `${ }`; services need cluster FQDNs (short compose
+        names don't resolve from the runner); context chaining goes through
+        `output: as: '${ $input + { k: $output } }'` and a `set` hoist for
+        anything referenced from an endpoint.
 
     input:
       schema:
@@ -785,6 +792,7 @@ data:
             correlationId:
               type: string
               format: uuid
+            # CONTRACT: workflow.labels.process_return.input
             notifyCustomer:
               type: boolean
 
@@ -796,12 +804,14 @@ data:
                 call: http
                 with:
                   method: get
-                  endpoint: 'http://labels-shopify-app.skirmshop.svc.cluster.local:3004/api/internal/order/${ .orderId | @uri }/return-context'
+                  # The runner does not expand `${ }` inside endpoint and a GID has
+                  # slashes, so orderId travels as a raw query param (SKIRM-310).
+                  endpoint: 'http://labels-shopify-app.skirmshop.svc.cluster.local:3004/api/internal/order/return-context?orderId={orderId}'
                   headers:
                     accept: application/json
                     x-correlation-id: '${ .correlationId }'
                 output:
-                  as: '.context'
+                  as: '${ $input + { context: $output } }'
           catch:
             errors:
               with:
@@ -821,7 +831,12 @@ data:
                           stage: fetch-context
                           reason: '${ $context.err | tostring }'
               - raise:
-                  error: { type: 'https://skirmshop.es/errors/return-context', status: 404, detail: order not found }
+                  error:
+                    {
+                      type: 'https://skirmshop.es/errors/return-context',
+                      status: 404,
+                      detail: order not found,
+                    }
 
       # -- 2. Dispatch to the matching carrier ------------------------------
       - dispatchByCarrier:
@@ -859,7 +874,7 @@ data:
                     customer: '${ .context.customer }'
                     kilos: '${ .context.totalKilos }'
                 output:
-                  as: '.upsResult'
+                  as: '${ $input + { upsResult: $output } }'
           catch:
             errors:
               with:
@@ -879,15 +894,20 @@ data:
                           stage: ups-returns
                           reason: '${ $context.err | tostring }'
               - raise:
-                  error: { type: 'https://skirmshop.es/errors/return-ups-failed', status: 502, detail: ups returns failed }
-          then: loadReturnLabel
+                  error:
+                    {
+                      type: 'https://skirmshop.es/errors/return-ups-failed',
+                      status: 502,
+                      detail: ups returns failed,
+                    }
+          then: hoistLabelRef
 
       # -- CEX Logística Inversa end-to-end (DNI present) -------------------
       # When the storefront tax-id field captured the customer's NIF/NIE,
-      # we have everything CEX needs to issue the inverse label without
-      # human intervention. The adapter responds with numEnvio + base64
-      # label bytes, which we then forward to the customer as a PDF
-      # attachment via `notifyCustomer`.
+      # we have everything CEX needs to register the logistics-inverse
+      # authorisation. apiRestLogisticaInversa does not print a label by
+      # itself; when CEX returns only codigoRetorno=0 the adapter marks the
+      # authorisation as accepted and skips label download.
       - callCexReturns:
           try:
             - callCexReturnsApi:
@@ -915,7 +935,7 @@ data:
                     kilos: '${ .context.totalKilos }'
                     originalNumEnvio: '${ .context.originalCarrierShipmentId }'
                 output:
-                  as: '.cexResult'
+                  as: '${ $input + { cexResult: $output } }'
           catch:
             errors:
               with:
@@ -935,8 +955,13 @@ data:
                           stage: cex-returns
                           reason: '${ $context.err | tostring }'
               - raise:
-                  error: { type: 'https://skirmshop.es/errors/return-cex-failed', status: 502, detail: cex returns failed }
-          then: loadReturnLabel
+                  error:
+                    {
+                      type: 'https://skirmshop.es/errors/return-cex-failed',
+                      status: 502,
+                      detail: cex returns failed,
+                    }
+          then: hoistLabelRef
 
       # -- CEX Logística Inversa fallback (DNI not captured) ----------------
       # When the customer never filled the tax-id field, we hand off to
@@ -978,15 +1003,22 @@ data:
       # s3://... (production label-storage). label-storage normalises both to
       # contentBase64 so the dispatcher can attach the PDF without knowing
       # where the bytes live.
+      # The runner only expands {topLevelVar} in endpoint, so the ref is hoisted
+      # to a top-level scalar first (nested {a.b} does not expand — SKIRM-310).
+      - hoistLabelRef:
+          set:
+            labelBytesRef: '${ .upsResult.labelBytesRef // .cexResult.labelBytesRef // "" }'
+          then: loadReturnLabel
+
       - loadReturnLabel:
           call: http
           with:
             method: get
-            endpoint: 'http://labels-label-storage.skirmshop.svc.cluster.local:3007/content?ref=${ (((.upsResult.labelBytesRef // .cexResult.labelBytesRef) // "") | @uri) }'
+            endpoint: 'http://labels-label-storage.skirmshop.svc.cluster.local:3007/content?ref={labelBytesRef}'
             headers:
               x-correlation-id: '${ .correlationId }'
           output:
-            as: '.returnLabelContent'
+            as: '${ $input + { returnLabelContent: $output } }'
           then: decideNotifyCustomer
 
       # Only an explicit false skips it: the portal and the admin send nothing and notify.

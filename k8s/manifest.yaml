@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:2d5c433ed718a090629966228fdf771821a3a4dbdb3dc5c3d24901ae63bc6f06 # pin por digest — SC-3071: v2026.10.27.4 (skirmshop-labels 3e34cb7, release 40525239509): la reprogramación se titula «Fecha de entrega cambiada» (criterio de la historia; .27.3 decía sólo «en tránsito») y `action_required` sigue pidiendo el dato.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:d61ba21ac901d6841f9c65f9c2f9f40b78ea0ad7295e538a8d3e5519fac906f3 # pin por digest — SKIRM-310: v2026.10.27.5 (skirmshop-labels e80594d, release 40527806654): `return-context` también por query `?orderId=` — el runner de Synapse solo expande {var} en la query y un GID no cabe en un path param; va con el CM process-return 1.2.1 y PROCESS_RETURN_WORKFLOW_VERSION=1.2.1 (el registrar hace fail-closed con versión desalineada).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -188,7 +188,7 @@ spec:
                   key: token
                   optional: true
             # Versión de process-return que lanza esa ruta (registrada por el PostSync, #86).
-            - { name: PROCESS_RETURN_WORKFLOW_VERSION, value: "1.2.0" }
+            - { name: PROCESS_RETURN_WORKFLOW_VERSION, value: "1.2.1" }
             - { name: GROUNDED_REPLY_TENANT_ID, value: "807a4817-b73a-42ce-8954-8dd5dc80b751" }
             - { name: GROUNDED_REPLY_STORE_ID, value: "269d0560-9c16-4db8-86e4-52867efc1901" }
             - { name: GROUNDED_REPLY_BINDING_ID, value: "d9188e91-b282-4878-a24e-933611c94d84" }
