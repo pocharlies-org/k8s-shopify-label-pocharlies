@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:c688ebaa8834e2f1c4a360d7bcad687ac0cdad7cd5594eca5d6c7b9b64129fd6 # pin por digest — tag v2026.10.26.10 (labels main 7ff3a87, release 40365748531): DGX-1297 pedido extra (rutas de operador /api/internal/order-edit/extra/preview y /extra: draft aparte con enlace de pago y la tarifa de la web) y googlemail.com = gmail.com en la regla del remitente. Incluye v2026.10.26.9.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:5a3c9a55326366e607b58c5d6ecc7b3d9f037fda32c6907e03e346e6786d3db3 # pin por digest — SC-3071: v2026.10.27.3 (skirmshop-labels 3df6053, release 40511623690): la página de seguimiento pinta por `customerSignal`, no por EXCEPTION — un `rescheduled`/`update` sale como en tránsito y `action_required` titula «El transportista te necesita» (copia nueva en las 21 lenguas).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
