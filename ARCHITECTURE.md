@@ -16,7 +16,7 @@ Kustomize/manifests planos; sin Helm. Config declarativa en `k8s/` (vat-rates, c
 `k8s/synapse-workflows.yaml` y `synapse-services.yaml` (registro de workflows y servicios en Synapse), `valkey-sentinel.yaml` + `valkey-master-service.yaml`, `nats-cluster.yaml`, `monitoring.yaml`. No usa la base del framework.
 
 ## Cómo se construye
-Un manifest por responsabilidad; CronJobs: `tracking-poll`, `notification-digest`, `pickup-point-reminder`, `ops-edit-hold-reconciler`, `correos-directory-refresh`, `fuel-freshness`, `vat-sync`, `deep-monitor`. `scripts/pin-wa-activation-digests.sh` fija digests; `scripts/generate-cex-rate-table.py` genera `cex-rate-table.json`. Diseño y decisiones en `plans/sc-231-*.md` y `docs/`.
+Un manifest por responsabilidad; CronJobs: `tracking-poll`, `notification-digest`, `pickup-point-reminder`, `ops-edit-hold-reconciler`, `correos-directory-refresh`, `fuel-freshness`, `vat-sync`, `deep-monitor`. `scripts/pin-wa-activation-digests.sh` fija digests; `scripts/generate-cex-rate-table.py` genera `cex-rate-table.json`. El recargo fuel (CEX por email, Correos matriz por factura) lo aplica desde Gmail `.github/workflows/fuel-sync.yml` → `scripts/fuel_sync.py`, que commitea a `main`; `fuel-freshness` avisa si un mes queda sin aplicar. Diseño y decisiones en `plans/sc-231-*.md` y `docs/`.
 
 ## Tests y validaciones
 `tests/deep-monitor-contract.sh` (contrato del deep-monitor) y `reusable-ci.yml` (yamllint, kustomize, kubeconform; hay un job previo propio en `ci.yml`).

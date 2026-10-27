@@ -4,8 +4,8 @@
 # combustible que varía mes a mes. Correos matriz NO lo comunica por email: el %
 # del mes sale en su factura mensual («Supl. combustible N %», facturas.clientes@correos.com).
 #
-# El adapter relee el fichero montado en cada /rate → un edit aquí (o vía el
-# panel admin) llega a checkout en <60s sin reiniciar pods. El mount es de
+# Los campos fuel los escribe .github/workflows/fuel-sync.yml (SKIRM-312). El
+# adapter relee el fichero montado en cada /rate → llega a checkout en <60s. El mount es de
 # DIRECTORIO completo (no subPath) o el kubelet no refresca.
 apiVersion: v1
 kind: ConfigMap

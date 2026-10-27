@@ -3419,8 +3419,8 @@ data:
       }
     ]
 ---
-# Recargos contractuales CEX. Editables desde el admin (panel Tarifas →
-# Recargos). El fuel surcharge se actualiza mensualmente por CEX (Real
+# Recargos contractuales CEX. Los campos fuel los escribe
+# .github/workflows/fuel-sync.yml desde el email mensual de CEX (SKIRM-312; Real
 # Decreto-ley 7/2026 + 9/2026, art.38 Ley 15/2009). El resto sale del PDF
 # contractual 2026.
 apiVersion: v1
