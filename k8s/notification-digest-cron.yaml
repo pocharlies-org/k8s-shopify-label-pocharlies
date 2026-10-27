@@ -120,7 +120,7 @@ spec:
           nodeSelector: { kubernetes.io/arch: amd64 }
           containers:
             - name: notification-digest
-              image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:290761456252cfacfe6884007a9f42b16488f0bc6d86e0ab2d236ddb3a78f737 # pin por digest — SC-3069: v2026.10.27.1 (skirmshop-labels f8402cd, release 40502140725): el evento de tracking lleva la señal del adaptador (customerSignal + carrierIncidentCode; migración 003 nullable, aplicada por applyMigrations() al arrancar) y nuevo kind shipping_action_required. Ningún adaptador envía señal todavía — eso es SC-3070 —, así que hasta entonces el aviso se sigue deduciendo del estado.
+              image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:9adc57587c4e38c9e75ccc81ff53d6346bac79925e601a8d101dc123d2e8eb2f # pin por digest — SC-3071: v2026.10.27.7 (skirmshop-labels 0247fd5, release 40599238765): mismo aviso nuevo que el despliegue (el digest de novedades usa las mismas plantillas); va en el mismo PR para que los dos no cuenten historias distintas al cliente.
               command: ["node", "/digest/report.cjs"]
               env:
                 - { name: NODE_PATH, value: "/app/node_modules" }
