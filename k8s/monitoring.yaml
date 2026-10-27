@@ -360,3 +360,73 @@ spec:
           annotations:
             summary: 'labels-deep-monitor no publica heartbeat'
             description: 'No existe un resultado completo reciente del probe. Revisar CronJob, acceso Kubernetes y entrega a VictoriaMetrics.'
+    # SKIRM-316. Recargo de combustible de CEX y Correos: el watchdog labels-fuel-freshness
+    # publica cada día si la vigencia de cada transportista es del mes (antes del día 8 vale
+    # la del anterior) y fuel-sync.yml publica el resultado de cada run. Nombres `Labels*`:
+    # la regla de correlación `labels-pipeline` de Keep abre el incidente.
+    - name: skirmshop-labels-fuel
+      rules:
+        - alert: LabelsFuelSurchargeStale
+          expr: |
+            last_over_time(
+              labels_fuel_surcharge_fresh{job="labels_fuel_freshness", namespace="skirmshop"}[26h]
+            ) == 0
+          for: 1m
+          labels:
+            severity: warning
+            area: labels
+            domain: crons
+          annotations:
+            summary: 'Recargo fuel de {{ $labels.carrier }} sin aplicar este mes'
+            description: 'labels-{{ $labels.carrier }}-surcharges tiene una vigencia de un mes anterior. fuel-sync.yml no ha encontrado el email de CEX o la factura de Correos de este mes en info@skirmshop.es: revisar el buzón y el último run del workflow en k8s-shopify-label-pocharlies.'
+        - alert: LabelsFuelFreshnessMissing
+          expr: |
+            (
+              time() - last_over_time(
+                labels_fuel_freshness_last_run_timestamp_seconds{job="labels_fuel_freshness", namespace="skirmshop"}[3d]
+              ) > 26 * 3600
+            )
+            or
+            absent_over_time(
+              labels_fuel_freshness_last_run_timestamp_seconds{job="labels_fuel_freshness", namespace="skirmshop"}[3d]
+            )
+          for: 30m
+          labels:
+            severity: warning
+            area: labels
+            domain: crons
+          annotations:
+            summary: 'labels-fuel-freshness no publica heartbeat'
+            description: 'Sin resultado del watchdog del recargo fuel en 26 h: nadie está mirando la vigencia del recargo. Revisar el CronJob skirmshop/labels-fuel-freshness y la entrega a VictoriaMetrics.'
+        - alert: LabelsFuelSyncFailed
+          expr: |
+            last_over_time(
+              labels_fuel_sync_ok{job="labels_fuel_sync", namespace="skirmshop"}[26h]
+            ) == 0
+          for: 1m
+          labels:
+            severity: warning
+            area: labels
+            domain: crons
+          annotations:
+            summary: 'fuel-sync falló en su último run'
+            description: 'El workflow fuel-sync.yml de k8s-shopify-label-pocharlies falló (Gmail, parseo de email/factura o commit a main). El recargo vigente sigue siendo el anterior: revisar el log del último run.'
+        - alert: LabelsFuelSyncMissing
+          expr: |
+            (
+              time() - last_over_time(
+                labels_fuel_sync_last_run_timestamp_seconds{job="labels_fuel_sync", namespace="skirmshop"}[3d]
+              ) > 26 * 3600
+            )
+            or
+            absent_over_time(
+              labels_fuel_sync_last_run_timestamp_seconds{job="labels_fuel_sync", namespace="skirmshop"}[3d]
+            )
+          for: 30m
+          labels:
+            severity: warning
+            area: labels
+            domain: crons
+          annotations:
+            summary: 'fuel-sync no ha corrido en 26 h'
+            description: 'El workflow programado fuel-sync.yml no publica resultado: deshabilitado por GitHub, sin runners arc-k8s o sin red a VictoriaMetrics. Revisar GitHub Actions de k8s-shopify-label-pocharlies.'
