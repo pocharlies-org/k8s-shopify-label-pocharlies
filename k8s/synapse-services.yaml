@@ -99,7 +99,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:2ab3fd9f7d9f577f43737038766148776ea1fc23d782701da9b92bb62d5313cf # pin por digest — source b892190 (tag v2026.10.21.8): nombre del pedido (ORDxxxx) como referencia de la etiqueta, también en `ref`, que es lo que CEX imprime como REF (SKIRM-227, PR #167 + #170); release 39643747498, job CEX PASS.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:7858855cfdefad13ca96fb044eee1845363edbbcbe65fe08a7340f22c541f6ca # pin por digest — SC-3070: v2026.10.27.2 (skirmshop-labels 481c2c0, release 40508897519): el `codigoEstado`/`incidenciaCode` de TEIDE ya no se descarta, viaja como `carrierIncidentCode` (columna de SC-3069) y la tabla de señales decide en la ingesta qué significa para el cliente.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -179,7 +179,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: correos-adapter
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:1dc005af2d2b956a9170bba8de2b95289c09fedad0f3abee8c8cb89a697cec0c # pin por digest — tag v2026.10.21.12 (labels main 47dfa52): «Admisión anulada» de Correos es CANCELLED (no avisa de «Recogido») y la hora de Correos lleva el desfase de Madrid (SKIRM-235, PR #176). Sobre v2026.10.21.4 (SKIRM-227).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:58fad8b3867a8413869c4dec31ec8253546c0fbff148dc76d6e163347c674f59 # pin por digest — SC-3070: v2026.10.27.2 (skirmshop-labels 481c2c0, release 40508897519): «No entregado» deja de leerse como ENTREGADO (la negación se comprueba antes); era un fallo latente — un intento fallido habría aparecido como entregado y se habría dejado de consultar.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -471,7 +471,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: tracking-ingestion
-          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:46080e17cfb4ca6db2ceca53644661c43444e6726282ba5e84f535075cccd1ed # pin por digest — SC-3069: v2026.10.27.1 (skirmshop-labels f8402cd, release 40502140725): el evento de tracking lleva la señal del adaptador (customerSignal + carrierIncidentCode; migración 003 nullable, aplicada por applyMigrations() al arrancar) y nuevo kind shipping_action_required. Ningún adaptador envía señal todavía — eso es SC-3070 —, así que hasta entonces el aviso se sigue deduciendo del estado.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:0f62ea9874a229a55216cfda46ed6d5c04204707d58579c88c06c162fd98a91f # pin por digest — SC-3070: v2026.10.27.2 (skirmshop-labels 481c2c0, release 40508897519): la ingesta consulta la tabla de códigos por transportista (UPS `X:`, descripción de Correos, `codigoEstado` de CEX) y guarda la señal del cliente; un código sin regla se registra como `carrier-code-unclassified` y NUNCA se traduce en aviso de incidencia.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
