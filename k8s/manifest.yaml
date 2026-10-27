@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:5a3c9a55326366e607b58c5d6ecc7b3d9f037fda32c6907e03e346e6786d3db3 # pin por digest — SC-3071: v2026.10.27.3 (skirmshop-labels 3df6053, release 40511623690): la página de seguimiento pinta por `customerSignal`, no por EXCEPTION — un `rescheduled`/`update` sale como en tránsito y `action_required` titula «El transportista te necesita» (copia nueva en las 21 lenguas).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:2d5c433ed718a090629966228fdf771821a3a4dbdb3dc5c3d24901ae63bc6f06 # pin por digest — SC-3071: v2026.10.27.4 (skirmshop-labels 3e34cb7, release 40525239509): la reprogramación se titula «Fecha de entrega cambiada» (criterio de la historia; .27.3 decía sólo «en tránsito») y `action_required` sigue pidiendo el dato.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
