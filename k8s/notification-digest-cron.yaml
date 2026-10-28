@@ -120,7 +120,7 @@ spec:
           nodeSelector: { kubernetes.io/arch: amd64 }
           containers:
             - name: notification-digest
-              image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:9adc57587c4e38c9e75ccc81ff53d6346bac79925e601a8d101dc123d2e8eb2f # pin por digest — SC-3071: v2026.10.27.7 (skirmshop-labels 0247fd5, release 40599238765): mismo aviso nuevo que el despliegue (el digest de novedades usa las mismas plantillas); va en el mismo PR para que los dos no cuenten historias distintas al cliente.
+              image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:759549795029ecfe77b202e27a00763461069d6924fdba393ba65851b4f7d755 # pin por digest — SC-3513: v2026.10.28.1 (skirmshop-labels 6f807a6796dc782053c2989345be1a72a19e461f, release 40640451546): el aviso de fecha cambiada deja de repetir la línea del enlace de seguimiento y de decir «lo hemos recibido» (el cliente no mandó ningún aviso: mueve la fecha el transportista). Email y WhatsApp, es/en.
               command: ["node", "/digest/report.cjs"]
               env:
                 - { name: NODE_PATH, value: "/app/node_modules" }
