@@ -66,7 +66,7 @@ spec:
                     name: SHOPIFY_FULFILLMENT_SERVICE_URL,
                     value: "http://labels-shopify-fulfillment-service.skirmshop.svc.cluster.local:3005",
                   }
-                - { name: PICKUP_SHOPIFY_HOLD_ENABLED, value: "false" }
+                - { name: PICKUP_SHOPIFY_HOLD_ENABLED, value: "true" }
               envFrom: [{ secretRef: { name: labels-secrets } }]
               resources:
                 requests: { cpu: 20m, memory: 64Mi }
