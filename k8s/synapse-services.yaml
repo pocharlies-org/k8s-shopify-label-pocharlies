@@ -471,7 +471,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: tracking-ingestion
-          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:464b574e276c0c96600458abba5bf8e344d57e79c53867e668ddd4806f6f6fc2 # pin por digest — SC-3048: v2026.10.27.6 (skirmshop-labels 8fa0abd, release 40538957537): la tabla de códigos cubre el censo real de 90 días de `tracking_event` (31 `X:` de UPS, `10`/`22`/`33`/`37` de Correos Express); ningún código observado queda ya sin señal del cliente.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:30ca90d5fae1573ee7b060c6685443018ef079e35bab40be5610200129505ea9 # pin por digest — SC-3532: v2026.10.28.2 (skirmshop-labels bcf11bfcd0bad6cb390a9b046294eb8746684f68, release 40684087943): X:KZ de UPS (no se pudo cobrar, último intento al siguiente día hábil) clasificado como reprogramación — igual que 51 y 48 — y deja de loguearse carrier-code-unclassified; la instantánea del guard del censo regenerada contra producción (116 → 117 pares).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
