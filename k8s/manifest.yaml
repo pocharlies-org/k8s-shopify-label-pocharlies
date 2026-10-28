@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:ba192e3875d75e414092a1c10c09351036cea417011054e3fdbb18c4b257b691 # pin por digest — SKIRM-318 + SKIRM-320: v2026.10.28.4 (skirmshop-labels 5e33af0d0101d2f2596d8c49ab8eddb02f7e3a3e, release 40690294140): el event store guarda y devuelve el source de cada evento (el aviso de «Crear etiquetas» cuenta las creadas) y el panel pinta «Esperando punto de recogida» e «Imprimir etiqueta» lo dice en vez de esperar.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:beab5448035a7780668e2ee403f7c59e97934d74da42074bfe59dff046d795d2 # pin por digest — SKIRM-319: v2026.10.28.5 (skirmshop-labels 202206bf3aca992e3dce94e0012746ee6d3f8623, release 40694102286): al imprimir, Correos sale en horizontal y UPS y Correos Express en vertical, también en un lote que los mezcla. Incluye v2026.10.28.4 (SKIRM-318 + SKIRM-320).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
