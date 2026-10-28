@@ -471,7 +471,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: tracking-ingestion
-          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:30ca90d5fae1573ee7b060c6685443018ef079e35bab40be5610200129505ea9 # pin por digest — SC-3532: v2026.10.28.2 (skirmshop-labels bcf11bfcd0bad6cb390a9b046294eb8746684f68, release 40684087943): X:KZ de UPS (no se pudo cobrar, último intento al siguiente día hábil) clasificado como reprogramación — igual que 51 y 48 — y deja de loguearse carrier-code-unclassified; la instantánea del guard del censo regenerada contra producción (116 → 117 pares).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:1198f1bff0c7459d15eb83b4ff275421183d3b7e42e5d44b19f621da5d3d9f5c # pin por digest — SC-3532: v2026.10.28.3 (skirmshop-labels 6b5e5f5e5e7d612204a379ba2ebd7035389660bd, release 40689143906): X:KZ de UPS (no se pudo cobrar, último intento al siguiente día hábil) clasificado como reprogramación — igual que 51 y 48 — y deja de loguearse carrier-code-unclassified; la instantánea del guard del censo regenerada contra producción (116 → 117 pares).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
