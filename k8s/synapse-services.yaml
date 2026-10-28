@@ -99,7 +99,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:7858855cfdefad13ca96fb044eee1845363edbbcbe65fe08a7340f22c541f6ca # pin por digest — SC-3070: v2026.10.27.2 (skirmshop-labels 481c2c0, release 40508897519): el `codigoEstado`/`incidenciaCode` de TEIDE ya no se descarta, viaja como `carrierIncidentCode` (columna de SC-3069) y la tabla de señales decide en la ingesta qué significa para el cliente.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:9b6ca8e2eb157f71a87d06ef800c7e3cffbbe2e08f60fb091bdaf539cb4dae61 # pin por digest — SC-3487: v2026.10.28.8 (skirmshop-labels df256ede38cb937800ba2e9f1a760e76cc3e92b3, release 40710083039): el incidente de un envío paralizado de CEX (codigoEstado 37 / codigoIncidencia) llega por fin a tracking_event — el poller lo leía y lo descartaba, y la ingesta lo toma del rawPayload porque el workflow poll-tracking no tiene hueco arriba.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -471,7 +471,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: tracking-ingestion
-          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:82479aae1ee228ca79a76b582a91dfd51a0b770c2920149aec968da517e26310 # pin por digest — SC-3532: v2026.10.28.4 (skirmshop-labels 5e33af0d0101d2f2596d8c49ab8eddb02f7e3a3e, release 40690294140): X:KZ de UPS (no se pudo cobrar, último intento al siguiente día hábil) clasificado como reprogramación — igual que 51 y 48 — y deja de loguearse carrier-code-unclassified; la instantánea del guard del censo regenerada contra producción (116 → 117 pares). Es .4 y no .3 porque SKIRM-318/320 sacaron otra release por delante; lleva el mismo fix y además el bump de domain a 0.0.1, que es lo que impide que el pnpm deploy reutilice el pack viejo del store.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:03526b108930fef369cc8660b4e1a5392d57eca83c6e669d429915ddefe01e94 # pin por digest — SC-3487: v2026.10.28.8 (skirmshop-labels df256ede38cb937800ba2e9f1a760e76cc3e92b3, release 40710083039): el incidente de un envío paralizado de CEX (codigoEstado 37 / codigoIncidencia) llega por fin a tracking_event — el poller lo leía y lo descartaba, y la ingesta lo toma del rawPayload porque el workflow poll-tracking no tiene hueco arriba.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
