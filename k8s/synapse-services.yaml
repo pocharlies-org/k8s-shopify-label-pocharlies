@@ -471,7 +471,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: tracking-ingestion
-          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:30ca90d5fae1573ee7b060c6685443018ef079e35bab40be5610200129505ea9 # pin por digest — SC-3532: v2026.10.28.2 (skirmshop-labels bcf11bfcd0bad6cb390a9b046294eb8746684f68, release 40684087943): X:KZ de UPS (no se pudo cobrar, último intento al siguiente día hábil) clasificado como reprogramación — igual que 51 y 48 — y deja de loguearse carrier-code-unclassified; la instantánea del guard del censo regenerada contra producción (116 → 117 pares).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:82479aae1ee228ca79a76b582a91dfd51a0b770c2920149aec968da517e26310 # pin por digest — SC-3532: v2026.10.28.4 (skirmshop-labels 5e33af0d0101d2f2596d8c49ab8eddb02f7e3a3e, release 40690294140): X:KZ de UPS (no se pudo cobrar, último intento al siguiente día hábil) clasificado como reprogramación — igual que 51 y 48 — y deja de loguearse carrier-code-unclassified; la instantánea del guard del censo regenerada contra producción (116 → 117 pares). Es .4 y no .3 porque SKIRM-318/320 sacaron otra release por delante; lleva el mismo fix y además el bump de domain a 0.0.1, que es lo que impide que el pnpm deploy reutilice el pack viejo del store.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
