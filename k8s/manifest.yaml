@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:beab5448035a7780668e2ee403f7c59e97934d74da42074bfe59dff046d795d2 # pin por digest — SKIRM-319: v2026.10.28.5 (skirmshop-labels 202206bf3aca992e3dce94e0012746ee6d3f8623, release 40694102286): al imprimir, Correos sale en horizontal y UPS y Correos Express en vertical, también en un lote que los mezcla. Incluye v2026.10.28.4 (SKIRM-318 + SKIRM-320).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:bb3a6e4cd487cce05bb3acde788821b4ad9515cba9e213b2ca25e09085f0b342 # pin por digest — SKIRM-325: v2026.10.28.6 (skirmshop-labels e9b7c1113b01ecb696c75b838e73aebcf79ce83f, release 40706142139): al imprimir, cada etiqueta sale en blanco y negro puro; el logo de Correos Express ya no sale tramado en la térmica.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
