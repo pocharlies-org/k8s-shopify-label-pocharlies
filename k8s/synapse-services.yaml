@@ -52,7 +52,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-fulfillment-service@sha256:29fe494ba117f9b26350d7bad4a98aaa40e1e2f22adc90a0f94eb0b70374c2d2 # pin por digest — SKIRM-243: v2026.10.22.3 (skirmshop-labels 9118bdd, release 39766152274): POST /fulfillment-events (fulfillmentEventCreate); THROTTLED reintentable.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-fulfillment-service@sha256:5239d5dd6160524330baa2fec4710180e232bb5277fa45d429352e1d298694e5 # pin por digest — SKIRM-322: v2026.10.28.7 (skirmshop-labels eef1e166c1364c50a21dea83085db7c46dd227d7, release 40708004799): hold y release por handle (idempotente; 409 HOLD_UNSUPPORTED si el FO no admite hold) y /fulfillments libera nuestro hold «Falta el punto de recogida» antes de crear.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

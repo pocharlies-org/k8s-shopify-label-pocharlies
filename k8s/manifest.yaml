@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:bb3a6e4cd487cce05bb3acde788821b4ad9515cba9e213b2ca25e09085f0b342 # pin por digest — SKIRM-325: v2026.10.28.6 (skirmshop-labels e9b7c1113b01ecb696c75b838e73aebcf79ce83f, release 40706142139): al imprimir, cada etiqueta sale en blanco y negro puro; el logo de Correos Express ya no sale tramado en la térmica.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:2e0000be07dd553d244fb4a5a13c2d826db2d46548a6eecff516af62e4654964 # pin por digest — SKIRM-322: v2026.10.28.7 (skirmshop-labels eef1e166c1364c50a21dea83085db7c46dd227d7, release 40708004799): la lista de Labels avisa «📍 Falta el punto de recogida» en los pedidos que esperan punto; contiene v2026.10.28.6 (SKIRM-325).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
