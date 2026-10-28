@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:328459c5fafc7bdcc4c12d734938f41d15f553ae55f378dc2646a6f511fddefc # pin por digest — SC-3532: v2026.10.28.3 (skirmshop-labels 6b5e5f5e5e7d612204a379ba2ebd7035389660bd, release 40689143906): X:KZ de UPS (no se pudo cobrar, último intento al siguiente día hábil) clasificado como reprogramación — igual que 51 y 48 — y deja de loguearse carrier-code-unclassified; la instantánea del guard del censo regenerada contra producción (116 → 117 pares).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:328459c5fafc7bdcc4c12d734938f41d15f553ae55f378dc2646a6f511fddefc # pin por digest — SC-3532: v2026.10.28.3 (skirmshop-labels 6b5e5f5e5e7d612204a379ba2ebd7035389660bd, release 40689143906): X:KZ de UPS clasificado como reprogramación y censo del guard regenerado (116 → 117). Lleva además la versión de domain a 0.0.1: la release anterior salió del tag correcto y turbo recompiló, pero el pnpm deploy empaquetó el pack viejo del store y el pod corrió el dist anterior a KZ.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
