@@ -25,7 +25,7 @@ spec:
           nodeSelector: { kubernetes.io/arch: amd64 }
           containers:
             - name: pickup-point-reminder
-              image: harbor.e-dani.com/homelab/skirmshop-labels-pickup-point-reminder@sha256:e3b583a7790d130fa080564dad7943a1c7ad3c88fd360d3644cd747875a7f070 # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); mismo código que el pin anterior (36f4b5a, tag v2026.09.17.1): solo se alinea a la release.
+              image: harbor.e-dani.com/homelab/skirmshop-labels-pickup-point-reminder@sha256:394485284a9f1dead0b9e214c375c7a1a6530a148ee785107477481fcbfb9d0d # pin por digest — SKIRM-322: v2026.10.28.7 (skirmshop-labels eef1e166c1364c50a21dea83085db7c46dd227d7, release 40708004799): pone y quita el hold de Shopify «Falta el punto de recogida» (ledger pickup_point_shopify_hold) cuando PICKUP_SHOPIFY_HOLD_ENABLED=true.
               env:
                 - {
                     name: PG_URL,
@@ -61,6 +61,12 @@ spec:
                     name: NOTIFICATION_DISPATCHER_URL,
                     value: "http://labels-notification-dispatcher.skirmshop.svc.cluster.local:3007",
                   }
+                # SKIRM-322: hold «Falta el punto de recogida» en Shopify vía el servicio de fulfillment.
+                - {
+                    name: SHOPIFY_FULFILLMENT_SERVICE_URL,
+                    value: "http://labels-shopify-fulfillment-service.skirmshop.svc.cluster.local:3005",
+                  }
+                - { name: PICKUP_SHOPIFY_HOLD_ENABLED, value: "false" }
               envFrom: [{ secretRef: { name: labels-secrets } }]
               resources:
                 requests: { cpu: 20m, memory: 64Mi }
