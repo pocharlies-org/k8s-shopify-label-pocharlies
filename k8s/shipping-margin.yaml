@@ -1,0 +1,22 @@
+# Percentage margin added on top of every LIVE carrier rate (UPS, CEX,
+# Correos) before VAT, so checkout carries a configurable margin over the
+# negotiated carrier cost. Read per checkout request by rates.ts (same
+# <60s propagation as labels-vat-rates); 0 % when the file is missing or
+# malformed, so an empty shell never breaks pricing.
+#
+# The initial 10 % ships via git. The Argo Application
+# (apps/shopify-label.yaml in k8s-gitops-pocharlies) declares ignoreDifferences
+# on /data so a live `kubectl edit` of the percentage is NOT rolled back by
+# self-heal — retune without a PR:
+#   kubectl edit configmap -n skirmshop labels-shipping-margin
+# Backup tables are NOT margined (they are already final retail prices).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: labels-shipping-margin
+  namespace: skirmshop
+  annotations:
+    skirmshop.labels/source: "git (retunable via kubectl edit; see ignoreDifferences)"
+data:
+  margin.json: |
+    { "margin_pct": 10 }

@@ -262,6 +262,10 @@ spec:
             # true. ConfigMap is refreshed weekly by labels-vat-sync from
             # Shopify Admin REST /countries.json.
             - { name: VAT_RATES_FILE, value: "/etc/vat/vat-rates.json" }
+            # Percentage added on top of every LIVE carrier rate (before VAT)
+            # so checkout carries a margin over the negotiated cost. Read per
+            # request like VAT rates; edit labels-shipping-margin to retune.
+            - { name: SHIPPING_MARGIN_FILE, value: "/etc/shipping-margin/margin.json" }
             - {
                 name: CEX_SURCHARGES_FILE,
                 value: "/etc/cex/surcharges/surcharges.json",
@@ -283,6 +287,7 @@ spec:
             # The ConfigMap projects vat-rates.json into /etc/vat/ and the
             # per-request loader in rates.ts re-reads it from there.
             - { name: vat-rates, mountPath: /etc/vat, readOnly: true }
+            - { name: shipping-margin, mountPath: /etc/shipping-margin, readOnly: true }
             - {
                 name: cex-surcharges,
                 mountPath: /etc/cex/surcharges,
@@ -297,6 +302,8 @@ spec:
       volumes:
         - name: vat-rates
           configMap: { name: labels-vat-rates }
+        - name: shipping-margin
+          configMap: { name: labels-shipping-margin }
         - name: cex-surcharges
           configMap: { name: labels-cex-surcharges }
 ---
