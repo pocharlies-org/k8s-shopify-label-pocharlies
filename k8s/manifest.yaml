@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:2e0000be07dd553d244fb4a5a13c2d826db2d46548a6eecff516af62e4654964 # pin por digest — SKIRM-322: v2026.10.28.7 (skirmshop-labels eef1e166c1364c50a21dea83085db7c46dd227d7, release 40708004799): la lista de Labels avisa «📍 Falta el punto de recogida» en los pedidos que esperan punto; contiene v2026.10.28.6 (SKIRM-325).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:dce235d2527cdfd06627d35d242e0f69b5cad19c7dee374cae8345c9ce135edb # pin por digest — margen envíos: v2026.11.1.1 (skirmshop-labels db91e52f03f4275e14a48bb6e72e07413ea7845d): margen configurable (labels-shipping-margin) sobre tarifas live de carriers; contiene v2026.10.28.8 (SC-3487).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
