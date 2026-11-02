@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:dce235d2527cdfd06627d35d242e0f69b5cad19c7dee374cae8345c9ce135edb # pin por digest — margen envíos: v2026.11.1.1 (skirmshop-labels db91e52f03f4275e14a48bb6e72e07413ea7845d): margen configurable (labels-shipping-margin) sobre tarifas live de carriers; contiene v2026.10.28.8 (SC-3487).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:65854d80b867857add209bf1a5c673077dc3defd0c8d003b78ebab919cfc3432 # pin por digest — SKIRM-339: v2026.11.2.1 (skirmshop-labels 7461765, release 41433862119): remitente/packing slip/CN22-23 a Via Llobregat 27, 08753 Pallejà; contiene margen envíos (v2026.11.1.1) y v2026.10.28.8 (SC-3487).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -558,7 +558,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: saga-launcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:94fb161de00351f5d899b4729f911ea9568a8de625de73aeb94a50f00aff21d7 # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); mismo código que el pin anterior (d957da9, tag v2026.10.21.4): solo se alinea a la release.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:a1e7fe0e2e4777f215dd9875bc4791761493adefcecfebc630ccbe939a957c59 # pin por digest — SKIRM-339: v2026.11.2.1 (skirmshop-labels 7461765): default del origin en el launch del saga → Via Llobregat 27, 08753 Pallejà.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -693,7 +693,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:e50ca59b754c6bf5ad869e5eb9f62f66be9f64ea48f6097d4a7e021cb8d1ae7b # pin por digest — SC-3070: v2026.10.27.2 (skirmshop-labels 481c2c0, release 40508897519): `track-alert` deja de tener su propio vocabulario y delega en el de `tracking` (dos tablas para el mismo código); `U` pasa a IN_TRANSIT y el `default` deja de ser EXCEPTION.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:1fd17d2d6805740230e19e9e3b2c1e1da19b27fb35889de3c2d2fe152e0b5330 # pin por digest — SKIRM-339: v2026.11.2.1 (skirmshop-labels 7461765): defaults UPS_PICKUP_* a Via Llobregat 27, 08753 Pallejà; contiene SC-3070 (v2026.10.27.2).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
