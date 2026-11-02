@@ -99,7 +99,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:775af4e033875b0a6ef31dab3bb7bfbcb91e361ae5341bc7550348ab192b6c3b # pin por digest — SKIRM-339: v2026.11.2.1 (skirmshop-labels 7461765): remite CEX de grabación a Via Llobregat 27, 08753 Pallejà; contiene v2026.10.28.8 (SC-3487).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:9c849aa9dbafa1d65baf52f88774547d04c710826b15d491314f35a8606949d6 # pin por digest — SKIRM-344: v2026.11.2.4 (skirmshop-labels e2ba4cc, release 41451029372): la etiqueta a Canarias exige el DNI del destinatario (la cotización del checkout no).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -179,7 +179,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: correos-adapter
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:58fad8b3867a8413869c4dec31ec8253546c0fbff148dc76d6e163347c674f59 # pin por digest — SC-3070: v2026.10.27.2 (skirmshop-labels 481c2c0, release 40508897519): «No entregado» deja de leerse como ENTREGADO (la negación se comprueba antes); era un fallo latente — un intento fallido habría aparecido como entregado y se habría dejado de consultar.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:4f4d9c521535e531bb17367b2dcb35422ca45b87f3437e2766a983705a1ec00b # pin por digest — SKIRM-344: v2026.11.2.4 (skirmshop-labels e2ba4cc, release 41451029372): la etiqueta a Canarias exige el DNI del destinatario (la cotización del checkout no).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

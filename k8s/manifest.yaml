@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:930bfd9e51195e49cfddbbb93549dd963634aa3d275c446b4ee57e0aafab449e # pin por digest — SKIRM-338: v2026.11.2.2 (skirmshop-labels 298dc6b, release 41437937244): al imprimir una etiqueta CEX de Canarias salen 3 copias de la factura aduanera y su aviso (`GET /api/customs-documents?orderId=`); contiene remitente Via Llobregat 27 (v2026.11.2.1) y margen envíos (v2026.11.1.1).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:e8bcfbad8de7848b74d6eb046eb9d84f505a8799e2a9adb123016f4073d44331 # pin por digest — SKIRM-344: v2026.11.2.4 (skirmshop-labels e2ba4cc, release 41451029372): Crear etiqueta a Canarias exige DNI y POST /api/customer/order-edit/dni lo guarda en custom.dni; contiene SKIRM-342 (v2026.11.2.3) y la factura aduanera ×3 (v2026.11.2.2).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -503,7 +503,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:c8c2600d1ce4fb6f1342656a77955cd07f485b7f79943b7d3d3fe4f7f2db1483 # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); mismo código que el pin anterior (e4e9be4, tag v2026.10.14.1): solo se alinea a la release.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:2ccffd694a8ba3a9036ce1ba6551af04db09e86e13d7b028236fdf22264e628e # pin por digest — SKIRM-344: v2026.11.2.4 (skirmshop-labels e2ba4cc, release 41451029372): la etiqueta a Canarias exige el DNI del destinatario (la cotización del checkout no).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -693,7 +693,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:1fd17d2d6805740230e19e9e3b2c1e1da19b27fb35889de3c2d2fe152e0b5330 # pin por digest — SKIRM-339: v2026.11.2.1 (skirmshop-labels 7461765): defaults UPS_PICKUP_* a Via Llobregat 27, 08753 Pallejà; contiene SC-3070 (v2026.10.27.2).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:61152f6a67cecfaba2ed41c32bd40ff92c3f2bab5180dc48e7875c1c995c05f6 # pin por digest — SKIRM-344: v2026.11.2.4 (skirmshop-labels e2ba4cc, release 41451029372): la etiqueta a Canarias exige el DNI del destinatario (la cotización del checkout no).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
