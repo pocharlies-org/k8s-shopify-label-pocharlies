@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:129fab64dbc5b15536cd56976bd74f07382abd5dc17270603bc6eab188dbd5b7 # pin por digest — SKIRM-338: v2026.11.2.2 (skirmshop-labels 298dc6b, release 41437937244): al imprimir una etiqueta CEX de Canarias salen 3 copias de la factura aduanera y su aviso (`GET /api/customs-documents?orderId=`); contiene remitente Via Llobregat 27 (v2026.11.2.1) y margen envíos (v2026.11.1.1).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:930bfd9e51195e49cfddbbb93549dd963634aa3d275c446b4ee57e0aafab449e # pin por digest — SKIRM-338: v2026.11.2.2 (skirmshop-labels 298dc6b, release 41437937244): al imprimir una etiqueta CEX de Canarias salen 3 copias de la factura aduanera y su aviso (`GET /api/customs-documents?orderId=`); contiene remitente Via Llobregat 27 (v2026.11.2.1) y margen envíos (v2026.11.1.1).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
