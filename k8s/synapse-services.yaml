@@ -99,7 +99,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:9b6ca8e2eb157f71a87d06ef800c7e3cffbbe2e08f60fb091bdaf539cb4dae61 # pin por digest — SC-3487: v2026.10.28.8 (skirmshop-labels df256ede38cb937800ba2e9f1a760e76cc3e92b3, release 40710083039): el incidente de un envío paralizado de CEX (codigoEstado 37 / codigoIncidencia) llega por fin a tracking_event — el poller lo leía y lo descartaba, y la ingesta lo toma del rawPayload porque el workflow poll-tracking no tiene hueco arriba.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:775af4e033875b0a6ef31dab3bb7bfbcb91e361ae5341bc7550348ab192b6c3b # pin por digest — SKIRM-339: v2026.11.2.1 (skirmshop-labels 7461765): remite CEX de grabación a Via Llobregat 27, 08753 Pallejà; contiene v2026.10.28.8 (SC-3487).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
