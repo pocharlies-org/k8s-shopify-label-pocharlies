@@ -99,7 +99,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:9c849aa9dbafa1d65baf52f88774547d04c710826b15d491314f35a8606949d6 # pin por digest — SKIRM-344: v2026.11.2.4 (skirmshop-labels e2ba4cc, release 41451029372): la etiqueta a Canarias exige el DNI del destinatario (la cotización del checkout no).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:4ae339f1466543459402455e26ecb3ea022fc2c70630879a3009631cb6da43b5 # pin por digest — SKIRM-355: v2026.11.3.1 (skirmshop-labels 725cf60, release 41621896435): el seguro de CEX viaja en `seguro`, el campo que CEX registra (antes `valorDeclarado`, ignorado).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
