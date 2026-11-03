@@ -47,7 +47,7 @@ spec:
           value: edge
       containers:
         - name: synapse-janitor
-          image: harbor.e-dani.com/homelab/skirmshop-labels-synapse-janitor@sha256:4a99b846432b9b1d8211aa84a020ab67cfc7c07899859da0373c210ed9e26e42 # pin por digest — tag v2026.10.26.7 (labels main 847ff66, release 40329895209): SKIRM-284 borrado en dos fases (primero se quita el campo del índice; la clave se borra ≥900 s después) para que el operator no lea una clave muerta y reviente (237 caídas en 7 días).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-synapse-janitor@sha256:fe21d6c56cce4c4b6e033346806dc23daa697599dce6c7878adb8eb644070154 # pin por digest — tag v2026.11.3.2 (labels main f3d307f, run 41645995630): SKIRM-352 manifiesto document-* (SCAN incremental + tabla Postgres document_manifest con first_seen/last_seen; solo id y marcas, nunca valores).
           imagePullPolicy: IfNotPresent
           envFrom:
             - secretRef:
@@ -99,6 +99,13 @@ spec:
             # next pass deletes it. A poll has no waits; 0 disables.
             - name: STALLED_POLL_MINUTES
               value: "30"
+            # SKIRM-352: manifiesto document-* (edad demostrable). Corre antes del
+            # retorno temprano de cleanup: registra edad aunque la limpieza esté
+            # apagada o en dry-run. Solo id + marcas temporales.
+            - name: DOCUMENT_MANIFEST_ENABLED
+              value: "true"
+            - name: DOCUMENT_SCAN_COUNT
+              value: "200"
           ports:
             - containerPort: 3000
               name: http
