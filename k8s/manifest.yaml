@@ -693,7 +693,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:61152f6a67cecfaba2ed41c32bd40ff92c3f2bab5180dc48e7875c1c995c05f6 # pin por digest — SKIRM-344: v2026.11.2.4 (skirmshop-labels e2ba4cc, release 41451029372): la etiqueta a Canarias exige el DNI del destinatario (la cotización del checkout no).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:9812d60dbc41852476951d44c8161886b2b29d744cfe22592028a26a6290bb68 # pin por digest — SKIRM-374: v2026.11.4.1 (skirmshop-labels b74d148, release 41903542070): los pedidos UPS Access Point salen con el punto como destino (Hold for Pickup, ShipmentIndicationType 01 + AlternateDeliveryAddress con el ID público U…), no a domicilio; contiene SKIRM-344 (v2026.11.2.4).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
