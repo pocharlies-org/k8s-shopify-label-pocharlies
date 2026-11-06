@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:713fed1b0d8a9bfc6feb8f049eaba1ea8581055720cecf2c24a52815c98f74d2 # pin por digest — SKIRM-378: v2026.11.5.1 (skirmshop-labels 8b85266, release 41941857577): una réplica con envío fuera de España necesita número de serie pero no DNI para Crear etiqueta; contiene SKIRM-355 (seguro CEX en `seguro`) y SKIRM-344 (v2026.11.2.4).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:646c0233f8d688ce5b35844e31a1bfa6e65f4ed88ac876a0fb1f6e272ec65ed7 # pin por digest — SKIRM-396: v2026.11.6.1 (skirmshop-labels 84934d2, release 42232995864): el retry se registra también en POST /api/agent/shipments/:orderId/retry (servicio bearer) para que el panel cree etiquetas fuera de Shopify; contiene SKIRM-378 (v2026.11.5.1).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
