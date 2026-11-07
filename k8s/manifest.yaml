@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:1aea53d28f68e6e4eaedce558fbee67a55fdf61a0cdecf2643ea8a5d7fab0e39 # pin por digest — SKIRM-401: v2026.11.7.2 (skirmshop-labels 66e8230, release 42330784426): Paq Punto desde 300 € sin seguro, avisado en checkout y con ePaq24 recomendado.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:c5d6e3aab14cef659a1911b691dc636d366ba07bc0db9ebb9733c2cfa7a2509b # pin por digest — SKIRM-404: v2026.11.7.3 (skirmshop-labels 8299a1a, release 42371747336): la fecha de entrega del checkout cuenta desde la salida del día siguiente laborable (fuera lunes/miércoles); sábado CEX solo para pedidos del jueves; contiene SKIRM-401 (v2026.11.7.2).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
