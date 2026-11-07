@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:646c0233f8d688ce5b35844e31a1bfa6e65f4ed88ac876a0fb1f6e272ec65ed7 # pin por digest — SKIRM-396: v2026.11.6.1 (skirmshop-labels 84934d2, release 42232995864): el retry se registra también en POST /api/agent/shipments/:orderId/retry (servicio bearer) para que el panel cree etiquetas fuera de Shopify; contiene SKIRM-378 (v2026.11.5.1).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:1aea53d28f68e6e4eaedce558fbee67a55fdf61a0cdecf2643ea8a5d7fab0e39 # pin por digest — SKIRM-401: v2026.11.7.2 (skirmshop-labels 66e8230, release 42330784426): Paq Punto desde 300 € sin seguro, avisado en checkout y con ePaq24 recomendado.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
