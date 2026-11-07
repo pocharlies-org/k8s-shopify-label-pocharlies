@@ -99,7 +99,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:4ae339f1466543459402455e26ecb3ea022fc2c70630879a3009631cb6da43b5 # pin por digest — SKIRM-355: v2026.11.3.1 (skirmshop-labels 725cf60, release 41621896435): el seguro de CEX viaja en `seguro`, el campo que CEX registra (antes `valorDeclarado`, ignorado).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:f89387e5f669ca88273c1230dc18d8cfcceca003e26044d5cfc955e2fd40ee18 # pin por digest — SKIRM-397: v2026.11.7.1 (skirmshop-labels 40b740d, release 42320805621): el Paq Punto (18) no lleva `seguro`; CEX no lo asegura.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
