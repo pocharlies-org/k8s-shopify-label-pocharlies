@@ -410,7 +410,7 @@ spec:
             domain: crons
           annotations:
             summary: 'fuel-sync falló en su último run'
-            description: 'El workflow fuel-sync.yml de k8s-shopify-label-pocharlies falló (Gmail, parseo de email/factura o commit a main). El recargo vigente sigue siendo el anterior: revisar el log del último run.'
+            description: 'El workflow fuel-sync.yml de k8s-shopify-label-pocharlies falló (MITECO, Gmail, parseo del informe/factura o commit a main). El recargo vigente sigue siendo el anterior: revisar el log del último run.'
         - alert: LabelsFuelSyncMissing
           expr: |
             (
