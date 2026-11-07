@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:c5d6e3aab14cef659a1911b691dc636d366ba07bc0db9ebb9733c2cfa7a2509b # pin por digest — SKIRM-404: v2026.11.7.3 (skirmshop-labels 8299a1a, release 42371747336): la fecha de entrega del checkout cuenta desde la salida del día siguiente laborable (fuera lunes/miércoles); sábado CEX solo para pedidos del jueves; contiene SKIRM-401 (v2026.11.7.2).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:8ee8af45bf0b6bdb68440fea141123fbc5b706deceed3709d31f1baa3cd79b0e # pin por digest — SKIRM-403: v2026.11.7.4 (skirmshop-labels 6b18cee, release 42373680027): seguro opcional pagado por el cliente (modo `optional`); el envío gratis no regala la prima.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -503,7 +503,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:2ccffd694a8ba3a9036ce1ba6551af04db09e86e13d7b028236fdf22264e628e # pin por digest — SKIRM-344: v2026.11.2.4 (skirmshop-labels e2ba4cc, release 41451029372): la etiqueta a Canarias exige el DNI del destinatario (la cotización del checkout no).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:38bca8dc00a06df3b267e229497dea898ff29392d79e84dbfb35048bd3fabd35 # pin por digest — SKIRM-403: v2026.11.7.4 (skirmshop-labels 6b18cee, release 42373680027): seguro opcional pagado por el cliente (modo `optional`); el envío gratis no regala la prima.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -558,7 +558,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: saga-launcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:a1e7fe0e2e4777f215dd9875bc4791761493adefcecfebc630ccbe939a957c59 # pin por digest — SKIRM-339: v2026.11.2.1 (skirmshop-labels 7461765): default del origin en el launch del saga → Via Llobregat 27, 08753 Pallejà.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:e1aa97c7a8ceb9c47b4fd2040c70f283bfa35eecc82d7f1ebbd44fa771b0758b # pin por digest — SKIRM-403: v2026.11.7.4 (skirmshop-labels 6b18cee, release 42373680027): seguro opcional pagado por el cliente (modo `optional`); el envío gratis no regala la prima.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
