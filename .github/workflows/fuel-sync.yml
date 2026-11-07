@@ -3,13 +3,15 @@ name: Recargo fuel
 # SKIRM-312, SKIRM-398. Aplica el recargo de combustible de CEX (tramo contractual sobre el gasóleo del
 # informe mensual de MITECO) y Correos matriz (factura mensual, Gmail) a k8s/cex-config.yaml y
 # k8s/correos-surcharges.yaml, y lo commitea a main: ArgoCD lo despliega y el adapter lo relee en cada
-# /rate. Corre cada día; en la práctica commitea una vez al mes por transportista (idempotente por la
-# referencia de la fuente: miteco:AAAA-MM o el Gmail id).
+# /rate. El día 1 a primera hora entra el % de CEX del mes (su gasóleo MITECO de M-2 ya está publicado);
+# la pasada diaria recoge la factura de Correos, que llega los días 2-4. Commitea una vez al mes por
+# transportista (idempotente por la referencia de la fuente: miteco:AAAA-MM o el Gmail id). SKIRM-402.
 # Cada run publica su resultado en VictoriaMetrics (LabelsFuelSyncFailed/Missing → Keep, SKIRM-316);
 # si un mes no llega nada, el watchdog labels-fuel-freshness lo publica y avisa LabelsFuelSurchargeStale.
 on:
   schedule:
-    - cron: "0 7 * * *"
+    - cron: "5 0 1 * *"   # día 1, 01:05 (02:05 en verano) en Madrid: CEX del mes
+    - cron: "0 7 * * *"   # diario: factura de Correos matriz
   workflow_dispatch:
 
 permissions:
