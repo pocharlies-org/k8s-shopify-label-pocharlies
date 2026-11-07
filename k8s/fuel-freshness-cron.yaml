@@ -1,8 +1,8 @@
 # Daily fuel-surcharge freshness watchdog (CEX + Correos matriz).
 #
-# CEX communicates its fuel % by email (~day 5) and Correos matriz on its
-# monthly invoice (~day 2); .github/workflows/fuel-sync.yml applies both from
-# Gmail to GitOps (SKIRM-312). This job is its safety net: it reads each adapter's
+# CEX's fuel % is its contractual tier over MITECO's monthly diesel price
+# (from day 1) and Correos matriz's comes on its monthly invoice (~day 2);
+# .github/workflows/fuel-sync.yml applies both to GitOps (SKIRM-312, SKIRM-398). This job is its safety net: it reads each adapter's
 # surcharge ConfigMap directly and publishes, per carrier, whether its
 # effective_from belongs to the current month (Europe/Madrid; before day 8 the
 # previous month still counts, the sources arrive days 2-5) to VictoriaMetrics.
