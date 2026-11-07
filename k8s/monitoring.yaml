@@ -378,7 +378,7 @@ spec:
             domain: crons
           annotations:
             summary: 'Recargo fuel de {{ $labels.carrier }} sin aplicar este mes'
-            description: 'labels-{{ $labels.carrier }}-surcharges tiene una vigencia de un mes anterior. fuel-sync.yml no ha encontrado el email de CEX o la factura de Correos de este mes en info@skirmshop.es: revisar el buzón y el último run del workflow en k8s-shopify-label-pocharlies.'
+            description: 'labels-{{ $labels.carrier }}-surcharges tiene una vigencia de un mes anterior. fuel-sync.yml no ha encontrado el informe mensual de MITECO (CEX) o la factura de Correos de este mes en info@skirmshop.es: revisar el último run del workflow en k8s-shopify-label-pocharlies.'
         - alert: LabelsFuelFreshnessMissing
           expr: |
             (
