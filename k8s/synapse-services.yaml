@@ -471,7 +471,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: tracking-ingestion
-          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:03526b108930fef369cc8660b4e1a5392d57eca83c6e669d429915ddefe01e94 # pin por digest — SC-3487: v2026.10.28.8 (skirmshop-labels df256ede38cb937800ba2e9f1a760e76cc3e92b3, release 40710083039): el incidente de un envío paralizado de CEX (codigoEstado 37 / codigoIncidencia) llega por fin a tracking_event — el poller lo leía y lo descartaba, y la ingesta lo toma del rawPayload porque el workflow poll-tracking no tiene hueco arriba.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:c2a603cb58f5d98965a9a6fc2fe9c55dc68764e8425214765092fd7601e7f791 # pin por digest — SKIRM-410: v2026.11.8.2 (skirmshop-labels 8947e93, release 42516136502): crea el fulfillment que falta (sin aviso al cliente) cuando el transportista ya tiene el paquete. Sobre v2026.10.28.8 (SC-3487).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
