@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:2771d960b6dfcc7e146ca3e0748d9fd019f708b81670d0811a189dc54b09085f # pin por digest — SKIRM-410: v2026.11.8.2 (skirmshop-labels 8947e93, release 42516136502): orders/updated registra el método editado fuera de Labels antes de la etiqueta. Sobre v2026.11.8.1 (SKIRM-412).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:145cb2eb5e0fcdcc780b504107a14b71b87eeb045726f0ccad75ab85ff94c428 # pin por digest — SKIRM-411: v2026.11.8.3 (skirmshop-labels e42ac49, release 42516871750): etiqueta manual CEX sin seguro en Paq Punto y con la prima del contrato en el resto. Sobre v2026.11.8.2 (SKIRM-410).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
