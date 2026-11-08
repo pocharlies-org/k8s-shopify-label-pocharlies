@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:9fd6e4ed1fd50af402ad1dd23fd721f1ba4873e26854a9424cacb52677367154 # pin por digest — SKIRM-412: v2026.11.8.1 (skirmshop-labels 77eaacd, release 42515093885): la selección manual no ofrece Paq Punto ni otros servicios de punto de recogida sin punto; contiene SKIRM-403 (v2026.11.7.4).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:2771d960b6dfcc7e146ca3e0748d9fd019f708b81670d0811a189dc54b09085f # pin por digest — SKIRM-410: v2026.11.8.2 (skirmshop-labels 8947e93, release 42516136502): orders/updated registra el método editado fuera de Labels antes de la etiqueta. Sobre v2026.11.8.1 (SKIRM-412).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
