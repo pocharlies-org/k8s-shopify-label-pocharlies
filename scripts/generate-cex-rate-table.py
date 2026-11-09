@@ -38,23 +38,10 @@ ZONES_ECOMMERCE = [
     ("special", "Especial"),
 ]
 
-# PaqEcommerce, p.16. Primary ecommerce service — cheapest peninsular.
-PAQECOMMERCE = {
-    "service": "PaqEcommerce",
-    "transit_days": 2,
-    "zones": ZONES_ECOMMERCE,
-    # rows[weight_idx] = list of charges aligned with zones above
-    "rows": {
-        1: [4.16, 4.16, 4.16, 4.16, 7.50, 6.42, 10.28, 11.30, 6.42, 10.03, 43.67, 42.44, 7.12, 25.49],
-        2: [4.16, 4.16, 4.16, 4.16, 8.61, 6.42, 14.97, 16.47, 6.42, 10.03, 44.94, 42.91, 8.06, 25.49],
-        3: [4.56, 4.56, 4.65, 4.65, 10.15, 7.44, 19.21, 21.14, 7.65, 11.95, 47.08, 44.18, 9.45, 29.35],
-        4: [4.96, 4.96, 5.14, 5.14, 11.00, 8.46, 23.47, 25.84, 8.88, 13.87, 49.79, 46.35, 10.13, 33.21],
-        5: [5.36, 5.36, 5.63, 5.63, 11.84, 9.48, 27.73, 30.50, 10.11, 15.79, 52.80, 48.77, 10.80, 37.07],
-        10: [7.36, 7.36, 8.08, 8.08, 16.09, 14.58, 49.32, 54.25, 16.26, 25.39, 74.22, 68.04, 14.20, 56.37],
-        15: [9.36, 9.36, 10.53, 10.53, 20.99, 19.68, 71.06, 78.18, 22.41, 34.99, 91.73, 83.45, 17.60, 75.67],
-    },
-    "additional": [0.40, 0.40, 0.49, 0.49, 0.81, 1.02, 4.11, 4.52, 1.23, 1.92, 6.05, 5.97, 0.64, 3.86],
-}
+# Paq Ecommerce (p.16) is NOT published: Labels never ships it. Routing and the
+# label path treat "Paq Ecommerce" as an alias of ePaq24 and record CEX product
+# 93, which CEX bills as "93-ePaq 24" at the ePaq24 rate (invoice F261011633).
+# Its cheaper rows only produced a second, wrong ePaq24 quote (SKIRM-424).
 
 # Paq punto, p.17. Pickup-point delivery — cheapest of all peninsular.
 PAQPUNTO = {
@@ -212,7 +199,7 @@ def emit_entries(product: dict) -> Iterable[dict]:
 
 
 def main() -> None:
-    products = [PAQECOMMERCE, EPAQ24, PAQ24, PAQ14, PAQPUNTO, ISLAS_EXPRESS]
+    products = [EPAQ24, PAQ24, PAQ14, PAQPUNTO, ISLAS_EXPRESS]
     entries = [e for p in products for e in emit_entries(p)]
     json.dump(entries, sys.stdout, ensure_ascii=False, indent=2)
     sys.stderr.write(f"emitted {len(entries)} rate rows across {len(products)} products\n")
