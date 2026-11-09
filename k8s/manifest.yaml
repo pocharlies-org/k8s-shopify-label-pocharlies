@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:145cb2eb5e0fcdcc780b504107a14b71b87eeb045726f0ccad75ab85ff94c428 # pin por digest — SKIRM-411: v2026.11.8.3 (skirmshop-labels e42ac49, release 42516871750): etiqueta manual CEX sin seguro en Paq Punto y con la prima del contrato en el resto. Sobre v2026.11.8.2 (SKIRM-410).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:0ac787c13d45980de2aec506d12da5cc4ecd3ed451cac7b56d109ae842f550d0 # pin por digest — SKIRM-423: v2026.11.9.1 (skirmshop-labels fc3559a, release 42550823154): el coste del seguro de «Crear etiquetas» sigue al importe asegurado editado (CEX y UPS). Sobre v2026.11.8.3 (SKIRM-411).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
