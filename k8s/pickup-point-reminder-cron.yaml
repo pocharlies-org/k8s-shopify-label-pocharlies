@@ -25,7 +25,7 @@ spec:
           nodeSelector: { kubernetes.io/arch: amd64 }
           containers:
             - name: pickup-point-reminder
-              image: harbor.e-dani.com/homelab/skirmshop-labels-pickup-point-reminder@sha256:394485284a9f1dead0b9e214c375c7a1a6530a148ee785107477481fcbfb9d0d # pin por digest — SKIRM-322: v2026.10.28.7 (skirmshop-labels eef1e166c1364c50a21dea83085db7c46dd227d7, release 40708004799): pone y quita el hold de Shopify «Falta el punto de recogida» (ledger pickup_point_shopify_hold) cuando PICKUP_SHOPIFY_HOLD_ENABLED=true.
+              image: harbor.e-dani.com/homelab/skirmshop-labels-pickup-point-reminder@sha256:0f48febb41eaf2d5a7bf95e1df0f7a18933c411b6654bf670d9076ce63f3558e # pin por digest — SC-5141: v2026.11.10.2 (skirmshop-labels 1a7f9d28578f61b17184a49348d05b47d25c6655, release 42757475140): shippingMethodTitle hasta 255 + truncado en ingesta + un pedido con payload ilegible ya no tumba la ejecución del cron (Keep CRON-18920).
               env:
                 - {
                     name: PG_URL,
