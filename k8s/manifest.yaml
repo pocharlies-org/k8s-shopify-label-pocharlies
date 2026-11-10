@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:0ac787c13d45980de2aec506d12da5cc4ecd3ed451cac7b56d109ae842f550d0 # pin por digest — SKIRM-423: v2026.11.9.1 (skirmshop-labels fc3559a, release 42550823154): el coste del seguro de «Crear etiquetas» sigue al importe asegurado editado (CEX y UPS). Sobre v2026.11.8.3 (SKIRM-411).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:4b8449d210451196e19276224862a44aba1991330f7d2d9588126326e6f1cabb # pin por digest — SKIRM-441: v2026.11.10.1 (skirmshop-labels 4efa53b, release 42724537338): el pickup de Correos (oficina/Citypaq) entra en la promo de envío gratis ≥100 € península. Sobre v2026.11.9.1 (SKIRM-423).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
