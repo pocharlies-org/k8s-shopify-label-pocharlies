@@ -179,7 +179,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: correos-adapter
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:4f4d9c521535e531bb17367b2dcb35422ca45b87f3437e2766a983705a1ec00b # pin por digest — SKIRM-344: v2026.11.2.4 (skirmshop-labels e2ba4cc, release 41451029372): la etiqueta a Canarias exige el DNI del destinatario (la cotización del checkout no).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:754bf2c3c2afc33575ca2fb4153d822907667ed0a0dabde36d62f60f23ba93bc # pin por digest — SC-5298: v2026.11.11.1 (skirmshop-labels 4ad8235, release 42954464849): SKIRM-447 — POST /returns, envío inverso Paq Estándar del return estándar de Correos (la rama correos del workflow process-return 1.2.3). Sobre v2026.11.2.4 (SKIRM-344).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
