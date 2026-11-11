@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:1e1bc473a9550808967f89904314c1fec23265575b72ec6419965eb22517f1cb # pin por digest — SC-5298: v2026.11.11.1 (skirmshop-labels 4ad8235, release 42954464849): SKIRM-447 — attach manual acepta carrier correos y PROCESS_RETURN_WORKFLOW_VERSION por defecto 1.2.3 (va con el ConfigMap labels-synapse-workflows a 1.2.3 en el mismo commit). Sobre v2026.11.10.1 (SKIRM-441).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:49fc462546244907d9b7592a34642decd9b8c31682f84c3cc11a716ac1dadb17 # pin por digest — SC-5298: v2026.11.11.2 (skirmshop-labels 6795dea, release 43103511035): SKIRM-460 — el add-items (cliente y operador) avisa a ops por Telegram y comenta el pedido de Picqer en cada edit aplicado, con o sin saldo; el riesgo es el stock de Picqer, que no recibe la línea (el paquete se hace con Shopify). Sin vars nuevas: PICQER_API_KEY ya está en labels-secrets y el resto tiene default. Sobre v2026.11.11.1 (SKIRM-447).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
