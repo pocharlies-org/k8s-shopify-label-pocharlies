@@ -47,7 +47,7 @@ spec:
           value: edge
       containers:
         - name: synapse-janitor
-          image: harbor.e-dani.com/homelab/skirmshop-labels-synapse-janitor@sha256:fe21d6c56cce4c4b6e033346806dc23daa697599dce6c7878adb8eb644070154 # pin por digest — tag v2026.11.3.2 (labels main f3d307f, run 41645995630): SKIRM-352 manifiesto document-* (SCAN incremental + tabla Postgres document_manifest con first_seen/last_seen; solo id y marcas, nunca valores).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-synapse-janitor@sha256:b6127c2568a5f6f12c8af3e1b24734340e7e7130bf70778c0600560fe92ba43e # pin por digest — tag v2026.11.11.2 (labels main 5bfb8b7, run 42977262333): SKIRM-353 retención firmada de document-* terminales (cero-referencias por pasada + skiplist, UNLINK; nunca DEL).
           imagePullPolicy: IfNotPresent
           envFrom:
             - secretRef:
@@ -106,6 +106,12 @@ spec:
               value: "true"
             - name: DOCUMENT_SCAN_COUNT
               value: "200"
+            # SKIRM-353: retención firmada por Dani (N=45 días) de document-* terminales.
+            # Solo expira claves con edad > N y cero referencias verificadas en la misma
+            # pasada (índice workflow-instances, hash skirmshop, event_store/failed_events);
+            # referencia viva = clave intacta + métrica documentSkipped. 0 desactiva.
+            - name: DOCUMENT_RETENTION_DAYS
+              value: "45"
           ports:
             - containerPort: 3000
               name: http
