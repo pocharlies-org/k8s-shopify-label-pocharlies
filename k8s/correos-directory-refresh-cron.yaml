@@ -31,7 +31,7 @@ spec:
             - name: trigger
               # Misma imagen que el Deployment labels-correos-adapter — bumpear
               # los dos digests A LA VEZ.
-              image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:58fad8b3867a8413869c4dec31ec8253546c0fbff148dc76d6e163347c674f59 # pin por digest — SC-3070: v2026.10.27.2 (skirmshop-labels 481c2c0, release 40508897519): mismo código que el despliegue de correos-adapter (se mantiene el pin alineado); el cambio es el de «No entregado».
+              image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:754bf2c3c2afc33575ca2fb4153d822907667ed0a0dabde36d62f60f23ba93bc # pin por digest — SC-5298: v2026.11.11.1 (skirmshop-labels 4ad8235, release 42954464849): mismo código que el despliegue de correos-adapter (se mantiene el pin alineado).
               command: ["node", "-e"]
               args:
                 - >

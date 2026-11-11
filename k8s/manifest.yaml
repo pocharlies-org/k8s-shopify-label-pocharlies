@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:4b8449d210451196e19276224862a44aba1991330f7d2d9588126326e6f1cabb # pin por digest — SKIRM-441: v2026.11.10.1 (skirmshop-labels 4efa53b, release 42724537338): el pickup de Correos (oficina/Citypaq) entra en la promo de envío gratis ≥100 € península. Sobre v2026.11.9.1 (SKIRM-423).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:1e1bc473a9550808967f89904314c1fec23265575b72ec6419965eb22517f1cb # pin por digest — SC-5298: v2026.11.11.1 (skirmshop-labels 4ad8235, release 42954464849): SKIRM-447 — attach manual acepta carrier correos y PROCESS_RETURN_WORKFLOW_VERSION por defecto 1.2.3 (va con el ConfigMap labels-synapse-workflows a 1.2.3 en el mismo commit). Sobre v2026.11.10.1 (SKIRM-441).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -188,7 +188,9 @@ spec:
                   key: token
                   optional: true
             # Versión de process-return que lanza esa ruta (registrada por el PostSync, #86).
-            - { name: PROCESS_RETURN_WORKFLOW_VERSION, value: "1.2.2" }
+            # SC-5298: 1.2.3 con el ConfigMap labels-synapse-workflows a la vez (rama correos, SKIRM-447);
+            # el registrar falla cerrado si imagen y ConfigMap no van juntos.
+            - { name: PROCESS_RETURN_WORKFLOW_VERSION, value: "1.2.3" }
             - { name: GROUNDED_REPLY_TENANT_ID, value: "807a4817-b73a-42ce-8954-8dd5dc80b751" }
             - { name: GROUNDED_REPLY_STORE_ID, value: "269d0560-9c16-4db8-86e4-52867efc1901" }
             - { name: GROUNDED_REPLY_BINDING_ID, value: "d9188e91-b282-4878-a24e-933611c94d84" }

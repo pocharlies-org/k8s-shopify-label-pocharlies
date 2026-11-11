@@ -735,6 +735,7 @@ data:
     #                             customer, totalKilos, currency}
     #   2. dispatchToCarrier    → switch on carrier
     #       - ups               → POST labels-ups-adapter:3002/returns
+    #       - correos           → POST labels-correos-adapter:3011/returns (SKIRM-447)
     #       - correos_express   → POST labels-correos-express-adapter:3003/returns
     #                             (CEX requires a customer DNI/NIE that the
     #                             webhook payload doesn't carry; the saga
@@ -760,11 +761,13 @@ data:
       dsl: '1.0.0'
       namespace: skirmshop
       name: process-return
-      version: '1.2.2'
+      version: '1.2.3'
       summary: |
-        Auto-generate a return label when ReturnRequested fires. UPS branch
-        runs end-to-end; CEX branch hands off to ops because the customer's
-        DNI is required and we don't capture it in the Shopify webhook yet.
+        Auto-generate a return label when ReturnRequested fires. UPS and Correos
+        estándar branches run end-to-end (SKIRM-447: Correos returns are an envío
+        inverso — a new Paq Estándar shipment with the directions swapped); the
+        CEX branch hands off to ops because the customer's DNI is required and we
+        don't capture it in the Shopify webhook yet.
 
         Engine dialect (SKIRM-310, proven against labels-synapse-api):
         `endpoint` expands only {topLevelVar} URI-templates (raw, no URL-
@@ -858,6 +861,12 @@ data:
                 # "cases cexBranch, unknownBranch have been matched").
                 when: '${ .context.carrier == "correos_express" and (.context.customer.taxId == null or .context.customer.taxId == "") }'
                 then: cexEmailFallback
+            - correosBranch:
+                # SKIRM-447: Correos estándar (the shop's majority carrier) had no
+                # branch, so every such return fell into failUnknownCarrier and
+                # labels_return_label_get stayed LABEL_NOT_READY forever.
+                when: '${ .context.carrier == "correos" }'
+                then: callCorreosReturns
             - unknownBranch:
                 # Default case: no `when` (a `${ true }` here matches alongside
                 # every specific case — poll-tracking.yaml is the reference).
@@ -969,6 +978,56 @@ data:
                     }
           then: hoistLabelRef
 
+      # -- Correos estándar: envío inverso (SKIRM-447) ------------------------
+      # No dedicated Correos returns API: the adapter preregisters a new Paq
+      # Estándar shipment with the customer as sender and the Skirmshop warehouse
+      # as addressee, under the shop's own contract, and prints its label. The
+      # customer object travels as the return-context gives it (no DNI needed).
+      - callCorreosReturns:
+          try:
+            - callCorreosReturnsApi:
+                call: http
+                with:
+                  method: post
+                  endpoint: http://labels-correos-adapter.skirmshop.svc.cluster.local:3011/returns
+                  headers:
+                    content-type: application/json
+                    x-correlation-id: '${ .correlationId }'
+                  body:
+                    returnId: '${ .returnId }'
+                    orderId: '${ .orderId }'
+                    customer: '${ .context.customer }'
+                    kilos: '${ .context.totalKilos }'
+                    originalShipmentRef: '${ .context.originalCarrierShipmentId }'
+                output:
+                  as: '${ $input + { correosResult: $output } }'
+          catch:
+            errors:
+              with:
+                type: all
+            as: err
+            do:
+              - emitFailureCorreos:
+                  emit:
+                    event:
+                      with:
+                        type: com.skirmshop.shipping.returnfailed.v1
+                        source: urn:skirmshop:shipping-app:synapse
+                        subject: '${ .orderId }'
+                        data:
+                          returnId: '${ .returnId }'
+                          orderId: '${ .orderId }'
+                          stage: correos-returns
+                          reason: '${ $context.err | tostring }'
+              - raise:
+                  error:
+                    {
+                      type: 'https://skirmshop.es/errors/return-correos-failed',
+                      status: 502,
+                      detail: correos returns failed,
+                    }
+          then: hoistLabelRef
+
       # -- CEX Logística Inversa fallback (DNI not captured) ----------------
       # When the customer never filled the tax-id field, we hand off to
       # ops with a structured email and let them complete
@@ -1013,7 +1072,7 @@ data:
       # to a top-level scalar first (nested {a.b} does not expand — SKIRM-310).
       - hoistLabelRef:
           set:
-            labelBytesRef: '${ .upsResult.labelBytesRef // .cexResult.labelBytesRef // "" }'
+            labelBytesRef: '${ .upsResult.labelBytesRef // .cexResult.labelBytesRef // .correosResult.labelBytesRef // "" }'
           then: loadReturnLabel
 
       - loadReturnLabel:
