@@ -25,7 +25,10 @@ spec:
     rollingUpdate: { maxUnavailable: 0, maxSurge: 1 }
   selector: { matchLabels: { app: labels-whatsapp-optin-ingest } }
   template:
-    metadata: { labels: { app: labels-whatsapp-optin-ingest } }
+    metadata:
+      labels: { app: labels-whatsapp-optin-ingest }
+      # Sube el valor para reiniciar el pod: envFrom/secretKeyRef no se recargan (SC-2092, rotación de CONNECTOR_SHARED_SECRET).
+      annotations: { pocharlies/connector-secret-generation: "2" }
     spec:
       enableServiceLinks: false
       nodeSelector: { kubernetes.io/arch: amd64 }
