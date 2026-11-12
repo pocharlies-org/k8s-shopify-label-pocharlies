@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:a39670f502c984a5e715a9bec7f414502ad0330b88e8200ee4661fedf21e99b8 # pin por digest — SKIRM-462 (v2026.11.12.1, release 43133355290, merge 1db153c3 de #270). Comprobado con crane export sobre ESTE digest: trae dist/order-edit/picqer-sync.js y el add-items-sync compilado con changeStock y la ruta /products/{id}/stock/{idwarehouse}, sin createOrder/processOrder/cancelOrderForce. El add-items descuenta en Picqer el stock de lo añadido con un movimiento relativo por SKU y almacén; NO crea ni procesa pedidos (el paquete se hace con Shopify y el cliente ya recibe el producto: un segundo pedido pickeable lo enviaría dos veces). El aviso de SKIRM-460 sigue igual. Sin vars nuevas.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:14467d854dca649b11e8ca395466c86844a4372801891aa709f5898fb20cf303 # pin por digest — SKIRM-462 (v2026.11.12.2, release 43138229487, merge 0ac7936f de #271). Comprobado con crane export sobre ESTE digest: el aviso compilado dice «descuenta su stock en Picqer automáticamente» y ya no contiene «Descontar a mano.» ni «descontar el stock en Picqer</b>»; el add-items-sync sigue con changeStock y la ruta /products/{id}/stock/{idwarehouse}. Corrige el aviso de SKIRM-460, que mandaba al almacén descontar a mano lo que el sync ya descuenta solo (doble descuento). El descuento sigue siendo un movimiento relativo por SKU y almacén, sin crear ni procesar pedidos. Sin vars nuevas.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
