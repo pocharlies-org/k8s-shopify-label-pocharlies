@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:e39e3359bf16d8b571712290b7322688d747bea3404b842d460a35c8d321d231 # pin por digest — SKIRM-460: el build de 6795dea es el tag sha-6795deafcddc (release 43103511035), NO v2026.11.11.2: ese tag de versión apunta en Harbor a 49fc4625, una imagen anterior sin dist/order-edit/add-items-ops.js, y el pin anterior (#150) desplegó esa. Comprobado con crane export: este digest sí trae el fichero. El add-items (cliente y operador) avisa a ops por Telegram y comenta el pedido de Picqer en cada edit aplicado, con o sin saldo; el riesgo es el stock de Picqer, que no recibe la línea (el paquete se hace con Shopify). Sin vars nuevas.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:a39670f502c984a5e715a9bec7f414502ad0330b88e8200ee4661fedf21e99b8 # pin por digest — SKIRM-462 (v2026.11.12.1, release 43133355290, merge 1db153c3 de #270). Comprobado con crane export sobre ESTE digest: trae dist/order-edit/picqer-sync.js y el add-items-sync compilado con changeStock y la ruta /products/{id}/stock/{idwarehouse}, sin createOrder/processOrder/cancelOrderForce. El add-items descuenta en Picqer el stock de lo añadido con un movimiento relativo por SKU y almacén; NO crea ni procesa pedidos (el paquete se hace con Shopify y el cliente ya recibe el producto: un segundo pedido pickeable lo enviaría dos veces). El aviso de SKIRM-460 sigue igual. Sin vars nuevas.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
