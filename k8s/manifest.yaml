@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:14467d854dca649b11e8ca395466c86844a4372801891aa709f5898fb20cf303 # pin por digest — SKIRM-462 (v2026.11.12.2, release 43138229487, merge 0ac7936f de #271). Comprobado con crane export sobre ESTE digest: el aviso compilado dice «descuenta su stock en Picqer automáticamente» y ya no contiene «Descontar a mano.» ni «descontar el stock en Picqer</b>»; el add-items-sync sigue con changeStock y la ruta /products/{id}/stock/{idwarehouse}. Corrige el aviso de SKIRM-460, que mandaba al almacén descontar a mano lo que el sync ya descuenta solo (doble descuento). El descuento sigue siendo un movimiento relativo por SKU y almacén, sin crear ni procesar pedidos. Sin vars nuevas.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:8cf0f47f48e23e53049473557a28782c82b36610aa5a3f1c6f2452a5f7ecdda4 # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 69791854 -> 69790871 bytes (baja 983; capas base byte-idénticas, base b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
