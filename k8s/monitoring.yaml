@@ -226,6 +226,14 @@ spec:
           # puerta superada la alerta sigue disparando con ese valor. El crecimiento real
           # de cache (~8MiB/dia) nunca alcanza 300MiB en 24h, asi que nada se pierde;
           # caidas de repli las cubren LabelsValkeyExporterDown y ScrapeTargetsLow.
+          # SC-5567 (15-11): la puerta de uptime no cubre el BORRADO legitimo. El
+          # synapse-janitor (SKIRM-353, retencion firmada document-* 45d) desplegado
+          # 15-11 05:30 purgo ~650k claves (1.1Gi -> 28Mi) y el delta 24h (max de una
+          # instancia menos min de otra) disparo LBL-19416 con el sistema sano: la
+          # alerta restaba una caida, no un crecimiento. Tercera puerta: la regla solo
+          # evalua si la memoria ACTUAL supera 800Mi (por encima del regime normal
+          # ~30-100Mi y por debajo del LabelsValkeyMemoryHigh de 1600Mi). Un purge que
+          # baja la memoria no es presion OOM; un crecimiento que sigue alto si dispara.
           expr: |
             (
               max(max_over_time(redis_memory_used_bytes{job="labels-valkey-headless"}[24h]))
@@ -234,6 +242,8 @@ spec:
             ) > 300 * 1024 * 1024
             and on()
             count(redis_uptime_in_seconds{job="labels-valkey-headless"} >= 86400) >= 3
+            and on()
+            max(redis_memory_used_bytes{job="labels-valkey-headless"}) > 800 * 1024 * 1024
           for: 15m
           labels:
             severity: warning
