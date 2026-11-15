@@ -505,7 +505,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:38bca8dc00a06df3b267e229497dea898ff29392d79e84dbfb35048bd3fabd35 # pin por digest — SKIRM-403: v2026.11.7.4 (skirmshop-labels 6b18cee, release 42373680027): seguro opcional pagado por el cliente (modo `optional`); el envío gratis no regala la prima.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:fa7e605bcde8802e5c4633df6bdc70d3a0d91330bb53bb383d72eb688e1198bd # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 62177851 -> 62185113 bytes (+7262, +0.01%: código de la release, capas base byte-idénticas b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
