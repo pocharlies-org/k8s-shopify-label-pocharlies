@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:14467d854dca649b11e8ca395466c86844a4372801891aa709f5898fb20cf303 # pin por digest — SKIRM-462 (v2026.11.12.2, release 43138229487, merge 0ac7936f de #271). Comprobado con crane export sobre ESTE digest: el aviso compilado dice «descuenta su stock en Picqer automáticamente» y ya no contiene «Descontar a mano.» ni «descontar el stock en Picqer</b>»; el add-items-sync sigue con changeStock y la ruta /products/{id}/stock/{idwarehouse}. Corrige el aviso de SKIRM-460, que mandaba al almacén descontar a mano lo que el sync ya descuenta solo (doble descuento). El descuento sigue siendo un movimiento relativo por SKU y almacén, sin crear ni procesar pedidos. Sin vars nuevas.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:8cf0f47f48e23e53049473557a28782c82b36610aa5a3f1c6f2452a5f7ecdda4 # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 69791854 -> 69790871 bytes (baja 983; capas base byte-idénticas, base b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -379,7 +379,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: event-gateway
-          image: harbor.e-dani.com/homelab/skirmshop-labels-event-gateway@sha256:bfd05c657d65d1bf54eb5ac32835b4da0ae2acf5ca025799e99e3bab09b46e14 # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); mismo código que el pin anterior (e4e9be4, tag v2026.10.14.1): solo se alinea a la release.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-gateway@sha256:634beb072c147bbc78b398bec33506ac602af685eade7813e18cdbfb2e8ce173 # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 61448517 -> 62333420 bytes (+884903, +1.4%: código de la release sobre v2026.10.21.8, capas base byte-idénticas b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -505,7 +505,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:38bca8dc00a06df3b267e229497dea898ff29392d79e84dbfb35048bd3fabd35 # pin por digest — SKIRM-403: v2026.11.7.4 (skirmshop-labels 6b18cee, release 42373680027): seguro opcional pagado por el cliente (modo `optional`); el envío gratis no regala la prima.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:fa7e605bcde8802e5c4633df6bdc70d3a0d91330bb53bb383d72eb688e1198bd # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 62177851 -> 62185113 bytes (+7262, +0.01%: código de la release, capas base byte-idénticas b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -560,7 +560,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: saga-launcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:e1aa97c7a8ceb9c47b4fd2040c70f283bfa35eecc82d7f1ebbd44fa771b0758b # pin por digest — SKIRM-403: v2026.11.7.4 (skirmshop-labels 6b18cee, release 42373680027): seguro opcional pagado por el cliente (modo `optional`); el envío gratis no regala la prima.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:f13cdc9e9da6ddf4a115e13a16659c3512aba5cd86add762b6246946a1d275ef # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 60469102 -> 60475360 bytes (+6258, +0.01%: código de la release, capas base byte-idénticas b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -625,7 +625,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: outbox-relay
-          image: harbor.e-dani.com/homelab/skirmshop-labels-outbox-relay@sha256:6fc4502caa279f6a917a7c511050d7009655cb64b8065ec0b4210b9c5037a3d2 # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); mismo código que el pin anterior (5ca8fd8, tag v2026.10.12.1): solo se alinea a la release.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-outbox-relay@sha256:9f0b4e5acf0bd27cea67b9ea5eeb7520ef2a506cb8c68ebdc45f7e6070190f77 # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 59502968 -> 60390312 bytes (+887344, +1.5%: código de la release sobre v2026.10.21.8, capas base byte-idénticas b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -695,7 +695,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:9812d60dbc41852476951d44c8161886b2b29d744cfe22592028a26a6290bb68 # pin por digest — SKIRM-374: v2026.11.4.1 (skirmshop-labels b74d148, release 41903542070): los pedidos UPS Access Point salen con el punto como destino (Hold for Pickup, ShipmentIndicationType 01 + AlternateDeliveryAddress con el ID público U…), no a domicilio; contiene SKIRM-344 (v2026.11.2.4).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:0d4a49eb0a55d109c904ca461e15acc8c5e5567d1843af165a7fa0af97ae68d7 # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 67605650 -> 69385823 bytes (+1780173, +2.6%: código de la release sobre v2026.11.4.1, capas base byte-idénticas b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

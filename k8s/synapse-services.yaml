@@ -52,7 +52,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-fulfillment-service@sha256:5239d5dd6160524330baa2fec4710180e232bb5277fa45d429352e1d298694e5 # pin por digest — SKIRM-322: v2026.10.28.7 (skirmshop-labels eef1e166c1364c50a21dea83085db7c46dd227d7, release 40708004799): hold y release por handle (idempotente; 409 HOLD_UNSUPPORTED si el FO no admite hold) y /fulfillments libera nuestro hold «Falta el punto de recogida» antes de crear.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-fulfillment-service@sha256:8622a0cbcd8210cb179defab0bf03617a548a9214ce26375345a6024d5808de2 # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 62494646 -> 62506799 bytes (+12153, +0.02%: código de la release, capas base byte-idénticas b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -99,7 +99,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:f89387e5f669ca88273c1230dc18d8cfcceca003e26044d5cfc955e2fd40ee18 # pin por digest — SKIRM-397: v2026.11.7.1 (skirmshop-labels 40b740d, release 42320805621): el Paq Punto (18) no lleva `seguro`; CEX no lo asegura.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:ff5b27249b3d6042035c2844ff5c74a15b3378e8a3109bda3299a5a09a0fb9cf # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 67469266 -> 69244841 bytes (+1775575, +2.6%: código de la release sobre v2026.11.7.1, capas base byte-idénticas b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -179,7 +179,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: correos-adapter
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:754bf2c3c2afc33575ca2fb4153d822907667ed0a0dabde36d62f60f23ba93bc # pin por digest — SC-5298: v2026.11.11.1 (skirmshop-labels 4ad8235, release 42954464849): SKIRM-447 — POST /returns, envío inverso Paq Estándar del return estándar de Correos (la rama correos del workflow process-return 1.2.3). Sobre v2026.11.2.4 (SKIRM-344).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:49689b834d5bd6f3613c936f0399df34f699ecdf34013a4793f10f44dd3797f8 # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 64579496 -> 64580466 bytes (+970, +0.001%: código de la release, capas base byte-idénticas b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -316,7 +316,7 @@ spec:
       securityContext: { runAsUser: 1000, runAsGroup: 1000 }
       containers:
         - name: notification-dispatcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:759549795029ecfe77b202e27a00763461069d6924fdba393ba65851b4f7d755 # pin por digest — SC-3513: v2026.10.28.1 (skirmshop-labels 6f807a6796dc782053c2989345be1a72a19e461f, release 40640451546): el aviso de fecha cambiada deja de repetir la línea del enlace de seguimiento y de decir «lo hemos recibido» (el cliente no mandó ningún aviso: mueve la fecha el transportista). Email y WhatsApp, es/en.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:f36b35c51258d759c72628f782b24ce25b7449fbebbf40496bc6bdfd542bec9d # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 60326431 -> 60337814 bytes (+11383, +0.02%: código de la release, capas base byte-idénticas b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -415,7 +415,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: event-projector
-          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:0a88c55e04af9f800f8375c0600610be195582b07b693e0d78625010deed1771 # pin por digest — SKIRM-318: v2026.10.28.4 (skirmshop-labels 5e33af0d0101d2f2596d8c49ab8eddb02f7e3a3e, release 40690294140): el proyector guarda el source del CloudEvent y crea la columna (migración 002 de event-store) al arrancar.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:c822ccf5e550e359ec81132c0ad4ddab297cd1e43dee803ccc0e54946d64dcea # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 60362926 -> 60375769 bytes (+12843, +0.02%: código de la release, capas base byte-idénticas b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -471,7 +471,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: tracking-ingestion
-          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:c2a603cb58f5d98965a9a6fc2fe9c55dc68764e8425214765092fd7601e7f791 # pin por digest — SKIRM-410: v2026.11.8.2 (skirmshop-labels 8947e93, release 42516136502): crea el fulfillment que falta (sin aviso al cliente) cuando el transportista ya tiene el paquete. Sobre v2026.10.28.8 (SC-3487).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:7919e3e38d418e835a0e778fd43797da9bb8a01142384a9849f073cb5d149b2a # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 60449636 -> 60457627 bytes (+7991, +0.01%: código de la release, capas base byte-idénticas b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

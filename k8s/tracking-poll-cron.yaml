@@ -28,7 +28,7 @@ spec:
               # guards that stop the unbounded "new poll instance every 15 min" growth.
               # poll-tracking v1.3.1 publishes TrackingEventReceived through the
               # event gateway so tracking-ingestion persists carrier movement.
-              image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-poll-scheduler@sha256:89c7d4381b163d8d7d43ec2645102651c9a308be3298653e4865ec9d24519d68 # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); desde 168bdc0 (polling hasta terminal) su código no cambia: paquetes compartidos (domain, shopify-auth) y lockfile al día, sin variables de entorno nuevas.
+              image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-poll-scheduler@sha256:14450a692232598d42334c1b609c12a1e8b4c6123bc4e27874f643926600a033 # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 56676079 -> 57551167 bytes (+875088, +1.5%: código de la release sobre v2026.10.21.8, capas base byte-idénticas b64ced2e).
               env:
                 - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
                 - { name: SYNAPSE_API_URL, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }

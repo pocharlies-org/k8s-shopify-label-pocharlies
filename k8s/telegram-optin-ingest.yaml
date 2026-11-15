@@ -35,7 +35,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: telegram-optin-ingest
-          image: harbor.e-dani.com/homelab/skirmshop-labels-telegram-optin-ingest@sha256:5d491fead6c2fcf88e0833a7af382ee1effa56d4bfe66691bb2603ae44b07290 # pin por digest — SC-3069: v2026.10.27.1 (skirmshop-labels f8402cd, release 40502140725): el evento de tracking lleva la señal del adaptador (customerSignal + carrierIncidentCode; migración 003 nullable, aplicada por applyMigrations() al arrancar) y nuevo kind shipping_action_required. Ningún adaptador envía señal todavía — eso es SC-3070 —, así que hasta entonces el aviso se sigue deduciendo del estado.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-telegram-optin-ingest@sha256:da4e294c7f65880c6ec3bebce6f4c2fe21602ac4873ee21563572e3da5ca6613 # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 59977225 -> 60003305 bytes (+26080, +0.04%: código de la release, capas base byte-idénticas b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

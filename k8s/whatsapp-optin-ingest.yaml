@@ -33,7 +33,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: whatsapp-optin-ingest
-          image: harbor.e-dani.com/homelab/skirmshop-labels-whatsapp-optin-ingest@sha256:5b4ea49d46d0db5d64541c0a37ff25a3285fe774942d03d0b37d43acbdf5d44c # pin por digest — SC-3069: v2026.10.27.1 (skirmshop-labels f8402cd, release 40502140725): el evento de tracking lleva la señal del adaptador (customerSignal + carrierIncidentCode; migración 003 nullable, aplicada por applyMigrations() al arrancar) y nuevo kind shipping_action_required. Ningún adaptador envía señal todavía — eso es SC-3070 —, así que hasta entonces el aviso se sigue deduciendo del estado.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-whatsapp-optin-ingest@sha256:2cf19800a6f6b602a093acf5a29f6b3aa3596a6ed3dfbe809637e93221e24a55 # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 59972754 -> 59998998 bytes (+26244, +0.04%: código de la release, capas base byte-idénticas b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
