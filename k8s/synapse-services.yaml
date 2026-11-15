@@ -471,7 +471,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: tracking-ingestion
-          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:c2a603cb58f5d98965a9a6fc2fe9c55dc68764e8425214765092fd7601e7f791 # pin por digest — SKIRM-410: v2026.11.8.2 (skirmshop-labels 8947e93, release 42516136502): crea el fulfillment que falta (sin aviso al cliente) cuando el transportista ya tiene el paquete. Sobre v2026.10.28.8 (SC-3487).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion@sha256:7919e3e38d418e835a0e778fd43797da9bb8a01142384a9849f073cb5d149b2a # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 60449636 -> 60457627 bytes (+7991, +0.01%: código de la release, capas base byte-idénticas b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
