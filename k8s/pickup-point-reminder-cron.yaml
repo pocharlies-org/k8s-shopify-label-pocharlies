@@ -25,7 +25,7 @@ spec:
           nodeSelector: { kubernetes.io/arch: amd64 }
           containers:
             - name: pickup-point-reminder
-              image: harbor.e-dani.com/homelab/skirmshop-labels-pickup-point-reminder@sha256:0f48febb41eaf2d5a7bf95e1df0f7a18933c411b6654bf670d9076ce63f3558e # pin por digest — SC-5141: v2026.11.10.2 (skirmshop-labels 1a7f9d28578f61b17184a49348d05b47d25c6655, release 42757475140): shippingMethodTitle hasta 255 + truncado en ingesta + un pedido con payload ilegible ya no tumba la ejecución del cron (Keep CRON-18920).
+              image: harbor.e-dani.com/homelab/skirmshop-labels-pickup-point-reminder@sha256:e67e4fa9603b08d9e526c18f01fe9d9eeea2801c93a89ded1ddb923fff4edc64 # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 57571602 -> 57572654 bytes (+1052, +0.002%: código de la release, capas base byte-idénticas b64ced2e).
               env:
                 - {
                     name: PG_URL,
