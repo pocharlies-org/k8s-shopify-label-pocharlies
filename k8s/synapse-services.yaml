@@ -316,7 +316,7 @@ spec:
       securityContext: { runAsUser: 1000, runAsGroup: 1000 }
       containers:
         - name: notification-dispatcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:759549795029ecfe77b202e27a00763461069d6924fdba393ba65851b4f7d755 # pin por digest — SC-3513: v2026.10.28.1 (skirmshop-labels 6f807a6796dc782053c2989345be1a72a19e461f, release 40640451546): el aviso de fecha cambiada deja de repetir la línea del enlace de seguimiento y de decir «lo hemos recibido» (el cliente no mandó ningún aviso: mueve la fecha el transportista). Email y WhatsApp, es/en.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:f36b35c51258d759c72628f782b24ce25b7449fbebbf40496bc6bdfd542bec9d # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 60326431 -> 60337814 bytes (+11383, +0.02%: código de la release, capas base byte-idénticas b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
