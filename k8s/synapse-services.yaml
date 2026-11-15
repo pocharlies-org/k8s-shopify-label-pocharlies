@@ -99,7 +99,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:f89387e5f669ca88273c1230dc18d8cfcceca003e26044d5cfc955e2fd40ee18 # pin por digest — SKIRM-397: v2026.11.7.1 (skirmshop-labels 40b740d, release 42320805621): el Paq Punto (18) no lleva `seguro`; CEX no lo asegura.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:ff5b27249b3d6042035c2844ff5c74a15b3378e8a3109bda3299a5a09a0fb9cf # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 67469266 -> 69244841 bytes (+1775575, +2.6%: código de la release sobre v2026.11.7.1, capas base byte-idénticas b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
