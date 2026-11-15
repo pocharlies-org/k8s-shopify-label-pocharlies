@@ -379,7 +379,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: event-gateway
-          image: harbor.e-dani.com/homelab/skirmshop-labels-event-gateway@sha256:bfd05c657d65d1bf54eb5ac32835b4da0ae2acf5ca025799e99e3bab09b46e14 # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); mismo código que el pin anterior (e4e9be4, tag v2026.10.14.1): solo se alinea a la release.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-gateway@sha256:634beb072c147bbc78b398bec33506ac602af685eade7813e18cdbfb2e8ce173 # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 61448517 -> 62333420 bytes (+884903, +1.4%: código de la release sobre v2026.10.21.8, capas base byte-idénticas b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
