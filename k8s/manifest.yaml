@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:e5af0e7a2c64b8bd37a54ba9506f404e69d5569377b953b8a6c4c79274661086 # pin por digest — SKIRM-462: v2026.11.15.2 (skirmshop-labels, release 43771065166). Solo esta imagen se repinea: el resto de la matriz no cambió.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:058d6223c8694a92c2537bf2ef527616be8acabd9064522c8b149bba042c5685 # pin por digest — SKIRM-490: v2026.11.15.3 (skirmshop-labels, release 43773005850, revisión 0faadc13e87f). El fallo del transportista ya no se borra cuando la web de seguimiento republica OrderPaid al elegir punto de recogida: el pedido deja de quedarse en «creando etiqueta» y su motivo (failureReason) vuelve a /api/shipments y al bloque de Shopify.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
