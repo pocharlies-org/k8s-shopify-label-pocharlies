@@ -625,7 +625,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: outbox-relay
-          image: harbor.e-dani.com/homelab/skirmshop-labels-outbox-relay@sha256:6fc4502caa279f6a917a7c511050d7009655cb64b8065ec0b4210b9c5037a3d2 # pin por digest — SKIRM-236: repin a v2026.10.21.8 (skirmshop-labels b892190, release 39643747498); mismo código que el pin anterior (5ca8fd8, tag v2026.10.12.1): solo se alinea a la release.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-outbox-relay@sha256:9f0b4e5acf0bd27cea67b9ea5eeb7520ef2a506cb8c68ebdc45f7e6070190f77 # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 59502968 -> 60390312 bytes (+887344, +1.5%: código de la release sobre v2026.10.21.8, capas base byte-idénticas b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
