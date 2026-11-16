@@ -695,7 +695,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:0d4a49eb0a55d109c904ca461e15acc8c5e5567d1843af165a7fa0af97ae68d7 # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 67605650 -> 69385823 bytes (+1780173, +2.6%: código de la release sobre v2026.11.4.1, capas base byte-idénticas b64ced2e).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:16e223494b9c7dd8216d4f444585f7cd625d7aeab98088952eb88c0dcc700cff # pin por digest — SKIRM-374: v2026.11.16.1 (skirmshop-labels 8963810, release 43779972828): envíos US a Access Point con la notificación ADL 012 (UPS 120995). Los 16 image-guard fallaron en «Resolve the image manifest with pinned crane» y el job del pin no corrió: este pin se abre a mano.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
