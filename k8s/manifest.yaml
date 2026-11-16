@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:058d6223c8694a92c2537bf2ef527616be8acabd9064522c8b149bba042c5685 # pin por digest — SKIRM-490: v2026.11.15.3 (skirmshop-labels, release 43773005850, revisión 0faadc13e87f). El fallo del transportista ya no se borra cuando la web de seguimiento republica OrderPaid al elegir punto de recogida: el pedido deja de quedarse en «creando etiqueta» y su motivo (failureReason) vuelve a /api/shipments y al bloque de Shopify.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:0e99fd223a1e510511ce781b84c49c92a594d3f55ed59031e3245f9184426487 # pin por digest — SKIRM-491: v2026.11.15.4 (skirmshop-labels, release 43783800901, revisión fc2800c). Añadir el mismo producto dos veces en una edición suma la cantidad pedida por variante antes de compararla con el stock: 3 + 3 ya no se acepta contra 4 unidades.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
