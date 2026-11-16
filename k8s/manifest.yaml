@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:d66f2d888842c3c2a8772b83193ad7613d15219390230ba6565676ceb0efd855 # pin por digest — SKIRM-493: v2026.11.16.2 (skirmshop-labels, release 43791218178, revisión f35e305). Cancelar un pedido devuelve al stock de Picqer lo que descontó la edición, una sola vez por pedido y edición; si el pedido ya se había enviado no se mueve stock y lo decide una persona.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:d08c6efb562ed54318ff6d5eb2155b5bed76179cfdea68000b517fb1f2f5cf27 # pin por digest — SKIRM-493: v2026.11.16.3 (skirmshop-labels, release 43793977709, revisión c9b5cfc). Cancelar con reposición deja fulfillment_status «restocked», que no es un envío: el stock vuelve a Picqer.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
