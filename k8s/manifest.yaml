@@ -695,7 +695,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:3a48e881520d40e7db1e6e9265393a2219b39daf3ee77a7d57a571049df58fb1 # pin por digest — SKIRM-374: v2026.11.16.6 (skirmshop-labels b61ef65, release 43854375467): la notificación ADL 012 usa Locale eng/US, que UPS exige (120992); sobre v2026.11.16.5, que puso StateProvinceCode en el ADL (120983). Pin a mano: los image-guard siguen fallando en «Resolve the image manifest with pinned crane».
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:9983f5e2959982f7b7d01ad56d211c9dd296d8725d78cd03953555ff12c9c7a2 # pin por digest — SKIRM-374: v2026.11.16.7 (skirmshop-labels 541b680, release 43860494509): US Access Point por entrega 02 con avisos 012+013 y aranceles al remitente, que UPS exige (120978); sobre v2026.11.16.6, que puso Locale eng/US (120992). Pin a mano: los image-guard siguen fallando en «Resolve the image manifest with pinned crane».
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
