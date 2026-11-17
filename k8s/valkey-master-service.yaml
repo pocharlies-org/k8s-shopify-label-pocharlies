@@ -95,7 +95,7 @@ spec:
         # (INFRA-1300). No hay NetworkPolicy en skirmshop que acote el 26379:
         # nada que abrir aquí.
         - name: labeler
-          image: harbor.e-dani.com/homelab/valkey-master-labeler:v1@sha256:6997a0ca91c41c8902abfe64294a772aabdb5625267d76b06b43eb00923f515a
+          image: harbor.e-dani.com/homelab/valkey-master-labeler:v2@sha256:6b0ac2028de1d6e044a64793d5af08838a989e806a63c362adb69541a61b0188
           env:
             - { name: NAMESPACE, valueFrom: { fieldRef: { fieldPath: metadata.namespace } } }
             - { name: MASTER_NAME, value: labels-master }
@@ -105,3 +105,9 @@ spec:
           resources:
             requests: { cpu: 20m, memory: 64Mi }
             limits: { memory: 192Mi }
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
+            seccompProfile: { type: RuntimeDefault }
