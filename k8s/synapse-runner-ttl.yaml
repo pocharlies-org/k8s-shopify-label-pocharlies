@@ -15,7 +15,12 @@ spec:
   # Fail: sin Kyverno, el pod no se crea y el workflow se aparca a la vista (el bus es
   # durable); con Ignore nacería sin etiqueta y no lo borraría nadie.
   failurePolicy: Fail
+  admission: true
   background: false
+  # Kyverno's defaulting webhook writes these into the live object; declared exactly as
+  # it writes them or ArgoCD sees the Policy OutOfSync forever (INFRA-481 in k8s-infra).
+  emitWarning: false
+  validationFailureAction: Audit
   rules:
     - name: label-runner-pods
       match:
@@ -28,6 +33,7 @@ spec:
           - key: "{{ request.object.metadata.name || '' }}"
             operator: AnyIn
             value: ["*.skirmshop-*"]
+      skipBackgroundRequests: true
       mutate:
         patchStrategicMerge:
           metadata:
