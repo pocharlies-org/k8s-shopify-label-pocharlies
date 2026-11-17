@@ -95,7 +95,7 @@ spec:
         # (INFRA-1300). No hay NetworkPolicy en skirmshop que acote el 26379:
         # nada que abrir aquí.
         - name: labeler
-          image: harbor.e-dani.com/homelab/valkey-master-labeler:v1
+          image: harbor.e-dani.com/homelab/valkey-master-labeler:v1@sha256:6997a0ca91c41c8902abfe64294a772aabdb5625267d76b06b43eb00923f515a
           env:
             - { name: NAMESPACE, valueFrom: { fieldRef: { fieldPath: metadata.namespace } } }
             - { name: MASTER_NAME, value: labels-master }
