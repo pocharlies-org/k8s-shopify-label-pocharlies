@@ -32,10 +32,11 @@ metadata:
 rules:
   # SC-5880: reducción de privilegio. Cae `pods/exec` (ya no se hace
   # `kubectl exec <pod> -- valkey-cli role`): la pregunta va a Sentinel
-  # (`SENTINEL get-master-addr-by-name`). El watch de pods pide `watch`.
+  # (`SENTINEL get-master-addr-by-name`). El watch de pods pide `watch`; `get`
+  # no lo usa nadie. Sin `resourceNames` en `patch`: ataría el Role a 3 réplicas.
   - apiGroups: [""]
     resources: ["pods"]
-    verbs: ["get", "list", "watch", "patch"]
+    verbs: ["list", "watch", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -91,8 +92,7 @@ spec:
         # databases/valkey-master-labeler). Level-triggered: lectura de Sentinel
         # al arrancar, SUBSCRIBE `+switch-master` y watch de los pods; sin bucle
         # de reloj. labels-valkey no pone requirepass en Sentinel, así que no
-        # hay SENTINEL_PASSWORD. Falta fijar el digest tras el primer build
-        # (INFRA-1300). No hay NetworkPolicy en skirmshop que acote el 26379:
+        # hay SENTINEL_PASSWORD. No hay NetworkPolicy en skirmshop que acote el 26379:
         # nada que abrir aquí.
         - name: labeler
           image: harbor.e-dani.com/homelab/valkey-master-labeler:v2@sha256:6b0ac2028de1d6e044a64793d5af08838a989e806a63c362adb69541a61b0188
