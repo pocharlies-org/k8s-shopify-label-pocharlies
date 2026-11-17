@@ -1,0 +1,35 @@
+# SC-5905 (B3 de SC-5806, «Events, never polling»): los pods sueltos del runner
+# serverlessworkflow/synapse alpha1 (`poll-<uuid>-<n>.skirmshop-<hash>`, sin ownerReferences,
+# así que ttlSecondsAfterFinished no les aplica) nacen con la etiqueta TTL de Kyverno y el
+# cleanup-controller los borra 1 h después de crearse (temporizador por recurso desde
+# creationTimestamp; terminados o colgados por igual: un poll dura minutos y el janitor
+# da por atascado uno de 30 min). Sustituye al CronJob labels-synapse-pod-reaper (*/10) y a
+# su running-orphan-reaper. El permiso de borrar pods del cleanup-controller está en
+# k8s-gitops-pocharlies infra/kyverno/values.yaml. Diseño: nota-architect-b3.md (rev. 2).
+apiVersion: kyverno.io/v1
+kind: Policy
+metadata:
+  name: synapse-runner-ttl
+  namespace: skirmshop
+spec:
+  # Fail: sin Kyverno, el pod no se crea y el workflow se aparca a la vista (el bus es
+  # durable); con Ignore nacería sin etiqueta y no lo borraría nadie.
+  failurePolicy: Fail
+  background: false
+  rules:
+    - name: label-runner-pods
+      match:
+        any:
+          - resources:
+              kinds: ["Pod"]
+              operations: ["CREATE"]
+      preconditions:
+        all:
+          - key: "{{ request.object.metadata.name || '' }}"
+            operator: AnyIn
+            value: ["*.skirmshop-*"]
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            labels:
+              +(cleanup.kyverno.io/ttl): "1h"
