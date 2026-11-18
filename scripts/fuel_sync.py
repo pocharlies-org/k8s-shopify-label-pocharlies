@@ -25,6 +25,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import urllib.error
 import urllib.parse
 import urllib.request
 from decimal import ROUND_HALF_UP, Decimal
@@ -158,19 +159,35 @@ def decide(text: str, ref: str, value: float, effective: dt.date, source: str, t
 
 # ── Gmail ────────────────────────────────────────────────────────────────────
 
+def _raise_http(exc: urllib.error.HTTPError) -> None:
+    # urllib solo muestra «HTTP Error 400: Bad Request»; el cuerpo dice invalid_grant
+    # (refresh token caducado/revocado) frente a un query malo. Sin él no se diagnostica.
+    try:
+        body = exc.read().decode("utf-8", "replace")[:300]
+    except Exception:
+        body = ""
+    raise RuntimeError(f"HTTP {exc.code}: {body or exc.reason}") from None
+
+
 def gmail_token() -> str:
     cred = json.loads(os.environ["GMAIL_TOKEN_JSON"])
     data = urllib.parse.urlencode({"grant_type": "refresh_token", "client_id": cred["client_id"],
                                    "client_secret": cred["client_secret"],
                                    "refresh_token": cred["refresh_token"]}).encode()
-    with urllib.request.urlopen(cred.get("token_uri", "https://oauth2.googleapis.com/token"), data, timeout=30) as r:
-        return json.load(r)["access_token"]
+    try:
+        with urllib.request.urlopen(cred.get("token_uri", "https://oauth2.googleapis.com/token"), data, timeout=30) as r:
+            return json.load(r)["access_token"]
+    except urllib.error.HTTPError as exc:
+        _raise_http(exc)
 
 
 def gmail_get(token: str, path: str) -> dict:
     req = urllib.request.Request(f"{GMAIL}/{path}", headers={"Authorization": f"Bearer {token}"})
-    with urllib.request.urlopen(req, timeout=60) as r:
-        return json.load(r)
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            return json.load(r)
+    except urllib.error.HTTPError as exc:
+        _raise_http(exc)
 
 
 def latest(token: str, query: str) -> dict | None:

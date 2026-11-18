@@ -27,7 +27,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: pdftotext
-        run: command -v pdftotext || (sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils)
+        run: |
+          # apt-get update devuelve 100 si algún índice falla (p. ej. el PPA ajeno git-core
+          # respondió 503 el 17-11 y tumbó el sync); poppler-utils vive en los archivos
+          # principales, así que se tolera el índice fallido y se reintenta el resto.
+          command -v pdftotext >/dev/null && exit 0
+          sudo apt-get update -qq -o Acquire::Retries=5 || true
+          sudo apt-get install -y -qq poppler-utils
       - name: Leer MITECO y Gmail y aplicar
         id: sync
         env:
