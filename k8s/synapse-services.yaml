@@ -99,7 +99,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:ff5b27249b3d6042035c2844ff5c74a15b3378e8a3109bda3299a5a09a0fb9cf # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 67469266 -> 69244841 bytes (+1775575, +2.6%: código de la release sobre v2026.11.7.1, capas base byte-idénticas b64ced2e).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:c4a31b3d792d8c10f5a9a3a0b5f676f5a3d635517f97ee01ba3028b422876064 # pin por digest — SKIRM-546: v2026.11.19.2 (skirmshop-labels, release 44561252147, revisión e2bbe25). PO No de la factura comercial = nombre real del pedido.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
