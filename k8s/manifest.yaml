@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:c7d6f1e4915e1be099d415b10d9749ce08df091ef44f1943605ce1b1c7cf037a # pin por digest — DGX-1707: v2026.11.19.1 (skirmshop-labels, release 44520079461, revisión 74c02c1). /api/agent/shipment-status devuelve todos los pasos del seguimiento (movements).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:52b95eb1c96e4afae456e706ff1205229ed725ae097012d57f1552415c4e1b60 # pin por digest — SKIRM-545: v2026.11.19.2 (skirmshop-labels, release 44561252147, revisión e2bbe25). Aduanas marca «Factura en papel: 3 copias firmadas» y la pestaña de imprimir saca las 3 copias de la factura UPS que UPS no aceptó por ETD; incluye SKIRM-546 (PO No = nombre del pedido en la descarga de Aduanas).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -695,7 +695,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:9983f5e2959982f7b7d01ad56d211c9dd296d8725d78cd03953555ff12c9c7a2 # pin por digest — SKIRM-374: v2026.11.16.7 (skirmshop-labels 541b680, release 43860494509): US Access Point por entrega 02 con avisos 012+013 y aranceles al remitente, que UPS exige (120978); sobre v2026.11.16.6, que puso Locale eng/US (120992). Pin a mano: los image-guard siguen fallando en «Resolve the image manifest with pinned crane».
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:4d46ac6f1190b85e0db63fe947aa5605c5544522227eb7db4f899c51f7e39d21 # pin por digest — SKIRM-545: v2026.11.19.2 (skirmshop-labels, release 44561252147, revisión e2bbe25). Lee la Alert 120023 de UPS (factura ETD rechazada, etiqueta INV) y marca la factura paperRequired; incluye SKIRM-546 (PO No de la factura = nombre del pedido).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
