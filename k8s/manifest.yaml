@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:d08c6efb562ed54318ff6d5eb2155b5bed76179cfdea68000b517fb1f2f5cf27 # pin por digest — SKIRM-493: v2026.11.16.3 (skirmshop-labels, release 43793977709, revisión c9b5cfc). Cancelar con reposición deja fulfillment_status «restocked», que no es un envío: el stock vuelve a Picqer.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:c7d6f1e4915e1be099d415b10d9749ce08df091ef44f1943605ce1b1c7cf037a # pin por digest — DGX-1707: v2026.11.19.1 (skirmshop-labels, release 44520079461, revisión 74c02c1). /api/agent/shipment-status devuelve todos los pasos del seguimiento (movements).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
