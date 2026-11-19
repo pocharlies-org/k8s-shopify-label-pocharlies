@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:52b95eb1c96e4afae456e706ff1205229ed725ae097012d57f1552415c4e1b60 # pin por digest — SKIRM-545: v2026.11.19.2 (skirmshop-labels, release 44561252147, revisión e2bbe25). Aduanas marca «Factura en papel: 3 copias firmadas» y la pestaña de imprimir saca las 3 copias de la factura UPS que UPS no aceptó por ETD; incluye SKIRM-546 (PO No = nombre del pedido en la descarga de Aduanas).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:c241aa58760c13d746b9171eff1787831cca56b42782510206be950b748225e1 # pin por digest — SKIRM-555: v2026.11.19.3 (skirmshop-labels, release 44640008768, revisión 94e734c). El 120995 de UPS tiene su propio mensaje y deja de mostrarse como «teléfono no válido».
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -695,7 +695,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:4d46ac6f1190b85e0db63fe947aa5605c5544522227eb7db4f899c51f7e39d21 # pin por digest — SKIRM-545: v2026.11.19.2 (skirmshop-labels, release 44561252147, revisión e2bbe25). Lee la Alert 120023 de UPS (factura ETD rechazada, etiqueta INV) y marca la factura paperRequired; incluye SKIRM-546 (PO No de la factura = nombre del pedido).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:141c6dc582f69ac5abde6e6d8e05e3ec4122b172d72d81a124e1204d6da53ed4 # pin por digest — SKIRM-555: v2026.11.19.3 (skirmshop-labels, release 44640008768, revisión 94e734c). Los puntos de recogida UPS mandan la notificación ADL 012 también fuera de US (UPS 120995; ORD19564, SE).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
