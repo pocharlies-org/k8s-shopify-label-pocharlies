@@ -154,7 +154,12 @@ spec:
             summary: 'synapse-janitor archive failures'
             description: '{{ $value }} archive failures in 15 min — deletes skipped (safe) but backlog will not drain. Check Postgres. Runbook §6.'
         - alert: SynapseOperatorRestarts
-          expr: increase(kube_pod_container_status_restarts_total{namespace="skirmshop",pod=~"labels-synapse-operator.*"}[15m]) > 2
+          # SC-6150 (SYNC-20137, 20/11): increase() sobre la serie cruda dispara falso cuando
+          # kube-state-metrics se recrea (nueva etiqueta `instance` → serie nueva sin histórico:
+          # el valor acumulado cuenta como incremento; medido: increase=7 con 0 reinicios reales).
+          # Agregando por pod ANTES del increase la serie sobrevive al reinicio del KSM; verificado
+          # contra VM del incidente (vacío en la ventana del falso, =1 en el reinicio real de 07:15Z).
+          expr: increase(max by (namespace, pod) (kube_pod_container_status_restarts_total{namespace="skirmshop",pod=~"labels-synapse-operator.*"})[15m:1m]) > 2
           labels:
             severity: critical
           annotations:
