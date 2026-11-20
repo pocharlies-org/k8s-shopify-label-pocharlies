@@ -695,7 +695,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:141c6dc582f69ac5abde6e6d8e05e3ec4122b172d72d81a124e1204d6da53ed4 # pin por digest — SKIRM-555: v2026.11.19.3 (skirmshop-labels, release 44640008768, revisión 94e734c). Los puntos de recogida UPS mandan la notificación ADL 012 también fuera de US (UPS 120995; ORD19564, SE).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:6391808eeb2bb699a8ed6aa17eb92e2a37ac95f961d83754fea81622d8584ad2 # pin por digest — SKIRM-555: v2026.11.20.1 (skirmshop-labels, release 44657586101, revisión 29aefb). El punto de recogida va por entrega 02 en todos los países: con 01 UPS rechaza la notificación ADL (121262, ORD19564, SE).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
