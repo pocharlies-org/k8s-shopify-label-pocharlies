@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:c241aa58760c13d746b9171eff1787831cca56b42782510206be950b748225e1 # pin por digest — SKIRM-555: v2026.11.19.3 (skirmshop-labels, release 44640008768, revisión 94e734c). El 120995 de UPS tiene su propio mensaje y deja de mostrarse como «teléfono no válido».
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:39c666a853d5c0d39e320280e4f0c5b05341b51854efe62507f39d709ed672a2 # pin por digest — SKIRM-555: v2026.11.19.3 (skirmshop-labels, release 44640008768, revisión 94e734c). El 120995 de UPS tiene su propio mensaje y deja de mostrarse como «teléfono no válido».
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
