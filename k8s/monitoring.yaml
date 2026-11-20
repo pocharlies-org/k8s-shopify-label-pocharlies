@@ -160,17 +160,24 @@ spec:
           annotations:
             summary: 'labels-synapse-operator restarting'
             description: '{{ $value }} restarts in 15 min — likely choking on the workflow-instance backlog. Check orphan entries + poll backlog. Runbook §3.'
+        # SC-6104: las tres reglas de presencia de serie (MetricsMissing, ScrapeTargetsLow,
+        # MasterCountInvalid) se ponen a `for: 15m` porque no distinguen "valkey caído" de
+        # "VictoriaMetrics sin datos nuevos": la migración planificada de vmsingle/vmagent a
+        # atlantic (SC-6096, 20/11 06:35-06:52Z) dejó ~17 min sin muestras y disparó un critical
+        # falso (LBL-20095) con el pipeline sano. 15m cubre la peor ventana observada de un
+        # reinicio/derribo de la pila de métricas; la pérdida real de master la caza además
+        # labels-deep-monitor (CronJob */15 → LabelsDeepMonitorIncident, for: 1m).
         - alert: LabelsValkeyMetricsMissing
           expr: absent(redis_up{job="labels-valkey-headless"})
-          for: 5m
+          for: 15m
           labels:
             severity: critical
           annotations:
             summary: 'labels-valkey metrics are missing'
-            description: 'No redis_up series for labels-valkey for 5m. The redis_exporter scrape is failing or the labels-valkey pods are down.'
+            description: 'No redis_up series for labels-valkey for 15m. The redis_exporter scrape is failing, the labels-valkey pods are down, or VictoriaMetrics (vmsingle/vmagent) has not received samples.'
         - alert: LabelsValkeyScrapeTargetsLow
           expr: count(redis_up{job="labels-valkey-headless"}) < 3
-          for: 5m
+          for: 15m
           labels:
             severity: warning
           annotations:
@@ -186,7 +193,7 @@ spec:
             description: 'Exporter target {{ $labels.pod }} reports redis_up=0 for 2m.'
         - alert: LabelsValkeyMasterCountInvalid
           expr: (count(redis_instance_info{job="labels-valkey-headless",role="master"}) or vector(0)) != 1
-          for: 2m
+          for: 15m
           labels:
             severity: critical
           annotations:
