@@ -508,7 +508,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:fa7e605bcde8802e5c4633df6bdc70d3a0d91330bb53bb383d72eb688e1198bd # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 62177851 -> 62185113 bytes (+7262, +0.01%: código de la release, capas base byte-idénticas b64ced2e).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:19f28bf6df1935d961a0c476683a5d933f8f29792f630bed0a2c4cd6bdfcc829 # pin por digest: v2026.11.23.2 (skirmshop-labels, revisión 12a0834). Incluye SKIRM-536: el routing decide por el code explícito, no por el título viejo que Shopify deja en la línea de envío.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
