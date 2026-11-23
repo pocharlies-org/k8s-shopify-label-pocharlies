@@ -147,7 +147,10 @@ spec:
     metadata: { labels: { app: labels-shopify-app } }
     spec:
       enableServiceLinks: false
-      nodeSelector: { kubernetes.io/arch: amd64, region: ovh-rbx }
+      # SKIRM-609: ks5-cp-* solo admiten plano de control desde el 20-11 (SC-6094/SC-6096,
+      # taint control-plane + allowlist de Kyverno), y ovh-rbx dejó el pod Pending. atlantic
+      # (ovh-gra) mantiene la app fuera de sauvage, como quería 1374e63.
+      nodeSelector: { kubernetes.io/arch: amd64, region: ovh-gra }
       tolerations:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       # Bound to the labels-shopify-app SA (defined below) so the admin
