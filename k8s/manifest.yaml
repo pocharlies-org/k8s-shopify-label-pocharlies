@@ -163,7 +163,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:d03e8e971c799a62f461cf30ad54482b32f40d2a517098c96a8f8b3a2a687804 # pin por digest — SKIRM-615: v2026.11.23.2 (skirmshop-labels, release 45281690701, revisión 12a0834). La factura UPS en papel (INV/KEY) no se imprime sola: la pestaña de la etiqueta ofrece un botón que la abre, con 3 copias, en su propia pestaña.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:c127c3eb0023268b809c39f2291a8b45df7a960cff8460771000d9637f6dbf34 # pin por digest — SKIRM-618: v2026.11.23.3 (skirmshop-labels, release 45290873532, revisión 71a70a2). Factura comercial en DAP: las aduanas las paga el destinatario.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -699,7 +699,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:976c6dd3cdf902b7816ed0e80f96d0610adf020d0cec8b29c9548e6843087668 # pin por digest — SKIRM-555: v2026.11.20.5 (skirmshop-labels, release 44709650004, revisión 4eac515). ADL 012 al destinatario y 013 al remitente; si UPS sigue rechazando el ADL, el envío se reemite como entrega normal a la dirección del punto (ORD19564, SE).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:c1c41d594c07f8b147e8f114ebaca82aab073ba1f1c10e52a84e0759e4bd8619 # pin por digest — SKIRM-618: v2026.11.23.3 (skirmshop-labels, release 45290873532, revisión 71a70a2). Factura comercial en DAP: las aduanas las paga el destinatario.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
