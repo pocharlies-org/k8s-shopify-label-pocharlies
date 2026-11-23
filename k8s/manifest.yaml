@@ -160,7 +160,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:39c666a853d5c0d39e320280e4f0c5b05341b51854efe62507f39d709ed672a2 # pin por digest — SKIRM-555: v2026.11.19.3 (skirmshop-labels, release 44640008768, revisión 94e734c). El 120995 de UPS tiene su propio mensaje y deja de mostrarse como «teléfono no válido».
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:9c971526300c232e4394a9e0db8f5b1f75a18637ebc0e17571b26ba53ae119d9 # pin por digest — SKIRM-609: v2026.11.23.1 (skirmshop-labels, release 45205751647, revisión 9ddf835). Un punto de otro carrier en un pedido Correos oficina/Citypaq no entra en el OrderPaid ni se enseña como su punto.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -584,7 +584,8 @@ spec:
                 name: SYNAPSE_API_URL,
                 value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080",
               }
-            - { name: SYNAPSE_WORKFLOW_VERSION, value: "1.2.26" }
+            # SKIRM-609: 1.2.27 (pickupPoint.carrier a Correos), ya registrada por el PostSync de #181.
+            - { name: SYNAPSE_WORKFLOW_VERSION, value: "1.2.27" }
             - {
                 name: SHOPIFY_APP_INTERNAL_URL,
                 value: "http://labels-shopify-app.skirmshop.svc.cluster.local:3004",
