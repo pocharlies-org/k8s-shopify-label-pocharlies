@@ -163,7 +163,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:9c971526300c232e4394a9e0db8f5b1f75a18637ebc0e17571b26ba53ae119d9 # pin por digest — SKIRM-609: v2026.11.23.1 (skirmshop-labels, release 45205751647, revisión 9ddf835). Un punto de otro carrier en un pedido Correos oficina/Citypaq no entra en el OrderPaid ni se enseña como su punto.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:d03e8e971c799a62f461cf30ad54482b32f40d2a517098c96a8f8b3a2a687804 # pin por digest — SKIRM-615: v2026.11.23.2 (skirmshop-labels, release 45281690701, revisión 12a0834). La factura UPS en papel (INV/KEY) no se imprime sola: la pestaña de la etiqueta ofrece un botón que la abre, con 3 copias, en su propia pestaña.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
