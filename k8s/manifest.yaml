@@ -163,7 +163,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:c075d5fc6144fb3bce1579b660ab1c85d1ed800018959bd996805aef751996f9 # pin por digest — SKIRM-620: v2026.11.23.4 (skirmshop-labels, release 45293025608, revisión b918dd0). /api/internal/claims (GET abre con última novedad, POST crea desde un pedido, POST /:claimId/status mueve) para la vista Disputas del Control Panel.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:c075d5fc6144fb3bce1579b660ab1c85d1ed800018959bd996805aef751996f9 # pin por digest — SKIRM-620: v2026.11.23.4 (skirmshop-labels, release 45293025608, revisión b918dd0; entra también SKIRM-618 DAP). Disputas: /api/internal/claims (listar con última novedad, crear desde un pedido, mover estado).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -699,7 +699,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:976c6dd3cdf902b7816ed0e80f96d0610adf020d0cec8b29c9548e6843087668 # pin por digest — SKIRM-555: v2026.11.20.5 (skirmshop-labels, release 44709650004, revisión 4eac515). ADL 012 al destinatario y 013 al remitente; si UPS sigue rechazando el ADL, el envío se reemite como entrega normal a la dirección del punto (ORD19564, SE).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:c1c41d594c07f8b147e8f114ebaca82aab073ba1f1c10e52a84e0759e4bd8619 # pin por digest — SKIRM-618: v2026.11.23.3 (skirmshop-labels, release 45290873532, revisión 71a70a2). Factura comercial en DAP: las aduanas las paga el destinatario.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
