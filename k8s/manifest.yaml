@@ -163,7 +163,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:c127c3eb0023268b809c39f2291a8b45df7a960cff8460771000d9637f6dbf34 # pin por digest — SKIRM-618: v2026.11.23.3 (skirmshop-labels, release 45290873532, revisión 71a70a2). Factura comercial en DAP: las aduanas las paga el destinatario.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:c075d5fc6144fb3bce1579b660ab1c85d1ed800018959bd996805aef751996f9 # pin por digest — SKIRM-620: v2026.11.23.4 (skirmshop-labels, release 45293025608, revisión b918dd0; entra también SKIRM-618 DAP). Disputas: /api/internal/claims (listar con última novedad, crear desde un pedido, mover estado).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
