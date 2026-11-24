@@ -23,7 +23,7 @@ spec:
       nodeSelector: { kubernetes.io/arch: amd64 }
       containers:
         - name: ops-edit-hold-reconciler
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ops-edit-hold-reconciler@sha256:80dcf0d514d38ef449f09dc61f9a0d925d9a424710a06d6cdb6109b044c6a004 # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 56692978 -> 57589257 bytes (+896279, +1.6%: código de la release sobre v2026.10.21.8, capas base byte-idénticas b64ced2e). RE-PINAR a la release con SKIRM-623 antes del sync.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ops-edit-hold-reconciler@sha256:171720a1d04c6a4bcdfdeb426f7aa026158af692be9cc11528351ffd09b937be # pin por digest — SKIRM-638: release k8s-20261124-skirm638 (skirmshop-labels, run 45459750210, #306 73bfae35). Worker NATS durable ops-edit-hold-reconciler (deadline-timers + nats-consumer), sustituye al CronJob */2.
           env:
             - {
                 name: PG_URL,

@@ -23,7 +23,7 @@ spec:
       nodeSelector: { kubernetes.io/arch: amd64 }
       containers:
         - name: pickup-point-reminder
-          image: harbor.e-dani.com/homelab/skirmshop-labels-pickup-point-reminder@sha256:e67e4fa9603b08d9e526c18f01fe9d9eeea2801c93a89ded1ddb923fff4edc64 # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 57571602 -> 57572654 bytes (+1052, +0.002%: código de la release, capas base byte-idénticas b64ced2e). RE-PINAR a la release con SKIRM-623 antes del sync.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-pickup-point-reminder@sha256:e8e2ccc2121771ba0429cfa99486583bbed302cc1542acee8452b901ea11530a # pin por digest — SKIRM-638: release k8s-20261124-skirm638 (skirmshop-labels, run 45459750210, #306 73bfae35). Worker NATS durable pickup-point-reminder (deadline-timers + nats-consumer), sustituye al CronJob */2.
           env:
             - {
                 name: PG_URL,
