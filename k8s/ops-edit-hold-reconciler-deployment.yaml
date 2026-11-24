@@ -1,0 +1,60 @@
+# SKIRM-623 (ley SC-5617): el CronJob */2 labels-ops-edit-hold-reconciler muere
+# y nace este Deployment event-driven. El worker consume por pedido
+# OrderEditApplied / OrderPaid / OrderEditBalanceSettled / OrderCancelled del
+# stream SHIPPING_EVENTS (JetStream, durable `ops-edit-hold-reconciler`) y las
+# gracias de tiempo (168 h sin pagar, reintento de pausa Picqer) son timers
+# one-shot por pedido en la tabla `edit_hold_timers`. Sin barrido global.
+#
+# ATENCIÓN antes de sincronizar: re-pinear la imagen a la release que contenga
+# skirmshop-labels SKIRM-623 (el digest de abajo es el del CronJob anterior;
+# con este pin el worker arrancaría en modo run-once y no consumiría nada).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-ops-edit-hold-reconciler
+  namespace: skirmshop
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: labels-ops-edit-hold-reconciler } }
+  template:
+    metadata: { labels: { app: labels-ops-edit-hold-reconciler } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector: { kubernetes.io/arch: amd64 }
+      containers:
+        - name: ops-edit-hold-reconciler
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ops-edit-hold-reconciler@sha256:171720a1d04c6a4bcdfdeb426f7aa026158af692be9cc11528351ffd09b937be # pin por digest — SKIRM-638: release k8s-20261124-skirm638 (skirmshop-labels, run 45459750210, #306 73bfae35). Worker NATS durable ops-edit-hold-reconciler (deadline-timers + nats-consumer), sustituye al CronJob */2.
+          env:
+            - {
+                name: PG_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - name: OPS_TELEGRAM_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: labels-telegram-bot
+                  key: bot_token
+            - { name: OPS_TELEGRAM_CHAT_ID, value: "-1003984393379" }
+            - { name: OPS_TELEGRAM_LABELS_THREAD_ID, value: "6921" }
+            # Picqer creds: PICQER_API_KEY comes from labels-secrets (envFrom).
+            - { name: PICQER_BASE_URL, value: "https://skirmshop.picqer.com/api/v1" }
+            - { name: PICQER_USER_AGENT, value: "SkirmshopLabels (info@e-dani.com)" }
+            - { name: PICQER_WEBSHOPORDERS_PATH, value: "webshoporders" }
+            - { name: EDIT_HOLD_ADMIN_BASE_URL, value: "https://track.skirmshop.es/labels" }
+            # During the Synapse noise audit, keep only hard failures immediate:
+            # Picqer pause failures still alert; unpaid edit reminders wait a week.
+            - { name: EDIT_HOLD_GRACE_HOURS, value: "168" }
+            - { name: EDIT_HOLD_LOOKBACK_DAYS, value: "30" }
+            - { name: EDIT_HOLD_PAGE_SIZE, value: "250" }
+            - { name: EDIT_HOLD_PAUSE_RETRY_MINUTES, value: "2" }
+            # SKIRM-623: consumer JetStream (nats-server 2.14, filter_subjects).
+            - {
+                name: NATS_URL,
+                value: "nats://labels-nats-cluster.skirmshop.svc.cluster.local:4222",
+              }
+            - { name: NATS_STREAM, value: "SHIPPING_EVENTS" }
+            - { name: NATS_DURABLE, value: "ops-edit-hold-reconciler" }
+          envFrom: [{ secretRef: { name: labels-secrets } }]
+          resources:
+            requests: { cpu: 20m, memory: 64Mi }
+            limits: { memory: 256Mi }
