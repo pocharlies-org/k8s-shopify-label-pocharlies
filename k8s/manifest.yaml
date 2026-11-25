@@ -163,7 +163,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:49a342456cb8584301b0a5d0b9411fbf813dd579ac01439942624eaa29856dbd # pin por digest — SKIRM-620: v2026.11.23.5 (skirmshop-labels, revisión 38666ec; construido en x86 con el release de GitHub caído por Harbor). Disputas: /api/internal/claims (listar, crear, mover) con bearer LABELS_AGENT_TOKEN.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:71da1adc88ac16663185ad0bff8606771dcf338a5f076f1438582f16737d289f # pin por digest — SKIRM-650: v2026.11.24.1 (skirmshop-labels, revisión 536d4cc, PR #309). GET /api/internal/claims añade `contestada`: la petición del transportista ya se contestó (presentada que vuelve de info_solicitada).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
