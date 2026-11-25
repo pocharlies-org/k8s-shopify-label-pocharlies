@@ -99,7 +99,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:c4a31b3d792d8c10f5a9a3a0b5f676f5a3d635517f97ee01ba3028b422876064 # pin por digest — SKIRM-546: v2026.11.19.2 (skirmshop-labels, release 44561252147, revisión e2bbe25). PO No de la factura comercial = nombre real del pedido.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:3ef452b06b785ca5cffe5dbd45702a2f7bab6d55706d15c7364604b22d8ee443 # pin por digest — SKIRM-618: v2026.11.23.3 (skirmshop-labels, release 45290873532, revisión 71a70a2). Factura comercial en DAP: las aduanas las paga el destinatario.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -179,7 +179,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: correos-adapter
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:49689b834d5bd6f3613c936f0399df34f699ecdf34013a4793f10f44dd3797f8 # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 64579496 -> 64580466 bytes (+970, +0.001%: código de la release, capas base byte-idénticas b64ced2e).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:e868382c0bbc0f07f062b148110cde6e77534b7b1f847d5ec99a4ab87a8e8b66 # pin por digest — SKIRM-609: v2026.11.23.1 (skirmshop-labels, release 45205751647, revisión 9ddf835). Ignora pickupPoint.carrier distinto de correos (ORD19573: id CEX → Correos 404).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

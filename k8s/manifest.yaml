@@ -147,7 +147,10 @@ spec:
     metadata: { labels: { app: labels-shopify-app } }
     spec:
       enableServiceLinks: false
-      nodeSelector: { kubernetes.io/arch: amd64, region: ovh-rbx }
+      # SKIRM-609: ks5-cp-* solo admiten plano de control desde el 20-11 (SC-6094/SC-6096,
+      # taint control-plane + allowlist de Kyverno), y ovh-rbx dejó el pod Pending. atlantic
+      # (ovh-gra) mantiene la app fuera de sauvage, como quería 1374e63.
+      nodeSelector: { kubernetes.io/arch: amd64, region: ovh-gra }
       tolerations:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       # Bound to the labels-shopify-app SA (defined below) so the admin
@@ -160,7 +163,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:39c666a853d5c0d39e320280e4f0c5b05341b51854efe62507f39d709ed672a2 # pin por digest — SKIRM-555: v2026.11.19.3 (skirmshop-labels, release 44640008768, revisión 94e734c). El 120995 de UPS tiene su propio mensaje y deja de mostrarse como «teléfono no válido».
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:71da1adc88ac16663185ad0bff8606771dcf338a5f076f1438582f16737d289f # pin por digest — SKIRM-650: v2026.11.24.1 (skirmshop-labels, revisión 536d4cc, PR #309). GET /api/internal/claims añade `contestada`: la petición del transportista ya se contestó (presentada que vuelve de info_solicitada).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -505,7 +508,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:fa7e605bcde8802e5c4633df6bdc70d3a0d91330bb53bb383d72eb688e1198bd # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 62177851 -> 62185113 bytes (+7262, +0.01%: código de la release, capas base byte-idénticas b64ced2e).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:19f28bf6df1935d961a0c476683a5d933f8f29792f630bed0a2c4cd6bdfcc829 # pin por digest: v2026.11.23.2 (skirmshop-labels, revisión 12a0834). Incluye SKIRM-536: el routing decide por el code explícito, no por el título viejo que Shopify deja en la línea de envío.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -584,7 +587,8 @@ spec:
                 name: SYNAPSE_API_URL,
                 value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080",
               }
-            - { name: SYNAPSE_WORKFLOW_VERSION, value: "1.2.26" }
+            # SKIRM-609: 1.2.27 (pickupPoint.carrier a Correos), ya registrada por el PostSync de #181.
+            - { name: SYNAPSE_WORKFLOW_VERSION, value: "1.2.27" }
             - {
                 name: SHOPIFY_APP_INTERNAL_URL,
                 value: "http://labels-shopify-app.skirmshop.svc.cluster.local:3004",
@@ -695,7 +699,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:976c6dd3cdf902b7816ed0e80f96d0610adf020d0cec8b29c9548e6843087668 # pin por digest — SKIRM-555: v2026.11.20.5 (skirmshop-labels, release 44709650004, revisión 4eac515). ADL 012 al destinatario y 013 al remitente; si UPS sigue rechazando el ADL, el envío se reemite como entrega normal a la dirección del punto (ORD19564, SE).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:c1c41d594c07f8b147e8f114ebaca82aab073ba1f1c10e52a84e0759e4bd8619 # pin por digest — SKIRM-618: v2026.11.23.3 (skirmshop-labels, release 45290873532, revisión 71a70a2). Factura comercial en DAP: las aduanas las paga el destinatario.
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }

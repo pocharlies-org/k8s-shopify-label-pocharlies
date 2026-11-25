@@ -1,0 +1,79 @@
+# SKIRM-623 (ley SC-5617): el CronJob */2 labels-pickup-point-reminder muere
+# y nace este Deployment event-driven. El worker consume por pedido
+# OrderPaid / PickupPointSelected / PickupPointRequired / OrderCancelled del
+# stream SHIPPING_EVENTS (JetStream, durable `pickup-point-reminder`); el delay
+# al cliente y el reintento del hold Shopify (SKIRM-322) son timers one-shot por
+# pedido en la tabla `pickup_reminder_timers`. Sin barrido global.
+#
+# ATENCIÓN antes de sincronizar: re-pinear la imagen a la release que contenga
+# skirmshop-labels SKIRM-623 (el digest de abajo es el del CronJob anterior;
+# con este pin el worker arrancaría en modo run-once y no consumiría nada).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-pickup-point-reminder
+  namespace: skirmshop
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: labels-pickup-point-reminder } }
+  template:
+    metadata: { labels: { app: labels-pickup-point-reminder } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector: { kubernetes.io/arch: amd64 }
+      containers:
+        - name: pickup-point-reminder
+          image: harbor.e-dani.com/homelab/skirmshop-labels-pickup-point-reminder@sha256:e8e2ccc2121771ba0429cfa99486583bbed302cc1542acee8452b901ea11530a # pin por digest — SKIRM-638: release k8s-20261124-skirm638 (skirmshop-labels, run 45459750210, #306 73bfae35). Worker NATS durable pickup-point-reminder (deadline-timers + nats-consumer), sustituye al CronJob */2.
+          env:
+            - {
+                name: PG_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - {
+                name: DATABASE_URL,
+                value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels",
+              }
+            - name: OPS_TELEGRAM_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: labels-telegram-bot
+                  key: bot_token
+            - { name: OPS_TELEGRAM_CHAT_ID, value: "-1003984393379" }
+            - { name: OPS_TELEGRAM_LABELS_THREAD_ID, value: "6921" }
+            - { name: OPS_TELEGRAM_ENABLED, value: "false" }
+            - {
+                name: PICKUP_REMINDER_ADMIN_BASE_URL,
+                value: "https://track.skirmshop.es/labels",
+              }
+            - {
+                name: PICKUP_REMINDER_PICKUP_SELECTOR_URL_BASE,
+                value: "https://track.skirmshop.es/labels/track",
+              }
+            - {
+                name: PICKUP_REMINDER_PUBLIC_TRACKING_URL_BASE,
+                value: "https://track.skirmshop.es/labels/track",
+              }
+            - { name: PICKUP_CUSTOMER_NOTIFICATIONS_ENABLED, value: "true" }
+            - { name: PICKUP_CUSTOMER_REMINDER_DELAY_MINUTES, value: "2" }
+            - { name: PICKUP_HOLD_RETRY_MINUTES, value: "2" }
+            - {
+                name: NOTIFICATION_DISPATCHER_URL,
+                value: "http://labels-notification-dispatcher.skirmshop.svc.cluster.local:3007",
+              }
+            # SKIRM-322: hold «Falta el punto de recogida» en Shopify vía el servicio de fulfillment.
+            - {
+                name: SHOPIFY_FULFILLMENT_SERVICE_URL,
+                value: "http://labels-shopify-fulfillment-service.skirmshop.svc.cluster.local:3005",
+              }
+            - { name: PICKUP_SHOPIFY_HOLD_ENABLED, value: "true" }
+            # SKIRM-623: consumer JetStream (nats-server 2.14, filter_subjects).
+            - {
+                name: NATS_URL,
+                value: "nats://labels-nats-cluster.skirmshop.svc.cluster.local:4222",
+              }
+            - { name: NATS_STREAM, value: "SHIPPING_EVENTS" }
+            - { name: NATS_DURABLE, value: "pickup-point-reminder" }
+          envFrom: [{ secretRef: { name: labels-secrets } }]
+          resources:
+            requests: { cpu: 20m, memory: 64Mi }
+            limits: { memory: 256Mi }

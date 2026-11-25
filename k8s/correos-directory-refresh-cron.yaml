@@ -31,7 +31,7 @@ spec:
             - name: trigger
               # Misma imagen que el Deployment labels-correos-adapter — bumpear
               # los dos digests A LA VEZ.
-              image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:49689b834d5bd6f3613c936f0399df34f699ecdf34013a4793f10f44dd3797f8 # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640), pin alineado con el despliegue labels-correos-adapter (misma imagen, se bumperan a la vez).
+              image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:e868382c0bbc0f07f062b148110cde6e77534b7b1f847d5ec99a4ab87a8e8b66 # pin por digest — SKIRM-609: v2026.11.23.1 (skirmshop-labels, release 45205751647, revisión 9ddf835). Pin alineado con el despliegue labels-correos-adapter (misma imagen, se bumperan a la vez).
               command: ["node", "-e"]
               args:
                 - >

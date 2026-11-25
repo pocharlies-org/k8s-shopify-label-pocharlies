@@ -35,7 +35,7 @@ data:
       dsl: '1.0.0'
       namespace: skirmshop
       name: generate-shipment-label
-      version: '1.2.26'
+      version: '1.2.27'
       summary: |
         Full shipping saga for a paid Shopify order. Routes to UPS, Correos
         Express or Correos matriz, persists the label, updates
@@ -368,7 +368,9 @@ data:
                     # order/routing), unlike ups/cex which carry pickupPointId inside
                     # `order`. The adapter schema tolerates null (nullish) when the
                     # customer hasn't selected a point yet.
-                    pickupPoint: '${ if .pickupPointId == null then null else { id: .pickupPointId } end }'
+                    # SKIRM-609 (ORD19573): `carrier` lets the adapter drop another
+                    # carrier's point (a CEX Paq Punto id is a Correos 404).
+                    pickupPoint: '${ if .pickupPointId == null then null else { id: .pickupPointId, carrier: .pickupPointCarrier } end }'
                 output:
                   as: '${ $input + { carrierConfirmed: { data: $output.carrierAccepted } } }'
           catch:

@@ -154,7 +154,12 @@ spec:
             summary: 'synapse-janitor archive failures'
             description: '{{ $value }} archive failures in 15 min — deletes skipped (safe) but backlog will not drain. Check Postgres. Runbook §6.'
         - alert: SynapseOperatorRestarts
-          expr: increase(kube_pod_container_status_restarts_total{namespace="skirmshop",pod=~"labels-synapse-operator.*"}[15m]) > 2
+          # SC-6150 (SYNC-20137, 20/11): increase() sobre la serie cruda dispara falso cuando
+          # kube-state-metrics se recrea (nueva etiqueta `instance` → serie nueva sin histórico:
+          # el valor acumulado cuenta como incremento; medido: increase=7 con 0 reinicios reales).
+          # Agregando por pod ANTES del increase la serie sobrevive al reinicio del KSM; verificado
+          # contra VM del incidente (vacío en la ventana del falso, =1 en el reinicio real de 07:15Z).
+          expr: increase(max by (namespace, pod) (kube_pod_container_status_restarts_total{namespace="skirmshop",pod=~"labels-synapse-operator.*"})[15m:1m]) > 2
           labels:
             severity: critical
           annotations:
@@ -428,12 +433,18 @@ spec:
           annotations:
             summary: 'fuel-sync falló en su último run'
             description: 'El workflow fuel-sync.yml de k8s-shopify-label-pocharlies falló (MITECO, Gmail, parseo del informe/factura o commit a main). El recargo vigente sigue siendo el anterior: revisar el log del último run.'
+        # SC-6395 (23-11): GitHub entrega el cron 0 7 * * * de fuel-sync.yml con 7-12 h de
+        # retraso y algún día lo omite (medido del 04/11 al 23/11 en runs event=schedule:
+        # created_at entre 13:46 y 17:15 UTC; el 23/11 no hubo run). El workflow está sano:
+        # sus runs duran ~20 s y publican la métrica. Con umbral de 26 h el retardo normal
+        # del disparador abría incidente (LBL-20464) sin daño funcional; 40 h tolera el
+        # retardo + un día saltado y sigue cazando un workflow muerto en ~1,7 días.
         - alert: LabelsFuelSyncMissing
           expr: |
             (
               time() - last_over_time(
                 labels_fuel_sync_last_run_timestamp_seconds{job="labels_fuel_sync", namespace="skirmshop"}[3d]
-              ) > 26 * 3600
+              ) > 40 * 3600
             )
             or
             absent_over_time(
@@ -445,5 +456,5 @@ spec:
             area: labels
             domain: crons
           annotations:
-            summary: 'fuel-sync no ha corrido en 26 h'
-            description: 'El workflow programado fuel-sync.yml no publica resultado: deshabilitado por GitHub, sin runners arc-k8s o sin red a VictoriaMetrics. Revisar GitHub Actions de k8s-shopify-label-pocharlies.'
+            summary: 'fuel-sync no ha corrido en 40 h'
+            description: 'El workflow programado fuel-sync.yml no publica resultado: deshabilitado por GitHub, sin runners arc-k8s o sin red a VictoriaMetrics. Revisar GitHub Actions de k8s-shopify-label-pocharlies; un disparo con run reciente = GitHub omitió el schedule, se reponer con `gh workflow run fuel-sync.yml -R pocharlies-org/k8s-shopify-label-pocharlies`.'
