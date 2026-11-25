@@ -415,7 +415,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: event-projector
-          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:c822ccf5e550e359ec81132c0ad4ddab297cd1e43dee803ccc0e54946d64dcea # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 60362926 -> 60375769 bytes (+12843, +0.02%: código de la release, capas base byte-idénticas b64ced2e).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:e81c7d4574f7076c717f9283f2364daa709b8f16bc25c0626b57730ca8c6977d # pin por digest — SKIRM-642: v2026.11.25.1 (skirmshop-labels 67d337c, Release Images 45571245716): publica cada reclamación (abierta, estado, tracking de su envío) en POST /eventos del Synapse general. Anterior: INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 60362926 -> 60375769 bytes (+12843, +0.02%: código de la release, capas base byte-idénticas b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
