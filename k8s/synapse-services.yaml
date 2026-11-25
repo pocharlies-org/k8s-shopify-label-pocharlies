@@ -415,7 +415,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: event-projector
-          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:c822ccf5e550e359ec81132c0ad4ddab297cd1e43dee803ccc0e54946d64dcea # pin por digest — INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 60362926 -> 60375769 bytes (+12843, +0.02%: código de la release, capas base byte-idénticas b64ced2e).
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:e81c7d4574f7076c717f9283f2364daa709b8f16bc25c0626b57730ca8c6977d # pin por digest — SKIRM-642: v2026.11.25.1 (skirmshop-labels 67d337c, Release Images 45571245716): publica cada reclamación (abierta, estado, tracking de su envío) en POST /eventos del Synapse general. Anterior: INFRA-1300: v2026.11.15.1 (skirmshop-labels, release 43674488640). C2 crane amd64: 60362926 -> 60375769 bytes (+12843, +0.02%: código de la release, capas base byte-idénticas b64ced2e).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -435,13 +435,44 @@ spec:
                 name: SYNAPSE_CORRELATOR_URL,
                 value: "http://labels-synapse-correlator.skirmshop.svc.cluster.local:8080/",
               }
+            # SKIRM-642: cada reclamación (abierta, estado, tracking de su envío) va firmada al
+            # gateway de Synapse (productor labels). Sin el Secret el POST falla, se registra y se descarta.
+            - {
+                name: SYNAPSE_EVENTOS_URL,
+                value: "http://synapse-gateway.synapse.svc.cluster.local:18790/eventos",
+              }
           envFrom: [{ secretRef: { name: labels-secrets } }]
+          volumeMounts:
+            - { name: synapse-eventos, mountPath: /etc/labels/synapse-eventos, readOnly: true }
           resources:
             requests: { cpu: 30m, memory: 64Mi }
             limits: { memory: 256Mi }
           readinessProbe:
             httpGet: { path: /ready, port: 3000 }
             initialDelaySeconds: 10
+      volumes:
+        - name: synapse-eventos
+          secret: { secretName: labels-synapse-eventos, optional: true }
+---
+# SKIRM-642: clave HMAC del productor `labels` de POST /eventos; la MISMA que lee el gateway
+# (synapse-gateway-webhooks, ns synapse). Ítem synapse-eventos-labels, lo acuña security (SKIRM-643).
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: labels-synapse-eventos
+  namespace: skirmshop
+spec:
+  refreshPolicy: OnChange
+  secretStoreRef: { name: onepassword-connect, kind: ClusterSecretStore }
+  target:
+    name: labels-synapse-eventos
+    creationPolicy: Owner
+    deletionPolicy: Retain
+  data:
+    - secretKey: webhook_secret
+      remoteRef:
+        key: synapse-eventos-labels
+        property: webhook_secret
 ---
 apiVersion: v1
 kind: Service
