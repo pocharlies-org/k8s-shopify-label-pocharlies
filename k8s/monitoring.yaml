@@ -172,8 +172,16 @@ spec:
         # falso (LBL-20095) con el pipeline sano. 15m cubre la peor ventana observada de un
         # reinicio/derribo de la pila de métricas; la pérdida real de master la caza además
         # labels-deep-monitor (CronJob */15 → LabelsDeepMonitorIncident, for: 1m).
+        # SC-6720 (LBL-21031, 25-11 23:25Z): el `for: 15m` no bastó — vmsingle OOM-killed (SC-6652)
+        # con ~50 min de hueco de ingestión disparó las dos críticas con valkey sano (redis_up=3 y
+        # master=1 continuos, medido post-replay). Con la TSDB caída, absent()/count() dicen «falta»
+        # para TODO, así que estas 3 reglas exigen además pipeline sano: `and on() (count(up) > 0)`
+        # solo pasa si VM está recibiendo muestras frescas de cualquier job. Con vmsingle caído la
+        # derecha queda vacía y la alerta calla — ese caso lo avisan las alertas de la propia pila
+        # (TooHighMemoryUsage/DiskRuns de vmsingle, TargetDown, ScrapePoolHasNoTargets), no labels;
+        # con la pila viva y redis_up ausente (caída real del exportador o del job) sigue disparando.
         - alert: LabelsValkeyMetricsMissing
-          expr: absent(redis_up{job="labels-valkey-headless"})
+          expr: absent(redis_up{job="labels-valkey-headless"}) and on() (count(up) > 0)
           for: 15m
           labels:
             severity: critical
@@ -181,7 +189,7 @@ spec:
             summary: 'labels-valkey metrics are missing'
             description: 'No redis_up series for labels-valkey for 15m. The redis_exporter scrape is failing, the labels-valkey pods are down, or VictoriaMetrics (vmsingle/vmagent) has not received samples.'
         - alert: LabelsValkeyScrapeTargetsLow
-          expr: count(redis_up{job="labels-valkey-headless"}) < 3
+          expr: count(redis_up{job="labels-valkey-headless"}) < 3 and on() (count(up) > 0)
           for: 15m
           labels:
             severity: warning
@@ -197,7 +205,7 @@ spec:
             summary: 'labels-valkey exporter cannot reach Valkey'
             description: 'Exporter target {{ $labels.pod }} reports redis_up=0 for 2m.'
         - alert: LabelsValkeyMasterCountInvalid
-          expr: (count(redis_instance_info{job="labels-valkey-headless",role="master"}) or vector(0)) != 1
+          expr: (count(redis_instance_info{job="labels-valkey-headless",role="master"}) or vector(0)) != 1 and on() (count(up) > 0)
           for: 15m
           labels:
             severity: critical
