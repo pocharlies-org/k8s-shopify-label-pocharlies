@@ -699,7 +699,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:c1c41d594c07f8b147e8f114ebaca82aab073ba1f1c10e52a84e0759e4bd8619 # pin por digest — SKIRM-618: v2026.11.23.3 (skirmshop-labels, release 45290873532, revisión 71a70a2). Factura comercial en DAP: las aduanas las paga el destinatario.
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:1f2cc546ccc9859feb72172548321168d45da271eaee9d15a92af3df7e359799 # pin por digest — SKIRM-707: v2026.11.27.1 (skirmshop-labels, release 45995258292, revisión f1b0195). Access Point legacy a 100 km; trae SKIRM-618 (factura comercial en DAP).
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
